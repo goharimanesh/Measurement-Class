@@ -1,0 +1,2640 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>جلسه ۲: سیگنال‌ها و استانداردهای صنعتی — سیستم‌های اندازه‌گیری و کنترل</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;300;400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --accent: #ffb700;
+      --accent2: #ff6b35;
+      --success: #00d4aa;
+      --danger: #ff4757;
+      --purple: #a855f7;
+      --pink: #ec4899;
+      --cyan: #06b6d4;
+      --dark: #050818;
+    }
+
+    html, body {
+      font-family: 'Vazirmatn', sans-serif;
+      background: #050818;
+      color: white;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ===== پس‌زمینه ===== */
+    .starfield {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      background:
+        radial-gradient(ellipse at 20% 30%, rgba(102, 126, 234, 0.35) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 70%, rgba(240, 147, 251, 0.25) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(0, 212, 170, 0.15) 0%, transparent 60%),
+        linear-gradient(135deg, #050818 0%, #0f1c3f 50%, #1a1f3a 100%);
+    }
+    .star {
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle 3s infinite ease-in-out;
+      pointer-events: none;
+      box-shadow: 0 0 6px currentColor;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.5); }
+    }
+
+    .neon-bubble {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.5;
+      animation: floatBubble 25s infinite ease-in-out;
+      pointer-events: none;
+      z-index: 2;
+    }
+    @keyframes floatBubble {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(60px, -80px) scale(1.2); }
+      66% { transform: translate(-40px, 60px) scale(0.9); }
+    }
+    .neon-bubble:nth-child(1) { width: 400px; height: 400px; top: -10%; left: -5%; background: #6d28d9; animation-duration: 22s; }
+    .neon-bubble:nth-child(2) { width: 350px; height: 350px; top: 60%; right: -8%; background: #ff6b35; animation-duration: 28s; animation-delay: 3s; }
+    .neon-bubble:nth-child(3) { width: 300px; height: 300px; bottom: -10%; left: 30%; background: #00d4aa; animation-duration: 25s; animation-delay: 5s; }
+    .neon-bubble:nth-child(4) { width: 250px; height: 250px; top: 30%; right: 30%; background: #ec4899; animation-duration: 30s; animation-delay: 8s; }
+
+    .progress-bar {
+      position: fixed;
+      top: 0; right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, #06b6d4, #a855f7, #ff6b35, #ffb700, #06b6d4);
+      background-size: 400% 100%;
+      width: 0%;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 1000;
+      box-shadow: 0 0 20px rgba(255, 183, 0, 0.8);
+      animation: gradientFlow 3s linear infinite;
+    }
+    @keyframes gradientFlow {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 400% 50%; }
+    }
+
+    .slide-header {
+      position: fixed;
+      top: 20px; right: 20px; left: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+      padding: 14px 28px;
+      background: rgba(10, 14, 39, 0.65);
+      backdrop-filter: blur(25px) saturate(180%);
+      border-radius: 60px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .slide-header .logo { display: flex; align-items: center; gap: 14px; font-weight: 800; font-size: 1rem; }
+    .slide-header .logo-icon {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      color: white;
+      box-shadow: 0 8px 20px rgba(255, 183, 0, 0.4);
+      animation: chipPulse 3s infinite ease-in-out;
+    }
+    @keyframes chipPulse {
+      0%, 100% { box-shadow: 0 8px 20px rgba(255, 183, 0, 0.4); }
+      50% { box-shadow: 0 8px 40px rgba(255, 183, 0, 0.8); }
+    }
+    .slide-header .slide-info { display: flex; align-items: center; gap: 20px; font-size: 0.9rem; color: rgba(255, 255, 255, 0.85); }
+    .slide-header .slide-info i { color: var(--accent); margin-left: 6px; }
+
+    .controls {
+      position: fixed;
+      top: 100px; left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 100;
+    }
+    .ctrl-btn {
+      width: 50px; height: 50px;
+      border-radius: 16px;
+      background: rgba(10, 14, 39, 0.7);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      font-size: 1.1rem;
+    }
+    .ctrl-btn:hover {
+      transform: translateY(-4px) scale(1.05);
+      border-color: var(--accent);
+      box-shadow: 0 10px 30px rgba(255, 183, 0, 0.4);
+    }
+    .ctrl-btn.active {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+    }
+
+    .slides-container {
+      width: 100%;
+      height: 100vh;
+      position: relative;
+      z-index: 10;
+    }
+    .slide {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 110px 40px 130px;
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0.9) rotateY(15deg);
+      transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow-y: auto;
+    }
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1) rotateY(0deg);
+    }
+
+    .animate-in {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .slide.active .animate-in { opacity: 1; transform: translateY(0); }
+    .slide.active .animate-in:nth-child(1) { transition-delay: 0.15s; }
+    .slide.active .animate-in:nth-child(2) { transition-delay: 0.3s; }
+    .slide.active .animate-in:nth-child(3) { transition-delay: 0.45s; }
+    .slide.active .animate-in:nth-child(4) { transition-delay: 0.6s; }
+    .slide.active .animate-in:nth-child(5) { transition-delay: 0.75s; }
+    .slide.active .animate-in:nth-child(6) { transition-delay: 0.9s; }
+
+    /* ===== عنوان ===== */
+    .title-slide { text-align: center; position: relative; }
+    .title-slide .hero-bg {
+      position: absolute; inset: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0.35;
+      z-index: -1;
+    }
+    .title-slide .hero-overlay {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at center, rgba(5,8,24,0.3) 0%, rgba(5,8,24,0.85) 70%);
+      z-index: -1;
+    }
+    .title-slide .main-icon {
+      font-size: 7rem;
+      margin-bottom: 30px;
+      display: inline-block;
+      background: linear-gradient(135deg, #ffb700, #ff6b35, #ec4899);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 40px rgba(255, 183, 0, 0.6));
+      animation: iconFloat 3s infinite ease-in-out;
+    }
+    @keyframes iconFloat {
+      0%, 100% { transform: translateY(0) rotate(-5deg); }
+      50% { transform: translateY(-20px) rotate(5deg); }
+    }
+    .title-slide .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: linear-gradient(135deg, rgba(255, 183, 0, 0.15), rgba(255, 107, 53, 0.1));
+      border: 2px solid rgba(255, 183, 0, 0.5);
+      padding: 12px 28px;
+      border-radius: 60px;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 25px;
+      font-size: 1rem;
+      backdrop-filter: blur(10px);
+    }
+    .badge .pulse-dot {
+      width: 10px; height: 10px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulseDot 1.5s infinite;
+    }
+    @keyframes pulseDot {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 183, 0, 0.7); }
+      50% { transform: scale(1.2); box-shadow: 0 0 0 12px rgba(255, 183, 0, 0); }
+    }
+    .title-slide h1 {
+      font-size: 4rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #ffffff 0%, #ffb700 40%, #ff6b35 70%, #ec4899 100%);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 25px;
+      line-height: 1.2;
+      animation: titleGradient 5s ease infinite;
+    }
+    @keyframes titleGradient {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    .title-slide .subtitle { font-size: 1.5rem; color: rgba(255, 255, 255, 0.85); margin-bottom: 45px; font-weight: 300; }
+    .title-slide .instructor-card {
+      display: inline-flex;
+      align-items: center;
+      gap: 18px;
+      background: rgba(10, 14, 39, 0.6);
+      backdrop-filter: blur(20px);
+      padding: 20px 36px;
+      border-radius: 24px;
+      border: 1px solid rgba(255, 183, 0, 0.3);
+      text-align: right;
+    }
+    .title-slide .instructor-avatar {
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      color: white;
+    }
+    .title-slide .instructor-info .name { font-weight: 800; font-size: 1.15rem; color: white; margin-bottom: 4px; }
+    .title-slide .instructor-info .title { font-size: 0.85rem; color: rgba(255, 183, 0, 0.9); }
+
+    .floating-icons { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: -1; }
+    .float-icon {
+      position: absolute;
+      font-size: 3rem;
+      background: linear-gradient(135deg, rgba(255,183,0,0.4), rgba(255,107,53,0.2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: floatIcon 10s infinite ease-in-out;
+    }
+    @keyframes floatIcon {
+      0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+      33% { transform: translateY(-40px) rotate(15deg) scale(1.15); }
+      66% { transform: translateY(20px) rotate(-10deg) scale(0.9); }
+    }
+    .float-icon:nth-child(1) { top: 12%; left: 8%; animation-delay: 0s; font-size: 4rem; }
+    .float-icon:nth-child(2) { top: 20%; right: 10%; animation-delay: 1.5s; font-size: 3rem; }
+    .float-icon:nth-child(3) { bottom: 22%; left: 12%; animation-delay: 3s; font-size: 3.5rem; }
+    .float-icon:nth-child(4) { bottom: 28%; right: 8%; animation-delay: 4.5s; font-size: 4.5rem; }
+    .float-icon:nth-child(5) { top: 45%; left: 4%; animation-delay: 2s; font-size: 3rem; }
+    .float-icon:nth-child(6) { top: 55%; right: 4%; animation-delay: 5s; font-size: 3.5rem; }
+
+    /* ===== محتوا ===== */
+    .content-slide { align-items: stretch; }
+    .content-slide .slide-title { text-align: center; margin-bottom: 26px; }
+    .content-slide .slide-title .title-icon-wrap {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 75px; height: 75px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, rgba(255, 183, 0, 0.2), rgba(255, 107, 53, 0.1));
+      border: 2px solid rgba(255, 183, 0, 0.4);
+      font-size: 2rem;
+      color: var(--accent);
+      margin-bottom: 14px;
+      backdrop-filter: blur(20px);
+      animation: iconRotate 6s infinite ease-in-out;
+    }
+    @keyframes iconRotate {
+      0%, 100% { transform: rotate(-5deg); }
+      50% { transform: rotate(5deg); }
+    }
+    .content-slide .slide-title h2 {
+      font-size: 2.3rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #fff, #ffb700);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+    }
+    .content-slide .slide-title .subtitle-bar {
+      display: inline-block;
+      width: 120px; height: 5px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 5px;
+    }
+
+    .content-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      max-width: 1300px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* ===== سوال انگیزشی ===== */
+    .question-slide { text-align: center; padding: 100px 60px; }
+    .question-slide .question-img {
+      width: 320px;
+      max-width: 70%;
+      height: auto;
+      border-radius: 24px;
+      margin-bottom: 30px;
+      animation: questionBounce 3s infinite ease-in-out;
+    }
+    @keyframes questionBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+    .question-slide h2 {
+      font-size: 2.6rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #fff, #ffb700, #ff6b35);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 30px;
+      line-height: 1.4;
+      animation: titleGradient 4s ease infinite;
+    }
+    .question-slide p { font-size: 1.25rem; color: rgba(255,255,255,0.92); line-height: 2; max-width: 900px; margin: 0 auto; }
+    .question-slide .hint {
+      margin-top: 35px;
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      padding: 18px 36px;
+      background: linear-gradient(135deg, rgba(255, 183, 0, 0.15), rgba(255, 107, 53, 0.1));
+      border-radius: 60px;
+      font-size: 1.05rem;
+      color: rgba(255,255,255,0.9);
+      border: 1px solid rgba(255, 183, 0, 0.4);
+      backdrop-filter: blur(10px);
+    }
+    .question-slide .hint i { color: var(--accent); font-size: 1.4rem; animation: pulseDot 1.5s infinite; }
+    .question-slide .hint strong { color: var(--accent); font-weight: 800; }
+
+    /* ===== تعریف ===== */
+    .big-definition {
+      background: linear-gradient(145deg, rgba(10, 14, 39, 0.9), rgba(30, 40, 70, 0.7));
+      backdrop-filter: blur(20px);
+      border: 2px solid rgba(255, 183, 0, 0.4);
+      border-radius: 40px;
+      padding: 30px;
+      display: flex;
+      align-items: center;
+      gap: 40px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .big-definition .def-image {
+      flex-shrink: 0;
+      width: 260px;
+      max-width: 100%;
+      border-radius: 24px;
+    }
+    .big-definition .def-text { flex: 1; min-width: 280px; text-align: right; }
+    .big-definition h3 {
+      font-size: 1.8rem;
+      color: var(--accent);
+      margin-bottom: 20px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .big-definition p {
+      font-size: 1.15rem;
+      line-height: 2.1;
+      color: rgba(255,255,255,0.95);
+      font-weight: 300;
+    }
+    .big-definition p strong { color: var(--accent); font-weight: 800; }
+    .big-definition p em { color: var(--success); font-style: normal; font-weight: 700; }
+
+    /* ===== دوگانه ===== */
+    .duo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; width: 100%; }
+    @media (max-width: 900px) { .duo-grid { grid-template-columns: 1fr; } }
+
+    .duo-card {
+      background: linear-gradient(145deg, rgba(10, 14, 39, 0.9), rgba(30, 40, 70, 0.7));
+      backdrop-filter: blur(20px);
+      border-radius: 28px;
+      padding: 24px;
+      border: 2px solid transparent;
+      transition: all 0.5s ease;
+      text-align: center;
+    }
+    .duo-card:hover { transform: translateY(-10px); }
+    .duo-card.analog { border-color: rgba(255, 183, 0, 0.5); }
+    .duo-card.digital { border-color: rgba(6, 182, 212, 0.5); }
+    .duo-card .duo-img { width: 100%; height: 160px; object-fit: cover; border-radius: 20px; margin-bottom: 16px; }
+    .duo-card h3 { font-size: 1.35rem; margin-bottom: 12px; font-weight: 800; }
+    .duo-card.analog h3 { color: var(--accent); }
+    .duo-card.digital h3 { color: var(--cyan); }
+    .duo-card p { font-size: 0.9rem; color: rgba(255,255,255,0.85); line-height: 1.8; }
+    .duo-card .example-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; }
+    .duo-card .example-list span {
+      background: rgba(255, 255, 255, 0.08);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.9);
+    }
+
+    /* ===== جدول ===== */
+    .compare-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: rgba(10, 14, 39, 0.85);
+      border-radius: 24px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 183, 0, 0.2);
+    }
+    .compare-table th {
+      background: linear-gradient(135deg, rgba(255, 183, 0, 0.25), rgba(255, 107, 53, 0.15));
+      padding: 14px;
+      text-align: right;
+      font-weight: 800;
+      color: var(--accent);
+      font-size: 0.95rem;
+    }
+    .compare-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      color: rgba(255,255,255,0.9);
+      font-size: 0.85rem;
+      line-height: 1.7;
+    }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table td:first-child { font-weight: 700; color: var(--accent); }
+    .compare-table td .highlight { color: var(--success); font-weight: 700; }
+    .compare-table td .warn { color: var(--danger); font-weight: 700; }
+
+    /* ===== استاندارد ===== */
+    .standard-card {
+      background: linear-gradient(145deg, rgba(10, 14, 39, 0.9), rgba(30, 40, 70, 0.7));
+      backdrop-filter: blur(20px);
+      border-radius: 32px;
+      padding: 28px;
+      border: 2px solid rgba(255, 183, 0, 0.4);
+      display: flex;
+      gap: 30px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .standard-img-wrap {
+      flex-shrink: 0;
+      width: 240px;
+      max-width: 100%;
+      border-radius: 24px;
+      overflow: hidden;
+      border: 2px solid rgba(255, 183, 0, 0.3);
+    }
+    .standard-img-wrap img { width: 100%; height: auto; display: block; }
+    .standard-text { flex: 1; min-width: 300px; }
+    .standard-text h3 {
+      font-size: 1.7rem;
+      color: var(--accent);
+      margin-bottom: 16px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .standard-text p { font-size: 0.95rem; line-height: 2; color: rgba(255,255,255,0.9); margin-bottom: 12px; }
+    .standard-text p strong { color: var(--accent); }
+
+    /* ===== صنعتی ===== */
+    .industry-examples-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+    .industry-example {
+      background: linear-gradient(145deg, rgba(10, 14, 39, 0.75), rgba(30, 40, 70, 0.5));
+      border-radius: 20px;
+      padding: 18px;
+      border-left: 4px solid var(--accent);
+      transition: all 0.3s ease;
+    }
+    .industry-example:hover { transform: translateY(-6px); border-left-color: var(--success); }
+    .industry-example .ie-icon { font-size: 1.8rem; margin-bottom: 10px; color: var(--accent); }
+    .industry-example h5 { font-size: 0.95rem; color: white; font-weight: 800; margin-bottom: 8px; }
+    .industry-example p { font-size: 0.82rem; color: rgba(255,255,255,0.8); line-height: 1.75; }
+    .industry-example .ie-current {
+      display: inline-block;
+      margin-top: 8px;
+      background: rgba(0, 212, 170, 0.15);
+      color: var(--success);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border: 1px solid rgba(0, 212, 170, 0.3);
+    }
+
+    /* ===== psi ===== */
+    .psi-examples-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+    .psi-example {
+      background: linear-gradient(145deg, rgba(10, 14, 39, 0.75), rgba(30, 40, 70, 0.5));
+      border-radius: 20px;
+      padding: 18px;
+      text-align: center;
+      border-top: 4px solid var(--purple);
+      transition: all 0.3s ease;
+    }
+    .psi-example:hover { transform: translateY(-6px); border-top-color: var(--accent); }
+    .psi-example .psi-value {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--accent);
+      margin-bottom: 6px;
+      font-family: 'Courier New', monospace;
+    }
+    .psi-example .psi-label { font-size: 0.85rem; color: rgba(255,255,255,0.85); line-height: 1.6; }
+    .psi-example .psi-emoji { font-size: 2rem; margin-bottom: 8px; display: block; }
+
+    .psi-example.unknown {
+      border-top-color: var(--pink);
+      background: linear-gradient(145deg, rgba(236, 72, 153, 0.08), rgba(30, 40, 70, 0.5));
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    .psi-example.unknown .question-mark {
+      display: inline-block;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+      color: white;
+      font-size: 2.5rem;
+      font-weight: 900;
+      line-height: 60px;
+      text-align: center;
+      margin-bottom: 8px;
+      animation: questionSpin 4s infinite ease-in-out;
+      box-shadow: 0 8px 25px rgba(236, 72, 153, 0.5);
+    }
+    @keyframes questionSpin {
+      0%, 100% { transform: rotate(-10deg) scale(1); }
+      50% { transform: rotate(10deg) scale(1.1); }
+    }
+
+    /* ===== اسلاید پاسخ ===== */
+    .answer-slide { text-align: center; padding: 90px 40px; }
+    .answer-slide .answer-icon {
+      font-size: 5rem;
+      margin-bottom: 16px;
+      display: inline-block;
+      animation: bounceAnswer 1.5s infinite ease-in-out;
+      filter: drop-shadow(0 0 40px rgba(0, 212, 170, 0.6));
+    }
+    @keyframes bounceAnswer {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-20px) scale(1.1); }
+    }
+    .answer-slide h2 {
+      font-size: 2.4rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--success), var(--cyan), var(--accent));
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 24px;
+      animation: titleGradient 4s ease infinite;
+    }
+    .answer-slide .infographic-image {
+      width: 100%;
+      max-width: 900px;
+      height: auto;
+      border-radius: 24px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), 0 0 80px rgba(0, 212, 170, 0.2);
+      border: 2px solid rgba(0, 212, 170, 0.3);
+      margin: 0 auto;
+      display: block;
+      animation: imageGlow 3s infinite alternate;
+    }
+    @keyframes imageGlow {
+      from { box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(0, 212, 170, 0.15); }
+      to { box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), 0 0 100px rgba(0, 212, 170, 0.4); }
+    }
+    .answer-slide .hint {
+      margin-top: 24px;
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 30px;
+      background: linear-gradient(135deg, rgba(0, 212, 170, 0.15), rgba(6, 182, 212, 0.1));
+      border-radius: 60px;
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.9);
+      border: 1px solid rgba(0, 212, 170, 0.4);
+    }
+    .answer-slide .hint i { color: var(--success); }
+
+    /* ===== PWM ===== */
+    .pwm-simulator {
+      background: linear-gradient(145deg, rgba(10, 14, 39, 0.9), rgba(30, 40, 70, 0.7));
+      backdrop-filter: blur(20px);
+      border-radius: 28px;
+      padding: 28px;
+      border: 2px solid rgba(0, 212, 170, 0.4);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      align-items: center;
+    }
+    @media (max-width: 900px) { .pwm-simulator { grid-template-columns: 1fr; } }
+
+    .pwm-controls { display: flex; flex-direction: column; gap: 18px; }
+    .pwm-controls h4 { color: var(--success); font-size: 1.15rem; display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .pwm-slider-wrap { background: rgba(0, 0, 0, 0.3); border-radius: 16px; padding: 16px; }
+    .pwm-slider-wrap label { display: flex; justify-content: space-between; font-size: 0.9rem; color: rgba(255,255,255,0.85); margin-bottom: 10px; font-weight: 700; }
+    .pwm-slider-wrap label span { color: var(--accent); font-size: 1.1rem; }
+    input[type="range"] {
+      width: 100%;
+      height: 8px;
+      border-radius: 4px;
+      background: linear-gradient(90deg, var(--success), var(--accent), var(--accent2));
+      outline: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: white;
+      border: 3px solid var(--success);
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    .led-preview {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      background: rgba(0, 0, 0, 0.35);
+      border-radius: 20px;
+      padding: 22px;
+    }
+    .led-preview h5 { color: var(--accent); font-size: 0.95rem; font-weight: 800; }
+    .led-bulb {
+      width: 100px; height: 100px;
+      border-radius: 50%;
+      background: #ffb700;
+      box-shadow: 0 0 40px 10px rgba(255, 183, 0, 0.6);
+      transition: all 0.15s ease;
+    }
+    .avg-voltage-display {
+      font-family: 'Courier New', monospace;
+      font-size: 1.3rem;
+      color: var(--success);
+      font-weight: 700;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 8px 20px;
+      border-radius: 12px;
+      border: 1px solid var(--success);
+      direction: ltr;
+    }
+    .pwm-wave-display { background: rgba(0, 0, 0, 0.4); border-radius: 18px; padding: 16px; grid-column: 1 / -1; }
+    .pwm-wave-display svg { width: 100%; height: auto; }
+
+    /* ===== Audio PWM Simulator ===== */
+    .audio-pwm-sim {
+      background: linear-gradient(145deg, rgba(10, 14, 39, 0.9), rgba(30, 40, 70, 0.7));
+      backdrop-filter: blur(20px);
+      border-radius: 28px;
+      padding: 28px;
+      border: 2px solid rgba(168, 85, 247, 0.5);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      align-items: center;
+    }
+    @media (max-width: 900px) { .audio-pwm-sim { grid-template-columns: 1fr; } }
+
+    .audio-pwm-left {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      text-align: center;
+    }
+    .audio-pwm-left h4 {
+      color: var(--purple);
+      font-size: 1.15rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 6px;
+    }
+    .mic-button {
+      width: 130px; height: 130px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--purple), var(--pink));
+      border: 4px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      font-size: 3rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 15px 40px rgba(168, 85, 247, 0.4);
+      position: relative;
+    }
+    .mic-button:hover {
+      transform: scale(1.08);
+      box-shadow: 0 20px 60px rgba(168, 85, 247, 0.6);
+    }
+    .mic-button.active {
+      animation: micPulse 1.5s infinite;
+    }
+    @keyframes micPulse {
+      0%, 100% { box-shadow: 0 15px 40px rgba(168, 85, 247, 0.4), 0 0 0 0 rgba(255, 71, 87, 0.7); }
+      50% { box-shadow: 0 15px 40px rgba(168, 85, 247, 0.8), 0 0 0 25px rgba(255, 71, 87, 0); }
+    }
+    .mic-hint {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.75);
+      line-height: 1.7;
+    }
+    .mic-hint strong { color: var(--pink); }
+    .audio-level-bar {
+      width: 100%;
+      height: 20px;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .audio-level-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--success), var(--accent), var(--accent2), var(--danger));
+      transition: width 0.05s ease;
+      border-radius: 10px;
+    }
+    .audio-pwm-right {
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 18px;
+      padding: 18px;
+    }
+    .audio-pwm-right svg { width: 100%; height: auto; }
+    .audio-pwm-values {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .audio-val-box {
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 12px;
+      padding: 10px;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .audio-val-box .label { font-size: 0.72rem; color: rgba(255,255,255,0.7); margin-bottom: 4px; }
+    .audio-val-box .value {
+      font-family: 'Courier New', monospace;
+      font-size: 1.2rem;
+      font-weight: 900;
+      color: var(--purple);
+    }
+
+    /* ===== Arduino ===== */
+    .arduino-intro { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: center; }
+    @media (max-width: 900px) { .arduino-intro { grid-template-columns: 1fr; } }
+
+    .arduino-photo-wrap {
+      border-radius: 24px;
+      overflow: hidden;
+      border: 2px solid rgba(0, 212, 170, 0.3);
+    }
+    .arduino-photo-wrap img { width: 100%; height: auto; display: block; }
+
+    .arduino-specs h3 {
+      color: var(--success);
+      font-size: 1.5rem;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+    }
+    .arduino-specs ul { list-style: none; padding: 0; }
+    .arduino-specs ul li {
+      padding: 10px 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      color: rgba(255,255,255,0.9);
+      font-size: 0.92rem;
+      border-bottom: 1px dashed rgba(255,255,255,0.08);
+      line-height: 1.7;
+    }
+    .arduino-specs ul li:last-child { border-bottom: none; }
+    .arduino-specs ul li i { color: var(--success); margin-top: 5px; flex-shrink: 0; width: 20px; }
+    .arduino-specs ul li strong { color: var(--accent); }
+
+    .arduino-code-block {
+      background: rgba(0, 0, 0, 0.6);
+      border-radius: 16px;
+      padding: 18px;
+      margin-top: 16px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      direction: ltr;
+      text-align: left;
+      color: #d4d4d4;
+      border-right: 3px solid var(--success);
+      line-height: 1.75;
+      overflow-x: auto;
+    }
+    .arduino-code-block .kw { color: #ff6b35; font-weight: 700; }
+    .arduino-code-block .num { color: #ffb700; }
+    .arduino-code-block .cmt { color: #6a8aa8; font-style: italic; }
+    .arduino-code-block .fn { color: #a855f7; }
+
+    /* ===== ADC ===== */
+    .adc-simulator {
+      background: linear-gradient(145deg, rgba(10, 14, 39, 0.9), rgba(30, 40, 70, 0.7));
+      backdrop-filter: blur(20px);
+      border-radius: 28px;
+      padding: 24px;
+      border: 2px solid rgba(255, 183, 0, 0.4);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      align-items: center;
+    }
+    @media (max-width: 900px) { .adc-simulator { grid-template-columns: 1fr; } }
+
+    .adc-controls { display: flex; flex-direction: column; gap: 18px; }
+    .adc-controls h4 { color: var(--accent); font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
+    .adc-slider-wrap { background: rgba(0, 0, 0, 0.3); border-radius: 16px; padding: 16px; }
+    .adc-slider-wrap label { display: flex; justify-content: space-between; font-size: 0.9rem; color: rgba(255,255,255,0.85); margin-bottom: 10px; font-weight: 700; }
+    .adc-slider-wrap label span { color: var(--accent); font-size: 1.1rem; }
+    .adc-value-display {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .adc-value-box {
+      background: rgba(0, 0, 0, 0.45);
+      border-radius: 14px;
+      padding: 14px;
+      text-align: center;
+    }
+    .adc-value-box .label { font-size: 0.75rem; color: rgba(255,255,255,0.7); margin-bottom: 6px; font-weight: 600; }
+    .adc-value-box .value { font-family: 'Courier New', monospace; font-size: 1.5rem; font-weight: 900; color: var(--cyan); }
+    .adc-value-box.voltage .value { color: var(--success); }
+    .adc-diagram { background: rgba(0, 0, 0, 0.4); border-radius: 18px; padding: 16px; }
+    .adc-diagram svg { width: 100%; height: auto; }
+
+    /* ===== جمع‌بندی ===== */
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; width: 100%; }
+    .content-card {
+      background: linear-gradient(145deg, rgba(10, 14, 39, 0.85), rgba(30, 40, 70, 0.6));
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.4s ease;
+    }
+    .content-card:hover { transform: translateY(-10px); border-color: rgba(255, 183, 0, 0.4); }
+    .content-card .card-icon {
+      width: 55px; height: 55px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 16px;
+      color: white;
+    }
+    .content-card h3 { font-size: 1.1rem; margin-bottom: 10px; color: #fff; display: flex; align-items: center; gap: 10px; }
+    .content-card p { font-size: 0.88rem; color: rgba(255, 255, 255, 0.8); line-height: 1.85; }
+
+    /* ===== تمرین‌ها ===== */
+    .exercises-float-wrapper { position: relative; width: 100%; height: 60vh; max-height: 550px; }
+    .exercises-float-scroll {
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 6px 20px 40px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .exercises-float-scroll::-webkit-scrollbar { width: 10px; }
+    .exercises-float-scroll::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); border-radius: 10px; }
+    .exercises-float-scroll::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, var(--accent), var(--accent2));
+      border-radius: 10px;
+      border: 2px solid rgba(10, 14, 39, 0.9);
+    }
+    .scroll-hint {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 183, 0, 0.9);
+      color: #050818;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      animation: bounceHint 2s infinite;
+      pointer-events: none;
+      z-index: 5;
+    }
+    @keyframes bounceHint {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-6px); }
+    }
+
+    .exercise-group {
+      background: linear-gradient(145deg, rgba(10, 14, 39, 0.9), rgba(30, 40, 70, 0.7));
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 24px 28px;
+      border-right: 6px solid var(--accent);
+      transition: all 0.4s ease;
+      flex-shrink: 0;
+    }
+    .exercise-group:hover { transform: translateX(-6px) scale(1.01); }
+    .exercise-group.group-conceptual { border-right-color: #ffb700; }
+    .exercise-group.group-practical { border-right-color: #00d4aa; }
+    .exercise-group.group-written { border-right-color: #a855f7; }
+    .exercise-group.group-challenge {
+      border-right-color: #ff4757;
+      background: linear-gradient(145deg, rgba(30, 10, 20, 0.9), rgba(60, 20, 40, 0.7));
+    }
+    .exercise-group-header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+    .exercise-group-icon {
+      width: 50px; height: 50px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      color: white;
+      flex-shrink: 0;
+    }
+    .exercise-group.group-conceptual .exercise-group-icon { background: linear-gradient(135deg, #ffb700, #ff6b35); }
+    .exercise-group.group-practical .exercise-group-icon { background: linear-gradient(135deg, #00d4aa, #06b6d4); }
+    .exercise-group.group-written .exercise-group-icon { background: linear-gradient(135deg, #a855f7, #ec4899); }
+    .exercise-group.group-challenge .exercise-group-icon { background: linear-gradient(135deg, #ff4757, #ff6b35); }
+    .exercise-group-header h4 { font-size: 1.15rem; color: white; font-weight: 800; margin: 0; }
+    .exercise-group-header .group-subtitle { font-size: 0.8rem; color: rgba(255, 255, 255, 0.6); margin-top: 4px; }
+
+    .exercise-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+    .exercise-list li {
+      display: flex;
+      gap: 12px;
+      padding: 12px 16px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 14px;
+      color: rgba(255, 255, 255, 0.92);
+      line-height: 1.85;
+      font-size: 0.9rem;
+      border-right: 3px solid transparent;
+    }
+    .exercise-list li:hover { background: rgba(255, 183, 0, 0.08); border-right-color: var(--accent); }
+    .exercise-list li .q-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: white;
+      font-weight: 800;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+    .exercise-group.group-practical .exercise-list li .q-num { background: linear-gradient(135deg, #00d4aa, #06b6d4); }
+    .exercise-group.group-written .exercise-list li .q-num { background: linear-gradient(135deg, #a855f7, #ec4899); }
+    .exercise-list li .q-text { flex: 1; }
+    .exercise-list li .q-text strong { color: var(--accent); }
+    .exercise-list li .q-text em {
+      color: #06b6d4;
+      font-style: normal;
+      font-weight: 700;
+      background: rgba(6, 182, 212, 0.1);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+    }
+
+    .challenge-box {
+      background: linear-gradient(135deg, rgba(255, 71, 87, 0.15), rgba(255, 183, 0, 0.08));
+      border: 2px dashed rgba(255, 71, 87, 0.5);
+      border-radius: 20px;
+      padding: 20px 22px;
+    }
+    .challenge-box .challenge-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #ff6b35;
+      font-weight: 800;
+      font-size: 1.05rem;
+      margin-bottom: 12px;
+    }
+    .challenge-box p { color: rgba(255, 255, 255, 0.92); line-height: 1.9; font-size: 0.92rem; margin-bottom: 8px; }
+    .challenge-box p strong { color: #ff6b35; }
+    .challenge-box .challenge-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 0.8rem;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .challenge-box .challenge-footer .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 71, 87, 0.15);
+      color: #ff6b35;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-weight: 700;
+      border: 1px solid rgba(255, 71, 87, 0.3);
+    }
+
+    /* ===== ناوبری ===== */
+    .slide-nav {
+      position: fixed;
+      bottom: 30px; left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      background: rgba(10, 14, 39, 0.75);
+      backdrop-filter: blur(25px);
+      padding: 14px 28px;
+      border-radius: 60px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      z-index: 100;
+    }
+    .nav-btn {
+      width: 54px; height: 54px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      font-size: 1.3rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      transform: scale(1.15);
+    }
+    .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .slide-counter {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: white;
+      min-width: 100px;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 10px 20px;
+      border-radius: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .slide-counter .current { color: var(--accent); font-size: 1.4rem; font-weight: 900; }
+
+    .dots-nav {
+      position: fixed;
+      left: 30px; top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 100;
+    }
+    .dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); cursor: pointer; transition: all 0.3s ease; }
+    .dot:hover { background: rgba(255, 183, 0, 0.5); transform: scale(1.3); }
+    .dot.active { background: var(--accent); box-shadow: 0 0 20px var(--accent); transform: scale(1.5); }
+
+    /* ===== پایان ===== */
+    .end-slide { text-align: center; }
+    .end-slide .end-icon {
+      font-size: 7rem;
+      margin-bottom: 25px;
+      display: inline-block;
+      animation: endBounce 2s infinite ease-in-out;
+    }
+    @keyframes endBounce {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-25px) scale(1.08); }
+    }
+    .end-slide h2 {
+      font-size: 3.2rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #fff, #ffb700, #ff6b35, #ec4899);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 20px;
+      animation: titleGradient 5s ease infinite;
+    }
+    .end-slide p { font-size: 1.2rem; color: rgba(255,255,255,0.85); margin-bottom: 40px; }
+    .end-slide .next-session {
+      display: inline-flex;
+      align-items: center;
+      gap: 20px;
+      padding: 20px 44px;
+      background: linear-gradient(135deg, rgba(255, 183, 0, 0.15), rgba(255, 107, 53, 0.1));
+      border: 2px solid var(--accent);
+      border-radius: 70px;
+      font-size: 1.1rem;
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .end-slide .next-session .arrow-icon {
+      width: 46px; height: 46px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #050818;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      animation: arrowMove2 2s infinite ease-in-out;
+    }
+    @keyframes arrowMove2 {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(-8px); }
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 120px; left: 50%;
+      transform: translateX(-50%) translateY(100px) scale(0.8);
+      background: linear-gradient(135deg, rgba(10, 14, 39, 0.95), rgba(30, 40, 70, 0.95));
+      backdrop-filter: blur(20px);
+      color: white;
+      padding: 16px 32px;
+      border-radius: 60px;
+      font-weight: 600;
+      opacity: 0;
+      transition: all 0.5s ease;
+      z-index: 2000;
+      border: 1px solid rgba(255, 183, 0, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+    .toast i { color: var(--accent); font-size: 1.2rem; }
+
+    @media (max-width: 900px) {
+      .slide { padding: 110px 20px 130px; }
+      .title-slide h1 { font-size: 2.2rem; }
+      .content-slide .slide-title h2 { font-size: 1.7rem; }
+      .question-slide h2 { font-size: 1.7rem; }
+      .end-slide h2 { font-size: 1.9rem; }
+      .dots-nav { display: none; }
+      .mic-button { width: 100px; height: 100px; font-size: 2.4rem; }
+    }
+
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+  </style>
+</head>
+<body>
+
+  <div class="starfield" id="starfield"></div>
+  <div class="neon-bubble"></div>
+  <div class="neon-bubble"></div>
+  <div class="neon-bubble"></div>
+  <div class="neon-bubble"></div>
+
+  <div class="progress-bar" id="progressBar"></div>
+
+  <header class="slide-header">
+    <div class="logo">
+      <div class="logo-icon"><i class="fas fa-wave-square"></i></div>
+      <span>سیستم‌های اندازه‌گیری و کنترل</span>
+    </div>
+    <div class="slide-info">
+      <span><i class="fas fa-user-tie"></i> دکتر مسعود گوهری‌منش</span>
+      <span><i class="fas fa-university"></i> دانشگاه تربت حیدریه</span>
+    </div>
+  </header>
+
+  <div class="controls">
+    <button class="ctrl-btn active" id="soundToggle" title="افکت صوتی">
+      <i class="fas fa-volume-up"></i>
+    </button>
+    <button class="ctrl-btn" id="musicToggle" title="موسیقی پس‌زمینه">
+      <i class="fas fa-music"></i>
+    </button>
+    <button class="ctrl-btn" id="fullscreenBtn" title="تمام صفحه">
+      <i class="fas fa-expand"></i>
+    </button>
+  </div>
+
+  <div class="dots-nav" id="dotsNav"></div>
+
+  <div class="slides-container" id="slidesContainer">
+
+    <!-- ===== 1: عنوان ===== -->
+    <section class="slide active title-slide" data-slide="0">
+      <div class="hero-bg" style="background-image: url('images/hero-signals.jpg');"></div>
+      <div class="hero-overlay"></div>
+      <div class="floating-icons">
+        <i class="fas fa-wave-square float-icon"></i>
+        <i class="fas fa-signal float-icon"></i>
+        <i class="fas fa-bolt float-icon"></i>
+        <i class="fas fa-microchip float-icon"></i>
+        <i class="fas fa-tachometer-alt float-icon"></i>
+        <i class="fas fa-broadcast-tower float-icon"></i>
+      </div>
+      <i class="fas fa-wave-square main-icon animate-in"></i>
+      <div class="badge animate-in">
+        <span class="pulse-dot"></span>
+        جلسه دوم — فاز ۱: مبانی نظری
+      </div>
+      <h1 class="animate-in">سیگنال‌ها و استانداردهای صنعتی</h1>
+      <p class="subtitle animate-in">آنالوگ، دیجیتال، ۴-۲۰mA و PWM</p>
+      <div class="instructor-card animate-in">
+        <div class="instructor-avatar"><i class="fas fa-user-tie"></i></div>
+        <div class="instructor-info">
+          <div class="name">دکتر مسعود گوهری‌منش</div>
+          <div class="title">دانشیار گروه مهندسی مکانیک دانشگاه تربت حیدریه</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 2: سوال انگیزشی ===== -->
+    <section class="slide question-slide" data-slide="1">
+      <img src="images/question-signals.jpg" alt="سوال انگیزشی" class="question-img animate-in">
+      <h2 class="animate-in">آیا می‌دانستید...</h2>
+      <p class="animate-in">
+        وقتی در میکروفون صحبت می‌کنید، صدای شما یک سیگنال <strong style="color: var(--accent);">آنالوگ</strong> است.<br>
+        اما وقتی همان صدا را در اسپیکر می‌شنوید، به سیگنال <strong style="color: var(--cyan);">دیجیتال</strong> تبدیل شده؟<br>
+        این تبدیل چگونه اتفاق می‌افتد و چه استانداردهایی دارد؟
+      </p>
+      <div class="hint animate-in">
+        <i class="fas fa-lightbulb"></i>
+        این جلسه، پل میان دنیای <strong>آنالوگ</strong> و <strong>دیجیتال</strong> است
+      </div>
+    </section>
+
+    <!-- ===== 3: تعریف سیگنال ===== -->
+    <section class="slide content-slide" data-slide="2">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-signal"></i></div>
+        <h2>سیگنال چیست؟</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="big-definition animate-in">
+          <img src="images/hero-signals.jpg" alt="سیگنال" class="def-image">
+          <div class="def-text">
+            <h3><i class="fas fa-quote-right"></i> تعریف سیگنال</h3>
+            <p>
+              سیگنال، نمایش <strong>تغییرات یک کمیت فیزیکی</strong> نسبت به زمان است که
+              حامل <em>اطلاعات</em> می‌باشد.
+              <br><br>
+              سیگنال‌ها به دو دستهٔ اصلی تقسیم می‌شوند: <strong>آنالوگ</strong> و <strong>دیجیتال</strong>.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 4: آنالوگ vs دیجیتال ===== -->
+    <section class="slide content-slide" data-slide="3">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-exchange-alt"></i></div>
+        <h2>آنالوگ در برابر دیجیتال</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="duo-grid">
+          <div class="duo-card analog animate-in">
+            <img src="images/analog-signal.jpg" alt="سیگنال آنالوگ" class="duo-img">
+            <h3>🟡 سیگنال آنالوگ</h3>
+            <p>سیگنالی که در هر لحظه از زمان <strong>هر مقداری</strong> می‌تواند داشته باشد. پیوسته و بی‌وقفه تغییر می‌کند.</p>
+            <div class="example-list">
+              <span>🎵 صدای انسان</span>
+              <span>🌡️ دما</span>
+              <span>☀️ نور</span>
+              <span>💧 فشار آب</span>
+              <span>📻 رادیو FM</span>
+              <span>⚡ ولتاژ باتری</span>
+            </div>
+          </div>
+          <div class="duo-card digital animate-in">
+            <img src="images/digital-signal.jpg" alt="سیگنال دیجیتال" class="duo-img">
+            <h3>🔵 سیگنال دیجیتال</h3>
+            <p>سیگنالی که فقط در <strong>مقادیر مشخصی</strong> وجود دارد. معمولاً دو حالت (۰ و ۱) دارد.</p>
+            <div class="example-list">
+              <span>💻 داده کامپیوتر</span>
+              <span>🔌 USB</span>
+              <span>📺 HDMI</span>
+              <span>📡 Wi-Fi</span>
+              <span>📱 پیامک</span>
+              <span>💾 فایل دیجیتال</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 5: جدول مقایسه ===== -->
+    <section class="slide content-slide" data-slide="4">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-table"></i></div>
+        <h2>مقایسه جامع</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <table class="compare-table animate-in">
+          <thead>
+            <tr>
+              <th>ویژگی</th>
+              <th>آنالوگ</th>
+              <th>دیجیتال</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>ماهیت سیگنال</td><td>پیوسته (Continuous)</td><td>گسسته (Discrete)</td></tr>
+            <tr><td>دقت</td><td>محدود به نویز</td><td><span class="highlight">بالا و قابل کنترل</span></td></tr>
+            <tr><td>مصونیت به نویز</td><td><span class="warn">ضعیف</span></td><td><span class="highlight">عالی</span></td></tr>
+            <tr><td>ذخیره‌سازی</td><td>مشکل</td><td><span class="highlight">آسان</span></td></tr>
+            <tr><td>پردازش</td><td>سخت</td><td><span class="highlight">آسان</span></td></tr>
+            <tr><td>هزینه انتقال</td><td>بالا در فواصل طولانی</td><td><span class="highlight">کم</span></td></tr>
+            <tr><td>کاربرد</td><td>سنسورها، صدا، تصویر</td><td>کامپیوتر، IoT</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===== 6: شبیه‌ساز سیگنال ===== -->
+    <section class="slide content-slide" data-slide="5">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-flask"></i></div>
+        <h2>شبیه‌ساز تعاملی سیگنال</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="signal-simulator animate-in" style="background: linear-gradient(145deg, rgba(10, 14, 39, 0.9), rgba(30, 40, 70, 0.7)); backdrop-filter: blur(20px); border-radius: 28px; padding: 28px; border: 2px solid rgba(168, 85, 247, 0.4);">
+          <div class="signal-display" style="background: rgba(0, 0, 0, 0.5); border-radius: 18px; padding: 20px; margin-bottom: 18px;">
+            <svg id="signalSvg" viewBox="0 0 800 220" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="analogGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#ffb700"/>
+                  <stop offset="100%" stop-color="#ff6b35"/>
+                </linearGradient>
+                <linearGradient id="digitalGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#06b6d4"/>
+                  <stop offset="100%" stop-color="#a855f7"/>
+                </linearGradient>
+              </defs>
+              <line x1="0" y1="110" x2="800" y2="110" stroke="#4a5b7a" stroke-width="1" stroke-dasharray="4 4"/>
+              <path id="analogPath" d="" fill="none" stroke="url(#analogGrad)" stroke-width="3"/>
+              <path id="digitalPath" d="" fill="none" stroke="url(#digitalGrad)" stroke-width="3"/>
+              <text x="20" y="30" font-family="Vazirmatn" font-size="14" fill="#ffb700" font-weight="700">آنالوگ</text>
+              <text x="20" y="205" font-family="Vazirmatn" font-size="14" fill="#06b6d4" font-weight="700">دیجیتال</text>
+            </svg>
+          </div>
+          <div class="signal-controls" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px;">
+            <button class="signal-btn active" data-signal="both" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: white; padding: 12px 20px; border-radius: 14px; cursor: pointer; font-family: 'Vazirmatn'; font-weight: 700; display: flex; align-items: center; gap: 10px; justify-content: center; font-size: 0.9rem;"><i class="fas fa-layer-group"></i> هر دو سیگنال</button>
+            <button class="signal-btn" data-signal="analog" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: white; padding: 12px 20px; border-radius: 14px; cursor: pointer; font-family: 'Vazirmatn'; font-weight: 700; display: flex; align-items: center; gap: 10px; justify-content: center; font-size: 0.9rem;"><i class="fas fa-wave-square"></i> فقط آنالوگ</button>
+            <button class="signal-btn" data-signal="digital" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: white; padding: 12px 20px; border-radius: 14px; cursor: pointer; font-family: 'Vazirmatn'; font-weight: 700; display: flex; align-items: center; gap: 10px; justify-content: center; font-size: 0.9rem;"><i class="fas fa-signal"></i> فقط دیجیتال</button>
+            <button class="signal-btn" id="animateBtn" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: white; padding: 12px 20px; border-radius: 14px; cursor: pointer; font-family: 'Vazirmatn'; font-weight: 700; display: flex; align-items: center; gap: 10px; justify-content: center; font-size: 0.9rem;"><i class="fas fa-play"></i> انیمیشن</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 7: ۴-۲۰mA ===== -->
+    <section class="slide content-slide" data-slide="6">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-bolt"></i></div>
+        <h2>استاندارد صنعتی ۴-۲۰mA</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="standard-card animate-in">
+          <div class="standard-img-wrap">
+            <img src="images/current-loop.jpg" alt="۴-۲۰mA">
+          </div>
+          <div class="standard-text">
+            <h3><i class="fas fa-star" style="color: var(--accent);"></i> استاندارد طلایی صنعت</h3>
+            <p>در سیستم‌های صنعتی، سیگنال‌های آنالوگ با <strong>جریان حلقه ۴-۲۰mA</strong> منتقل می‌شوند. استاندارد توسط <strong>ISA</strong> تعریف شده است.</p>
+            <ul style="list-style: none; padding: 0; margin-top: 12px;">
+              <li style="padding: 6px 0; display: flex; gap: 10px;"><i class="fas fa-check-circle" style="color: var(--accent); margin-top: 5px;"></i><span><strong style="color: var(--accent);">۴mA</strong> = کمترین مقدار (صفر زنده)</span></li>
+              <li style="padding: 6px 0; display: flex; gap: 10px;"><i class="fas fa-check-circle" style="color: var(--accent); margin-top: 5px;"></i><span><strong style="color: var(--accent);">۲۰mA</strong> = بیشترین مقدار (کامل)</span></li>
+              <li style="padding: 6px 0; display: flex; gap: 10px;"><i class="fas fa-check-circle" style="color: var(--danger); margin-top: 5px;"></i><span><strong style="color: var(--danger);">۰mA</strong> = خطا (قطع سیم)</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 8: مثال‌های ۴-۲۰mA ===== -->
+    <section class="slide content-slide" data-slide="7">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-industry"></i></div>
+        <h2>مثال‌های عینی ۴-۲۰mA</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="industry-examples-grid animate-in">
+          <div class="industry-example">
+            <div class="ie-icon"><i class="fas fa-heartbeat"></i></div>
+            <h5>نوار قلب (ECG)</h5>
+            <p>سیگنال ضربان قلب در مانیتورینگ بیمارستانی با جریان ۴-۲۰mA منتقل می‌شود.</p>
+            <span class="ie-current">۴mA = آرام، ۲۰mA = پرش</span>
+          </div>
+          <div class="industry-example">
+            <div class="ie-icon"><i class="fas fa-weight-scale"></i></div>
+            <h5>لودسل باسکول</h5>
+            <p>سنسورهای وزن در باسکول‌های سنگین صنعتی.</p>
+            <span class="ie-current">۴mA = خالی، ۲۰mA = پر</span>
+          </div>
+          <div class="industry-example">
+            <div class="ie-icon"><i class="fas fa-flask"></i></div>
+            <h5>pH متر صنعتی</h5>
+            <p>اندازه‌گیری pH در پالایشگاه‌ها و تصفیه‌خانه‌ها.</p>
+            <span class="ie-current">۴mA = pH 0، ۲۰mA = pH 14</span>
+          </div>
+          <div class="industry-example">
+            <div class="ie-icon"><i class="fas fa-tachometer-alt"></i></div>
+            <h5>سنسور فشار صنعتی</h5>
+            <p>ترانسمیترهای فشار در خطوط لوله نفت و گاز.</p>
+            <span class="ie-current">۴mA = ۰ bar، ۲۰mA = max</span>
+          </div>
+          <div class="industry-example">
+            <div class="ie-icon"><i class="fas fa-thermometer-half"></i></div>
+            <h5>ترموکوپل کوره</h5>
+            <p>دمای کوره‌های صنعتی در ذوب فلزات.</p>
+            <span class="ie-current">۴mA = ۰°C، ۲۰mA = ۱۰۰۰°C</span>
+          </div>
+          <div class="industry-example">
+            <div class="ie-icon"><i class="fas fa-tint"></i></div>
+            <h5>فلومتر مغناطیسی</h5>
+            <p>اندازه‌گیری دبی سیال در صنایع شیمیایی.</p>
+            <span class="ie-current">۴mA = صفر، ۲۰mA = حداکثر</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 9: چرا ۴-۲۰mA ===== -->
+    <section class="slide content-slide" data-slide="8">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-question"></i></div>
+        <h2>چرا ۴-۲۰mA و نه ۰-۲۰mA؟</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="industry-examples-grid animate-in">
+          <div class="industry-example" style="border-left-color: var(--success);">
+            <div class="ie-icon" style="color: var(--success);"><i class="fas fa-shield-alt"></i></div>
+            <h5>۱. تشخیص خطا (صفر زنده)</h5>
+            <p>اگر جریان به ۰mA برسد، یعنی سیم قطع شده. با ۰-۲۰mA این تفکیک ممکن نبود.</p>
+          </div>
+          <div class="industry-example" style="border-left-color: var(--cyan);">
+            <div class="ie-icon" style="color: var(--cyan);"><i class="fas fa-wave-square"></i></div>
+            <h5>۲. مصونیت به نویز</h5>
+            <p>جریان در مدار حلقه ثابت می‌ماند و در برابر نویز مقاوم است.</p>
+          </div>
+          <div class="industry-example" style="border-left-color: var(--purple);">
+            <div class="ie-icon" style="color: var(--purple);"><i class="fas fa-plug"></i></div>
+            <h5>۳. تغذیه از همان حلقه</h5>
+            <p>سنسور انرژی خود را از همان حلقه دریافت می‌کند (Loop Powered).</p>
+          </div>
+          <div class="industry-example" style="border-left-color: var(--pink);">
+            <div class="ie-icon" style="color: var(--pink);"><i class="fas fa-ruler"></i></div>
+            <h5>۴. انتقال در فواصل طولانی</h5>
+            <p>می‌توان سیگنال را تا چند صد متر بدون افت منتقل کرد.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 10: ۳-۱۵psi + psi تعاملی ===== -->
+    <section class="slide content-slide" data-slide="9">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-wind"></i></div>
+        <h2>استاندارد پنوماتیکی ۳-۱۵psi</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="standard-card animate-in">
+          <div class="standard-img-wrap">
+            <img src="images/pneumatic-standard.jpg" alt="۳-۱۵psi">
+          </div>
+          <div class="standard-text">
+            <h3><i class="fas fa-star" style="color: var(--accent);"></i> معادل پنوماتیکی ۴-۲۰mA</h3>
+            <p>در محیط‌های <strong>قابل اشتعال</strong> به جای سیگنال الکتریکی، از <strong>هوای فشرده</strong> با فشار ۳-۱۵psi استفاده می‌شود.</p>
+            <ul style="list-style: none; padding: 0; margin-top: 12px;">
+              <li style="padding: 6px 0; display: flex; gap: 10px;"><i class="fas fa-check-circle" style="color: var(--accent); margin-top: 5px;"></i><span><strong style="color: var(--accent);">۳psi</strong> = کمترین مقدار (معادل ۴mA)</span></li>
+              <li style="padding: 6px 0; display: flex; gap: 10px;"><i class="fas fa-check-circle" style="color: var(--accent); margin-top: 5px;"></i><span><strong style="color: var(--accent);">۱۵psi</strong> = بیشترین مقدار (معادل ۲۰mA)</span></li>
+              <li style="padding: 6px 0; display: flex; gap: 10px;"><i class="fas fa-check-circle" style="color: var(--danger); margin-top: 5px;"></i><span><strong style="color: var(--danger);">۰psi</strong> = خطا یا قطع هوا</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <h3 style="color: var(--accent); margin-top: 20px; text-align: center; font-size: 1.1rem;">
+          <i class="fas fa-lightbulb"></i> مقادیر psi در زندگی روزمره
+        </h3>
+        <div class="psi-examples-grid animate-in">
+          <div class="psi-example">
+            <span class="psi-emoji">🚗</span>
+            <div class="psi-value">32 PSI</div>
+            <div class="psi-label">فشار استاندارد تایر خودروی سواری</div>
+          </div>
+          <div class="psi-example">
+            <span class="psi-emoji">🌍</span>
+            <div class="psi-value">14.7 PSI</div>
+            <div class="psi-label">فشار اتمسفر در سطح دریا</div>
+          </div>
+          <div class="psi-example">
+            <span class="psi-emoji">🔧</span>
+            <div class="psi-value">90 PSI</div>
+            <div class="psi-label">فشار کار کمپرسور باد خانگی</div>
+          </div>
+          <div class="psi-example unknown" onclick="revealBikeAnswer()">
+            <span class="psi-emoji">🚴</span>
+            <div class="question-mark">؟</div>
+            <div class="psi-label" style="color: var(--pink); font-weight: 800; margin-top: 6px;">
+              فشار تایر دوچرخهٔ شهری به نظر شما چقدر است؟ 🤔
+            </div>
+          </div>
+          <div class="psi-example">
+            <span class="psi-emoji">🛞</span>
+            <div class="psi-value">35 PSI</div>
+            <div class="psi-label">تایر خودروی شاسی‌بلند</div>
+          </div>
+          <div class="psi-example">
+            <span class="psi-emoji">🎈</span>
+            <div class="psi-value">0.5 PSI</div>
+            <div class="psi-label">فشار بادکنک باد شده</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 11: پاسخ دوچرخه با اینفوگرافیک ===== -->
+    <section class="slide answer-slide" data-slide="10">
+      <span class="answer-icon">🚴‍♂️</span>
+      <h2>پاسخ درست: اینفوگرافیک فشار تایر دوچرخه</h2>
+
+      <img src="images/bike-tire-infographic.jpg" alt="اینفوگرافیک فشار تایر دوچرخه" class="infographic-image animate-in">
+
+      <div class="hint animate-in">
+        <i class="fas fa-arrow-left"></i>
+        برویم سراغ ادامهٔ مثال‌های psi
+      </div>
+    </section>
+
+    <!-- ===== 12: PWM مفصل ===== -->
+    <section class="slide content-slide" data-slide="11">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-wave-square"></i></div>
+        <h2>PWM: پل میان آنالوگ و دیجیتال</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="big-definition animate-in" style="display: block; padding: 28px;">
+          <h3 style="justify-content: center; font-size: 1.4rem; margin-bottom: 16px;">
+            <i class="fas fa-info-circle"></i> PWM چیست؟
+          </h3>
+          <p style="font-size: 1.02rem; line-height: 2;">
+            <strong>PWM</strong> (Pulse Width Modulation) یک تکنیک برای تولید سیگنال آنالوگ
+            با استفاده از خروجی دیجیتال است. با تغییر <strong>عرض پالس</strong>، می‌توان مقدار میانگین ولتاژ را کنترل کرد.
+          </p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-top: 22px;">
+            <div style="background: rgba(255, 183, 0, 0.1); border-radius: 14px; padding: 14px; border-right: 3px solid var(--accent);">
+              <div style="color: var(--accent); font-weight: 800; font-size: 1.3rem;">D = 25%</div>
+              <div style="font-size: 0.8rem; color: rgba(255,255,255,0.75); margin-top: 4px;">ولتاژ میانگین: ۱.۲۵V</div>
+            </div>
+            <div style="background: rgba(0, 212, 170, 0.1); border-radius: 14px; padding: 14px; border-right: 3px solid var(--success);">
+              <div style="color: var(--success); font-weight: 800; font-size: 1.3rem;">D = 50%</div>
+              <div style="font-size: 0.8rem; color: rgba(255,255,255,0.75); margin-top: 4px;">ولتاژ میانگین: ۲.۵V</div>
+            </div>
+            <div style="background: rgba(236, 72, 153, 0.1); border-radius: 14px; padding: 14px; border-right: 3px solid var(--pink);">
+              <div style="color: var(--pink); font-weight: 800; font-size: 1.3rem;">D = 75%</div>
+              <div style="font-size: 0.8rem; color: rgba(255,255,255,0.75); margin-top: 4px;">ولتاژ میانگین: ۳.۷۵V</div>
+            </div>
+          </div>
+        </div>
+
+        <h4 style="color: var(--accent); margin-top: 20px; text-align: center; font-size: 1.05rem;">
+          <i class="fas fa-lightbulb"></i> کاربردهای PWM در زندگی روزمره
+        </h4>
+        <div class="industry-examples-grid animate-in" style="margin-top: 14px;">
+          <div class="industry-example">
+            <div class="ie-icon"><i class="fas fa-lightbulb"></i></div>
+            <h5>تنظیم روشنایی LED</h5>
+            <p>چراغ‌های LED با PWM روشنایی خود را تنظیم می‌کنند.</p>
+          </div>
+          <div class="industry-example">
+            <div class="ie-icon"><i class="fas fa-fan"></i></div>
+            <h5>کنترل سرعت موتور</h5>
+            <p>فن کامپیوتر و موتور دی‌سی با PWM سرعت خود را تغییر می‌دهند.</p>
+          </div>
+          <div class="industry-example">
+            <div class="ie-icon"><i class="fas fa-bolt"></i></div>
+            <h5>منبع تغذیه سوییچینگ</h5>
+            <p>شارژرهای موبایل از PWM برای تنظیم ولتاژ استفاده می‌کنند.</p>
+          </div>
+          <div class="industry-example">
+            <div class="ie-icon"><i class="fas fa-temperature-high"></i></div>
+            <h5>کنترل حرارت</h5>
+            <p>هیترها و کوره‌های برقی با PWM دمای خود را تنظیم می‌کنند.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 13: شبیه‌ساز PWM ===== -->
+    <section class="slide content-slide" data-slide="12">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-sliders-h"></i></div>
+        <h2>شبیه‌ساز تعاملی PWM</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="pwm-simulator animate-in">
+          <div class="pwm-controls">
+            <h4><i class="fas fa-sliders-h"></i> تنظیم Duty Cycle</h4>
+            <div class="pwm-slider-wrap">
+              <label>مقدار PWM <span id="pwmValue">۱۲۸</span></label>
+              <input type="range" id="pwmSlider" min="0" max="255" value="128">
+            </div>
+            <div class="led-preview">
+              <h5><i class="fas fa-lightbulb"></i> پیش‌نمایش LED</h5>
+              <div class="led-bulb" id="ledBulb"></div>
+              <div class="avg-voltage-display" id="avgVoltage">V_avg = 2.51V</div>
+            </div>
+          </div>
+          <div class="pwm-wave-display">
+            <svg id="pwmSvg" viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="pwmGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#00d4aa"/>
+                  <stop offset="100%" stop-color="#06b6d4"/>
+                </linearGradient>
+              </defs>
+              <line x1="30" y1="180" x2="680" y2="180" stroke="#4a5b7a" stroke-width="1"/>
+              <line x1="30" y1="40" x2="680" y2="40" stroke="#4a5b7a" stroke-width="0.5" stroke-dasharray="3 3"/>
+              <text x="10" y="185" font-family="Vazirmatn" font-size="12" fill="#4a5b7a">0V</text>
+              <text x="10" y="45" font-family="Vazirmatn" font-size="12" fill="#4a5b7a">5V</text>
+              <path id="pwmPath" d="" fill="none" stroke="url(#pwmGrad2)" stroke-width="3"/>
+              <line id="avgLine" x1="30" y1="110" x2="680" y2="110" stroke="#ffb700" stroke-width="2" stroke-dasharray="8 4"/>
+              <text id="avgLabel" x="600" y="100" font-family="Vazirmatn" font-size="12" fill="#ffb700" font-weight="700">V_avg</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 14: شبیه‌ساز صوتی PWM (NEW) ===== -->
+    <section class="slide content-slide" data-slide="13">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-microphone"></i></div>
+        <h2>🎤 شبیه‌ساز صوتی PWM — صدای شما = سیگنال!</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="audio-pwm-sim animate-in">
+          <div class="audio-pwm-left">
+            <h4><i class="fas fa-microphone-alt"></i> میکروفون لپ‌تاپ</h4>
+            <button class="mic-button" id="micButton">
+              <i class="fas fa-microphone"></i>
+            </button>
+            <p class="mic-hint">
+              روی میکروفون کلیک کنید<br>
+              سپس <strong>صحبت کنید یا فریاد بزنید</strong><br>
+              ببینید صدا چگونه به PWM تبدیل می‌شود!
+            </p>
+            <div class="audio-level-bar">
+              <div class="audio-level-fill" id="audioLevel"></div>
+            </div>
+            <div class="audio-pwm-values">
+              <div class="audio-val-box">
+                <div class="label">Duty Cycle</div>
+                <div class="value" id="audioDuty">0</div>
+              </div>
+              <div class="audio-val-box">
+                <div class="label">ولتاژ میانگین</div>
+                <div class="value" id="audioVoltage">0.00V</div>
+              </div>
+            </div>
+          </div>
+          <div class="audio-pwm-right">
+            <svg id="audioPwmSvg" viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="audioPwmGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#a855f7"/>
+                  <stop offset="100%" stop-color="#ec4899"/>
+                </linearGradient>
+              </defs>
+              <line x1="30" y1="180" x2="680" y2="180" stroke="#4a5b7a" stroke-width="1"/>
+              <line x1="30" y1="40" x2="680" y2="40" stroke="#4a5b7a" stroke-width="0.5" stroke-dasharray="3 3"/>
+              <text x="10" y="185" font-family="Vazirmatn" font-size="12" fill="#4a5b7a">0V</text>
+              <text x="10" y="45" font-family="Vazirmatn" font-size="12" fill="#4a5b7a">5V</text>
+              <path id="audioPwmPath" d="" fill="none" stroke="url(#audioPwmGrad)" stroke-width="3"/>
+              <line id="audioAvgLine" x1="30" y1="110" x2="680" y2="110" stroke="#ffb700" stroke-width="2" stroke-dasharray="8 4"/>
+            </svg>
+            <div style="text-align: center; font-size: 0.82rem; color: rgba(255,255,255,0.7); margin-top: 12px; line-height: 1.7;">
+              <i class="fas fa-info-circle" style="color: var(--purple);"></i>
+              این دقیقاً همان چیزی است که در <strong>میکروفون‌های دیجیتال</strong> و <strong>سیستم‌های صوتی هوشمند</strong> اتفاق می‌افتد!
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 15: PWM در Arduino ===== -->
+    <section class="slide content-slide" data-slide="14">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-code"></i></div>
+        <h2>PWM در Arduino</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="big-definition animate-in" style="display: block; padding: 24px;">
+          <h3 style="justify-content: center; font-size: 1.3rem; margin-bottom: 14px;">
+            <i class="fas fa-microchip"></i> تولید PWM با analogWrite()
+          </h3>
+          <p style="font-size: 0.95rem; line-height: 1.9; margin-bottom: 16px;">
+            تابع <strong>analogWrite()</strong> مقدار PWM را روی پین‌های با علامت ~ تنظیم می‌کند. مقدار ورودی بین <strong>۰</strong> و <strong>۲۵۵</strong> است.
+          </p>
+          <div class="arduino-code-block">
+<span class="cmt">// مثال ۱: تنظیم روشنایی LED</span>
+<span class="kw">int</span> ledPin = <span class="num">9</span>;
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">pinMode</span>(ledPin, OUTPUT);
+}
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="fn">analogWrite</span>(ledPin, <span class="num">128</span>);  <span class="cmt">// 50% روشنایی</span>
+}
+          </div>
+          <div class="arduino-code-block">
+<span class="cmt">// مثال ۲: محو کردن تدریجی (Fade)</span>
+<span class="kw">int</span> brightness = <span class="num">0</span>;
+<span class="kw">int</span> fadeAmount = <span class="num">5</span>;
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="fn">analogWrite</span>(ledPin, brightness);
+  brightness += fadeAmount;
+  <span class="kw">if</span> (brightness &lt;= <span class="num">0</span> || brightness &gt;= <span class="num">255</span>) {
+    fadeAmount = -fadeAmount;
+  }
+  <span class="fn">delay</span>(<span class="num">30</span>);
+}
+          </div>
+          <div style="background: rgba(0, 212, 170, 0.1); border-radius: 14px; padding: 14px 18px; margin-top: 14px; border-right: 3px solid var(--success);">
+            <p style="color: var(--success); font-weight: 800; font-size: 0.88rem; margin: 0;">
+              <i class="fas fa-info-circle"></i> پین‌های PWM در Arduino UNO:
+              <span style="color: white; font-weight: 600;">۳، ۵، ۶، ۹، ۱۰، ۱۱ (با علامت ~)</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 16: آشنایی با آردوینو ===== -->
+    <section class="slide content-slide" data-slide="15">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-robot"></i></div>
+        <h2>آشنایی با آردوینو</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="arduino-intro animate-in">
+          <div class="arduino-photo-wrap">
+            <img src="images/arduino-real.jpg" alt="Arduino UNO R3">
+          </div>
+          <div class="arduino-specs">
+            <h3><i class="fas fa-microchip"></i> Arduino UNO R3</h3>
+            <ul>
+              <li><i class="fas fa-microchip"></i><span><strong>میکروکنترلر:</strong> ATmega328P (خانواده AVR)</span></li>
+              <li><i class="fas fa-bolt"></i><span><strong>ولتاژ کار:</strong> ۵ ولت | ورودی: ۷ تا ۱۲ ولت</span></li>
+              <li><i class="fas fa-plug"></i><span><strong>پین‌های دیجیتال:</strong> ۱۴ پین (۶ عدد PWM)</span></li>
+              <li><i class="fas fa-wave-square"></i><span><strong>پین‌های آنالوگ:</strong> ۶ پین (ADC ۱۰ بیتی) — در اسلاید بعدی مفصل توضیح می‌دهیم</span></li>
+              <li><i class="fas fa-memory"></i><span><strong>حافظه:</strong> ۳۲KB Flash | ۲KB SRAM | ۱KB EEPROM</span></li>
+              <li><i class="fas fa-clock"></i><span><strong>فرکانس:</strong> ۱۶ مگاهرتز</span></li>
+              <li><i class="fas fa-usb"></i><span><strong>ارتباط:</strong> USB، UART، I2C، SPI</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 17: ADC ===== -->
+    <section class="slide content-slide" data-slide="16">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-microchip"></i></div>
+        <h2>مبدل آنالوگ به دیجیتال (ADC)</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="big-definition animate-in" style="display: block; padding: 22px; margin-bottom: 18px;">
+          <h3 style="justify-content: center; font-size: 1.2rem; margin-bottom: 12px;">
+            <i class="fas fa-question-circle"></i> «پین‌های آنالوگ: ۶ پین (ADC ۱۰ بیتی)» یعنی چه؟
+          </h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; text-align: right;">
+            <div style="background: rgba(255, 183, 0, 0.1); border-radius: 14px; padding: 14px; border-right: 3px solid var(--accent);">
+              <h5 style="color: var(--accent); font-size: 0.95rem; margin-bottom: 8px;">🔌 ۶ پین آنالوگ (A0 تا A5)</h5>
+              <p style="font-size: 0.83rem; line-height: 1.8; color: rgba(255,255,255,0.85); margin: 0;">
+                Arduino UNO شش پین آنالوگ دارد که ولتاژ پیوسته از سنسورها (مثل پتانسیومتر، LM35، LDR) دریافت می‌کنند.
+              </p>
+            </div>
+            <div style="background: rgba(0, 212, 170, 0.1); border-radius: 14px; padding: 14px; border-right: 3px solid var(--success);">
+              <h5 style="color: var(--success); font-size: 0.95rem; margin-bottom: 8px;">🔢 ADC ۱۰ بیتی یعنی چه؟</h5>
+              <p style="font-size: 0.83rem; line-height: 1.8; color: rgba(255,255,255,0.85); margin: 0;">
+                ۱۰ بیت = ۲<sup>۱۰</sup> = <strong>۱۰۲۴ پله</strong>. ولتاژ ۰ تا ۵ ولت به اعداد <strong>۰ تا ۱۰۲۳</strong> تبدیل می‌شود.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="adc-simulator animate-in">
+          <div class="adc-controls">
+            <h4><i class="fas fa-sliders-h"></i> تغییر ولتاژ ورودی</h4>
+            <div class="adc-slider-wrap">
+              <label>ولتاژ ورودی (A0) <span id="adcVoltageDisplay">۲.۵۰V</span></label>
+              <input type="range" id="adcSlider" min="0" max="5" step="0.01" value="2.5">
+            </div>
+            <div class="adc-value-display">
+              <div class="adc-value-box">
+                <div class="label">عدد ADC</div>
+                <div class="value" id="adcValue">512</div>
+              </div>
+              <div class="adc-value-box voltage">
+                <div class="label">ولتاژ محاسبه‌شده</div>
+                <div class="value" id="adcVoltage">2.50V</div>
+              </div>
+            </div>
+            <p style="text-align: center; font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-top: 10px; font-family: 'Courier New', monospace;">
+              ADC = (V × 1023) / 5
+            </p>
+          </div>
+          <div class="adc-diagram">
+            <svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="analogStair" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#06b6d4"/>
+                  <stop offset="100%" stop-color="#a855f7"/>
+                </linearGradient>
+              </defs>
+              <text x="200" y="25" text-anchor="middle" font-family="Vazirmatn" font-size="13" fill="#ffb700" font-weight="700">نمایش پله‌ای ADC</text>
+              <line x1="40" y1="210" x2="380" y2="210" stroke="#4a5b7a" stroke-width="1"/>
+              <line x1="40" y1="40" x2="40" y2="210" stroke="#4a5b7a" stroke-width="1"/>
+              <text x="30" y="215" text-anchor="end" font-family="monospace" font-size="10" fill="#4a5b7a">0</text>
+              <text x="30" y="45" text-anchor="end" font-family="monospace" font-size="10" fill="#4a5b7a">1023</text>
+              <path id="adcStairs" d="" fill="none" stroke="url(#analogStair)" stroke-width="2.5"/>
+              <circle id="adcPoint" cx="40" cy="210" r="6" fill="#ffb700" stroke="white" stroke-width="2"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 18: جمع‌بندی ===== -->
+    <section class="slide content-slide" data-slide="17">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-clipboard-check"></i></div>
+        <h2>جمع‌بندی جلسه</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="cards-grid">
+          <div class="content-card animate-in">
+            <div class="card-icon" style="background: linear-gradient(135deg, #ffb700, #ff6b35);">
+              <i class="fas fa-wave-square"></i>
+            </div>
+            <h3>۱. آنالوگ در برابر دیجیتال</h3>
+            <p>آنالوگ پیوسته، دیجیتال گسسته. مثال‌ها: صدا و رادیو در برابر USB و Wi-Fi.</p>
+          </div>
+          <div class="content-card animate-in">
+            <div class="card-icon" style="background: linear-gradient(135deg, #06b6d4, #2a5298);">
+              <i class="fas fa-bolt"></i>
+            </div>
+            <h3>۲. استاندارد ۴-۲۰mA</h3>
+            <p>استاندارد طلایی صنعت. مثال‌ها: ECG، لودسل، pH متر، فشار، دما، فلومتر.</p>
+          </div>
+          <div class="content-card animate-in">
+            <div class="card-icon" style="background: linear-gradient(135deg, #00d4aa, #06b6d4);">
+              <i class="fas fa-wind"></i>
+            </div>
+            <h3>۳. استاندارد ۳-۱۵psi</h3>
+            <p>معادل پنوماتیکی. مثال‌ها: ۳۲psi تایر خودرو، ۶۵psi دوچرخه، ۱۴.۷psi اتمسفر.</p>
+          </div>
+          <div class="content-card animate-in">
+            <div class="card-icon" style="background: linear-gradient(135deg, #a855f7, #ec4899);">
+              <i class="fas fa-microchip"></i>
+            </div>
+            <h3>۴. PWM و ADC</h3>
+            <p>PWM: پل آنالوگ به دیجیتال (روشنایی، موتور، صدا). ADC: ۱۰ بیتی، ۱۰۲۴ پله.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 19: تمرین‌ها ===== -->
+    <section class="slide content-slide" data-slide="18">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-pen-fancy"></i></div>
+        <h2>تمرین‌های کلاسی</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="exercises-float-wrapper animate-in">
+          <div class="exercises-float-scroll" id="exercisesScroll">
+
+            <div class="exercise-group group-conceptual">
+              <div class="exercise-group-header">
+                <div class="exercise-group-icon"><i class="fas fa-question-circle"></i></div>
+                <div>
+                  <h4>الف) سؤالات مفهومی</h4>
+                  <div class="group-subtitle">مباحث نظری — تفکر و تحلیل</div>
+                </div>
+              </div>
+              <ul class="exercise-list">
+                <li><span class="q-num">۱</span><span class="q-text">چرا در صنعت از استاندارد <strong>۴-۲۰mA</strong> به‌جای ۰-۲۰mA استفاده می‌شود؟ مزیت «صفر زنده» را توضیح دهید.</span></li>
+                <li><span class="q-num">۲</span><span class="q-text">سیگنال <strong>۳-۱۵psi</strong> مربوط به کدام سیستم‌ها است و چرا الکتریسیته در آن محیط‌ها خطرناک است؟</span></li>
+                <li><span class="q-num">۳</span><span class="q-text">تفاوت سیگنال <strong>آنالوگ</strong> و <strong>دیجیتال</strong> را با ذکر سه مثال از هر کدام توضیح دهید.</span></li>
+                <li><span class="q-num">۴</span><span class="q-text">مفهوم «<strong>ADC ۱۰ بیتی</strong>» را توضیح دهید. چرا ۱۰۲۴ پله داریم و این چه تأثیری بر دقت دارد؟</span></li>
+                <li><span class="q-num">۵</span><span class="q-text">در یک سیستم کنترل دمای کوره، اگر از <strong>PWM</strong> استفاده کنیم، چگونه دمای دقیق حفظ می‌شود؟</span></li>
+              </ul>
+            </div>
+
+            <div class="exercise-group group-practical">
+              <div class="exercise-group-header">
+                <div class="exercise-group-icon"><i class="fas fa-flask"></i></div>
+                <div>
+                  <h4>ب) تمرین‌های عملی</h4>
+                  <div class="group-subtitle">کار با دوربین گوشی، جستجوی مقاله و شبیه‌سازی</div>
+                </div>
+              </div>
+              <ul class="exercise-list">
+                <li><span class="q-num">۱</span><span class="q-text"><strong>عکاسی صنعتی:</strong> از یک تابلو برق یا PLC در دانشگاه عکس بگیرید و <em>سیم‌های آنالوگ</em> و <em>سیم‌های دیجیتال</em> را مشخص کنید.</span></li>
+                <li><span class="q-num">۲</span><span class="q-text"><strong>جستجوی مقاله:</strong> عبارت «<em>4-20mA current loop advantages</em>» را در <strong>IEEE Xplore</strong> جستجو کرده و سه مزیت اصلی را استخراج کنید.</span></li>
+                <li><span class="q-num">۳</span><span class="q-text"><strong>شبیه‌سازی با Arduino:</strong> یک سیگنال PWM با <em>analogWrite()</em> تولید کنید و ولتاژ میانگین را در سه Duty Cycle مختلف اندازه بگیرید.</span></li>
+                <li><span class="q-num">۴</span><span class="q-text"><strong>خواندن ADC:</strong> یک پتانسیومتر به پین <em>A0</em> وصل کنید، عدد ADC را در Serial Monitor ببینید و با فرمول به ولتاژ تبدیل کنید.</span></li>
+                <li><span class="q-num">۵</span><span class="q-text"><strong>مثال psi:</strong> فشار تایر خودروی خانواده خود را با <em>فشارسنج دیجیتال</em> اندازه بگیرید و با مقدار استاندارد (۳۲psi) مقایسه کنید.</span></li>
+              </ul>
+            </div>
+
+            <div class="exercise-group group-written">
+              <div class="exercise-group-header">
+                <div class="exercise-group-icon"><i class="fas fa-pen-nib"></i></div>
+                <div>
+                  <h4>ج) تمرین نوشتاری</h4>
+                  <div class="group-subtitle">تحلیل و مستندسازی</div>
+                </div>
+              </div>
+              <ul class="exercise-list">
+                <li><span class="q-num">۱</span><span class="q-text">یک سناریوی واقعی طراحی کنید که در آن تبدیل سیگنال <strong>آنالوگ به دیجیتال</strong> ضروری است و مراحل را <em>گام‌به‌گام</em> بنویسید.</span></li>
+                <li><span class="q-num">۲</span><span class="q-text">در یک پاراگراف توضیح دهید چرا در محیط‌های قابل اشتعال، <strong>۳-۱۵psi</strong> بر ۴-۲۰mA ترجیح داده می‌شود.</span></li>
+                <li><span class="q-num">۳</span><span class="q-text">جدول مقایسه‌ای بین <strong>آنالوگ، دیجیتال، ۴-۲۰mA و ۳-۱۵psi</strong> تهیه کنید.</span></li>
+              </ul>
+            </div>
+
+            <div class="exercise-group group-challenge">
+              <div class="exercise-group-header">
+                <div class="exercise-group-icon"><i class="fas fa-star"></i></div>
+                <div>
+                  <h4>د) چالش خلاقانهٔ کلاسی ★</h4>
+                  <div class="group-subtitle">مسابقهٔ گروهی — امتیاز ویژه</div>
+                </div>
+              </div>
+              <div class="challenge-box">
+                <div class="challenge-title">
+                  <i class="fas fa-trophy"></i>
+                  «طراح مبدل» — Converter Designer Challenge
+                </div>
+                <p>هر گروه یک <strong>وسیلهٔ خانگی کاملاً آنالوگ</strong> انتخاب کرده و در قالب <strong>پوستر یک‌صفحه‌ای</strong> پیشنهاد دهد چگونه آن را <strong>دیجیتال و هوشمند</strong> کند.</p>
+                <p>🎯 <strong>پوستر باید شامل:</strong> بلوک‌دیاگرام، نوع سنسور، روش تبدیل ADC، و سناریوی کاربرد جدید.</p>
+                <p>🏆 <strong>بهترین ایده</strong> با رأی‌گیری انتخاب می‌شود.</p>
+                <div class="challenge-footer">
+                  <span class="tag"><i class="fas fa-clock"></i> ۱۵ دقیقه</span>
+                  <span class="tag"><i class="fas fa-users"></i> گروه‌های سه‌نفره</span>
+                  <span class="tag"><i class="fas fa-palette"></i> پوستر + ارائه</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <div class="scroll-hint">
+            <i class="fas fa-mouse"></i> اسکرول کنید
+            <i class="fas fa-arrow-down"></i>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 20: پایان ===== -->
+    <section class="slide end-slide" data-slide="19">
+      <span class="end-icon">🎓</span>
+      <h2 class="animate-in">پایان جلسه دوم</h2>
+      <p class="animate-in">از توجه و همراهی شما سپاسگزارم</p>
+      <div class="next-session animate-in">
+        <div class="arrow-icon"><i class="fas fa-arrow-left"></i></div>
+        <div>
+          <div style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 4px;">جلسه بعدی:</div>
+          <div>دستگاه بین‌المللی یکاها (SI)</div>
+        </div>
+      </div>
+      <p class="animate-in" style="margin-top: 40px; font-size: 0.95rem; color: rgba(255,255,255,0.6);">
+        <i class="fas fa-book" style="color: var(--accent);"></i> منابع پیشنهادی: Measurement Systems (Doebelin) — فصل ۲
+      </p>
+    </section>
+
+  </div>
+
+  <nav class="slide-nav">
+    <button class="nav-btn" id="prevBtn" title="اسلاید قبلی"><i class="fas fa-chevron-right"></i></button>
+    <div class="slide-counter">
+      <span class="current" id="currentSlide">۱</span> / <span id="totalSlides">۲۰</span>
+    </div>
+    <button class="nav-btn" id="nextBtn" title="اسلاید بعدی"><i class="fas fa-chevron-left"></i></button>
+  </nav>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    (function() {
+      const slides = document.querySelectorAll('.slide');
+      const totalSlides = slides.length;
+      let currentIndex = 0;
+      let soundEnabled = true;
+      let musicEnabled = false;
+      let audioCtx = null;
+      let musicOscillators = [];
+      let micStream = null;
+      let analyser = null;
+      let micActive = false;
+      let micAnimationId = null;
+
+      const progressBar = document.getElementById('progressBar');
+      const currentSlideSpan = document.getElementById('currentSlide');
+      const totalSlidesSpan = document.getElementById('totalSlides');
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const dotsNav = document.getElementById('dotsNav');
+      const toast = document.getElementById('toast');
+
+      totalSlidesSpan.textContent = toPersianNumber(totalSlides);
+
+      // ستاره‌ها
+      const starfield = document.getElementById('starfield');
+      for (let i = 0; i < 120; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        const size = Math.random() * 2.5 + 0.5;
+        star.style.width = size + 'px';
+        star.style.height = size + 'px';
+        star.style.left = Math.random() * 100 + '%';
+        star.style.top = Math.random() * 100 + '%';
+        star.style.animationDelay = Math.random() * 3 + 's';
+        star.style.animationDuration = (2 + Math.random() * 3) + 's';
+        const colors = ['#ffffff', '#ffb700', '#06b6d4', '#a855f7', '#00d4aa'];
+        star.style.color = colors[Math.floor(Math.random() * colors.length)];
+        star.style.background = 'currentColor';
+        starfield.appendChild(star);
+      }
+
+      // نقاط
+      slides.forEach((_, i) => {
+        const dot = document.createElement('div');
+        dot.className = 'dot' + (i === 0 ? ' active' : '');
+        dot.title = `اسلاید ${toPersianNumber(i + 1)}`;
+        dot.addEventListener('click', () => goToSlide(i));
+        dotsNav.appendChild(dot);
+      });
+
+      function toPersianNumber(num) {
+        const p = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+        return String(num).replace(/\d/g, d => p[d]);
+      }
+
+      function initAudio() {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+      }
+
+      function playClickSound() {
+        if (!soundEnabled) return;
+        try {
+          initAudio();
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.connect(gain); gain.connect(audioCtx.destination);
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.12);
+          gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
+          osc.start(); osc.stop(audioCtx.currentTime + 0.12);
+        } catch(e){}
+      }
+
+      function playTransitionSound() {
+        if (!soundEnabled) return;
+        try {
+          initAudio();
+          [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.type = 'sine';
+            osc.frequency.value = f;
+            const t = audioCtx.currentTime + i * 0.06;
+            gain.gain.setValueAtTime(0.05, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+            osc.start(t); osc.stop(t + 0.25);
+          });
+        } catch(e){}
+      }
+
+      function playSuccessSound() {
+        if (!soundEnabled) return;
+        try {
+          initAudio();
+          [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((f, i) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.type = 'triangle';
+            osc.frequency.value = f;
+            const t = audioCtx.currentTime + i * 0.08;
+            gain.gain.setValueAtTime(0.06, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+            osc.start(t); osc.stop(t + 0.3);
+          });
+        } catch(e){}
+      }
+
+      function startMusic() {
+        if (!audioCtx) initAudio();
+        if (musicOscillators.length > 0) return;
+        const notes = [130.81, 164.81, 196.00, 261.63];
+        notes.forEach((freq, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          const lfo = audioCtx.createOscillator();
+          const lfoGain = audioCtx.createGain();
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          lfo.connect(lfoGain);
+          lfoGain.connect(gain.gain);
+          lfo.frequency.value = 0.1 + idx * 0.05;
+          lfoGain.gain.value = 0.015;
+          gain.gain.value = 0.02 + idx * 0.005;
+          osc.start(); lfo.start();
+          musicOscillators.push({ osc, lfo, gain });
+        });
+      }
+
+      function stopMusic() {
+        musicOscillators.forEach(({ osc, lfo, gain }) => {
+          try {
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+            setTimeout(() => { try { osc.stop(); lfo.stop(); } catch(e){} }, 600);
+          } catch(e){}
+        });
+        musicOscillators = [];
+      }
+
+      function goToSlide(index) {
+        if (index < 0 || index >= totalSlides) return;
+        if (index === totalSlides - 1) playSuccessSound();
+        else playTransitionSound();
+
+        slides[currentIndex].classList.remove('active');
+        slides[index].classList.add('active');
+
+        document.querySelectorAll('.dot')[currentIndex].classList.remove('active');
+        document.querySelectorAll('.dot')[index].classList.add('active');
+
+        currentIndex = index;
+        currentSlideSpan.textContent = toPersianNumber(currentIndex + 1);
+
+        const progress = ((currentIndex + 1) / totalSlides) * 100;
+        progressBar.style.width = progress + '%';
+
+        prevBtn.disabled = currentIndex === 0;
+        nextBtn.disabled = currentIndex === totalSlides - 1;
+
+        // راه‌اندازی شبیه‌سازها
+        if (index === 5) initSignalSimulator();
+        if (index === 12) initPwmSimulator();
+        if (index === 16) initAdcSimulator();
+      }
+
+      function nextSlide() { goToSlide(currentIndex + 1); }
+      function prevSlide() { goToSlide(currentIndex - 1); }
+
+      nextBtn.addEventListener('click', nextSlide);
+      prevBtn.addEventListener('click', prevSlide);
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') nextSlide();
+        else if (e.key === 'ArrowRight') prevSlide();
+        else if (e.key === ' ') { e.preventDefault(); nextSlide(); }
+        else if (e.key === 'Home') goToSlide(0);
+        else if (e.key === 'End') goToSlide(totalSlides - 1);
+      });
+
+      let touchStartX = 0;
+      document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
+      document.addEventListener('touchend', (e) => {
+        const diff = touchStartX - e.changedTouches[0].screenX;
+        if (Math.abs(diff) > 50) { if (diff > 0) nextSlide(); else prevSlide(); }
+      }, { passive: true });
+
+      const soundToggle = document.getElementById('soundToggle');
+      soundToggle.addEventListener('click', () => {
+        soundEnabled = !soundEnabled;
+        soundToggle.classList.toggle('active', soundEnabled);
+        soundToggle.querySelector('i').className = soundEnabled ? 'fas fa-volume-up' : 'fas fa-volume-mute';
+        if (soundEnabled) playClickSound();
+      });
+
+      const musicToggle = document.getElementById('musicToggle');
+      musicToggle.addEventListener('click', () => {
+        musicEnabled = !musicEnabled;
+        musicToggle.classList.toggle('active', musicEnabled);
+        if (musicEnabled) { initAudio(); startMusic(); showToast('<i class="fas fa-music"></i> موسیقی فعال شد'); }
+        else { stopMusic(); showToast('<i class="fas fa-volume-mute"></i> موسیقی خاموش شد'); }
+      });
+
+      document.getElementById('fullscreenBtn').addEventListener('click', () => {
+        playClickSound();
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen();
+          document.getElementById('fullscreenBtn').querySelector('i').className = 'fas fa-compress';
+        } else {
+          document.exitFullscreen();
+          document.getElementById('fullscreenBtn').querySelector('i').className = 'fas fa-expand';
+        }
+      });
+
+      let toastTimeout;
+      function showToast(msg, duration = 2500) {
+        clearTimeout(toastTimeout);
+        toast.innerHTML = msg;
+        toast.classList.add('show');
+        toastTimeout = setTimeout(() => toast.classList.remove('show'), duration);
+      }
+
+      // ===== شبیه‌ساز سیگنال =====
+      let signalAnimId = null;
+      function initSignalSimulator() {
+        const analogPath = document.getElementById('analogPath');
+        const digitalPath = document.getElementById('digitalPath');
+        if (!analogPath || !digitalPath) return;
+
+        drawSignalPaths();
+
+        document.querySelectorAll('.signal-btn[data-signal]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            playClickSound();
+            document.querySelectorAll('.signal-btn[data-signal]').forEach(b => {
+              b.classList.remove('active');
+              b.style.background = 'rgba(255, 255, 255, 0.08)';
+            });
+            btn.classList.add('active');
+            btn.style.background = 'linear-gradient(135deg, var(--purple), var(--pink))';
+            const sig = btn.dataset.signal;
+            if (sig === 'both') { analogPath.style.opacity = 1; digitalPath.style.opacity = 1; }
+            else if (sig === 'analog') { analogPath.style.opacity = 1; digitalPath.style.opacity = 0.1; }
+            else { analogPath.style.opacity = 0.1; digitalPath.style.opacity = 1; }
+          });
+        });
+
+        const animateBtn = document.getElementById('animateBtn');
+        if (animateBtn && !animateBtn.dataset.bound) {
+          animateBtn.dataset.bound = 'true';
+          animateBtn.addEventListener('click', () => {
+            playClickSound();
+            if (signalAnimId) {
+              cancelAnimationFrame(signalAnimId);
+              signalAnimId = null;
+              animateBtn.innerHTML = '<i class="fas fa-play"></i> انیمیشن';
+            } else {
+              animateSignal();
+              animateBtn.innerHTML = '<i class="fas fa-stop"></i> توقف';
+            }
+          });
+        }
+      }
+
+      function drawSignalPaths() {
+        const analogPath = document.getElementById('analogPath');
+        const digitalPath = document.getElementById('digitalPath');
+
+        let analogD = 'M 0,110 ';
+        for (let x = 0; x <= 800; x += 4) {
+          const y = 110 - 70 * Math.sin((x / 800) * Math.PI * 6);
+          analogD += `L ${x},${y} `;
+        }
+        analogPath.setAttribute('d', analogD);
+
+        let digitalD = 'M 0,180 ';
+        const periods = 8;
+        const halfPeriod = 800 / (periods * 2);
+        for (let i = 0; i < periods * 2; i++) {
+          const x1 = i * halfPeriod;
+          const x2 = (i + 1) * halfPeriod;
+          const y = i % 2 === 0 ? 40 : 180;
+          digitalD += `L ${x1},${y} L ${x2},${y} `;
+        }
+        digitalPath.setAttribute('d', digitalD);
+      }
+
+      let signalOffset = 0;
+      function animateSignal() {
+        const analogPath = document.getElementById('analogPath');
+        let d = 'M 0,110 ';
+        for (let x = 0; x <= 800; x += 4) {
+          const y = 110 - 70 * Math.sin((x / 800) * Math.PI * 6 + signalOffset);
+          d += `L ${x},${y} `;
+        }
+        analogPath.setAttribute('d', d);
+        signalOffset += 0.05;
+        signalAnimId = requestAnimationFrame(animateSignal);
+      }
+
+      // ===== شبیه‌ساز PWM =====
+      function initPwmSimulator() {
+        const slider = document.getElementById('pwmSlider');
+        const valueDisplay = document.getElementById('pwmValue');
+        const ledBulb = document.getElementById('ledBulb');
+        const avgVoltage = document.getElementById('avgVoltage');
+        const pwmPath = document.getElementById('pwmPath');
+        const avgLine = document.getElementById('avgLine');
+        const avgLabel = document.getElementById('avgLabel');
+
+        if (!slider) return;
+
+        function updatePwm() {
+          const val = parseInt(slider.value);
+          const dutyCycle = val / 255;
+          const voltage = (dutyCycle * 5).toFixed(2);
+
+          valueDisplay.textContent = toPersianNumber(val);
+          avgVoltage.textContent = `V_avg = ${voltage}V`;
+
+          const brightness = 0.2 + (dutyCycle * 0.8);
+          ledBulb.style.background = `rgb(${Math.round(255 * brightness)}, ${Math.round(183 * brightness)}, 0)`;
+          ledBulb.style.boxShadow = `0 0 ${20 + dutyCycle * 60}px ${5 + dutyCycle * 20}px rgba(255, 183, 0, ${0.3 + dutyCycle * 0.7})`;
+
+          let d = 'M 30,180 ';
+          const totalWidth = 650;
+          const numPeriods = 8;
+          const periodWidth = totalWidth / numPeriods;
+          const highWidth = periodWidth * dutyCycle;
+
+          for (let i = 0; i < numPeriods; i++) {
+            const x1 = 30 + i * periodWidth;
+            const x2 = x1 + highWidth;
+            const x3 = x1 + periodWidth;
+            if (dutyCycle > 0) d += `L ${x1},40 L ${x2},40 L ${x2},180 `;
+            d += `L ${x3},180 `;
+          }
+          pwmPath.setAttribute('d', d);
+
+          const avgY = 180 - dutyCycle * 140;
+          avgLine.setAttribute('y1', avgY);
+          avgLine.setAttribute('y2', avgY);
+          avgLabel.setAttribute('y', avgY - 8);
+        }
+
+        slider.addEventListener('input', updatePwm);
+        updatePwm();
+      }
+
+      // ===== شبیه‌ساز ADC =====
+      function initAdcSimulator() {
+        const slider = document.getElementById('adcSlider');
+        const voltageDisplay = document.getElementById('adcVoltageDisplay');
+        const adcValueEl = document.getElementById('adcValue');
+        const voltageEl = document.getElementById('adcVoltage');
+        const stairsPath = document.getElementById('adcStairs');
+        const point = document.getElementById('adcPoint');
+
+        if (!slider) return;
+
+        let d = 'M 40,210 ';
+        const numSteps = 20;
+        const stepWidth = 340 / numSteps;
+        const stepHeight = 170 / numSteps;
+        for (let i = 0; i < numSteps; i++) {
+          const x1 = 40 + i * stepWidth;
+          const x2 = 40 + (i + 1) * stepWidth;
+          const y = 210 - (i + 1) * stepHeight;
+          d += `L ${x1},${y} L ${x2},${y} `;
+        }
+        stairsPath.setAttribute('d', d);
+
+        function updateAdc() {
+          const v = parseFloat(slider.value);
+          const adc = Math.round((v * 1023) / 5);
+
+          voltageDisplay.textContent = v.toFixed(2).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]) + 'V';
+          adcValueEl.textContent = toPersianNumber(adc);
+          voltageEl.textContent = v.toFixed(2) + 'V';
+
+          const px = 40 + (v / 5) * 340;
+          const py = 210 - (v / 5) * 170;
+          point.setAttribute('cx', px);
+          point.setAttribute('cy', py);
+        }
+
+        slider.addEventListener('input', updateAdc);
+        updateAdc();
+      }
+
+      // ===== تعامل با دوچرخه =====
+      window.revealBikeAnswer = function() {
+        playSuccessSound();
+        showToast('<i class="fas fa-bicycle"></i> پاسخ در اسلاید بعدی!', 2000);
+        setTimeout(() => {
+          goToSlide(10);
+        }, 400);
+      };
+
+      // ===== شبیه‌ساز صوتی PWM =====
+      const micButton = document.getElementById('micButton');
+      if (micButton) {
+        micButton.addEventListener('click', async () => {
+          playClickSound();
+          if (micActive) {
+            stopMic();
+          } else {
+            await startMic();
+          }
+        });
+      }
+
+      async function startMic() {
+        try {
+          initAudio();
+          micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          analyser = audioCtx.createAnalyser();
+          analyser.fftSize = 256;
+          const source = audioCtx.createMediaStreamSource(micStream);
+          source.connect(analyser);
+
+          micActive = true;
+          micButton.classList.add('active');
+          micButton.innerHTML = '<i class="fas fa-stop"></i>';
+          showToast('<i class="fas fa-microphone"></i> حالا صحبت کنید یا فریاد بزنید!', 3000);
+          updateAudioPwm();
+        } catch (err) {
+          showToast('<i class="fas fa-exclamation-triangle"></i> دسترسی به میکروفون ممکن نشد', 3000);
+        }
+      }
+
+      function stopMic() {
+        micActive = false;
+        if (micAnimationId) cancelAnimationFrame(micAnimationId);
+        if (micStream) {
+          micStream.getTracks().forEach(t => t.stop());
+          micStream = null;
+        }
+        micButton.classList.remove('active');
+        micButton.innerHTML = '<i class="fas fa-microphone"></i>';
+        document.getElementById('audioLevel').style.width = '0%';
+        document.getElementById('audioDuty').textContent = '0';
+        document.getElementById('audioVoltage').textContent = '0.00V';
+        document.getElementById('audioPwmPath').setAttribute('d', '');
+        document.getElementById('audioAvgLine').setAttribute('y1', 180);
+        document.getElementById('audioAvgLine').setAttribute('y2', 180);
+      }
+
+      function updateAudioPwm() {
+        if (!micActive || !analyser) return;
+
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+        analyser.getByteFrequencyData(dataArray);
+
+        // محاسبهٔ میانگین سطح صدا
+        let sum = 0;
+        for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+        const avg = sum / dataArray.length;
+        const normalized = Math.min(avg / 128, 1); // ۰ تا ۱
+        const dutyCycle = normalized;
+        const voltage = (dutyCycle * 5).toFixed(2);
+
+        // به‌روزرسانی نوار سطح
+        document.getElementById('audioLevel').style.width = (normalized * 100) + '%';
+        document.getElementById('audioDuty').textContent = toPersianNumber(Math.round(dutyCycle * 255));
+        document.getElementById('audioVoltage').textContent = voltage + 'V';
+
+        // به‌روزرسانی موج PWM
+        let d = 'M 30,180 ';
+        const totalWidth = 650;
+        const numPeriods = 8;
+        const periodWidth = totalWidth / numPeriods;
+        const highWidth = periodWidth * dutyCycle;
+
+        for (let i = 0; i < numPeriods; i++) {
+          const x1 = 30 + i * periodWidth;
+          const x2 = x1 + highWidth;
+          const x3 = x1 + periodWidth;
+          if (dutyCycle > 0.02) d += `L ${x1},40 L ${x2},40 L ${x2},180 `;
+          d += `L ${x3},180 `;
+        }
+        document.getElementById('audioPwmPath').setAttribute('d', d);
+
+        // خط میانگین
+        const avgY = 180 - dutyCycle * 140;
+        document.getElementById('audioAvgLine').setAttribute('y1', avgY);
+        document.getElementById('audioAvgLine').setAttribute('y2', avgY);
+
+        micAnimationId = requestAnimationFrame(updateAudioPwm);
+      }
+
+      // کلیک روی کارت‌ها
+      document.querySelectorAll('.duo-card, .industry-example, .psi-example:not(.unknown), .content-card').forEach(card => {
+        card.addEventListener('click', playClickSound);
+      });
+
+      document.querySelectorAll('.exercise-list li').forEach(li => {
+        li.addEventListener('click', () => {
+          playClickSound();
+          showToast('<i class="fas fa-check-circle"></i> تمرین انتخاب شد', 1500);
+        });
+      });
+
+      goToSlide(0);
+      setTimeout(() => {
+        showToast('<i class="fas fa-hand-sparkles"></i> خوش آمدید به جلسه دوم — سیگنال‌ها و استانداردهای صنعتی', 4000);
+      }, 800);
+    })();
+  </script>
+</body>
+</html>

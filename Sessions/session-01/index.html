@@ -1,0 +1,2134 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>جلسه ۱: مفاهیم پایه اندازه‌گیری</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;300;400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --primary: #1e3c72;
+      --secondary: #2a5298;
+      --accent: #ffb700;
+      --accent2: #ff6b35;
+      --success: #00d4aa;
+      --danger: #ff4757;
+      --purple: #a855f7;
+      --pink: #ec4899;
+      --cyan: #06b6d4;
+      --dark: #050818;
+    }
+
+    html, body {
+      font-family: 'Vazirmatn', sans-serif;
+      background: #050818;
+      color: white;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ===== پس‌زمینه ستاره‌ای ===== */
+    .starfield {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      background:
+        radial-gradient(ellipse at 20% 30%, rgba(102, 126, 234, 0.35) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 70%, rgba(240, 147, 251, 0.25) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(0, 212, 170, 0.15) 0%, transparent 60%),
+        linear-gradient(135deg, #050818 0%, #0f1c3f 50%, #1a1f3a 100%);
+    }
+    .star {
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle 3s infinite ease-in-out;
+      pointer-events: none;
+      box-shadow: 0 0 6px currentColor;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.5); }
+    }
+
+    /* ===== حباب‌های نئونی ===== */
+    .neon-bubble {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.5;
+      animation: floatBubble 25s infinite ease-in-out;
+      pointer-events: none;
+      z-index: 2;
+    }
+    @keyframes floatBubble {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(60px, -80px) scale(1.2); }
+      66% { transform: translate(-40px, 60px) scale(0.9); }
+    }
+    .neon-bubble:nth-child(1) { width: 400px; height: 400px; top: -10%; left: -5%; background: #6d28d9; animation-duration: 22s; }
+    .neon-bubble:nth-child(2) { width: 350px; height: 350px; top: 60%; right: -8%; background: #ff6b35; animation-duration: 28s; animation-delay: 3s; }
+    .neon-bubble:nth-child(3) { width: 300px; height: 300px; bottom: -10%; left: 30%; background: #00d4aa; animation-duration: 25s; animation-delay: 5s; }
+    .neon-bubble:nth-child(4) { width: 250px; height: 250px; top: 30%; right: 30%; background: #ec4899; animation-duration: 30s; animation-delay: 8s; }
+
+    /* ===== نوار پیشرفت ===== */
+    .progress-bar {
+      position: fixed;
+      top: 0; right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, #06b6d4, #a855f7, #ff6b35, #ffb700, #06b6d4);
+      background-size: 400% 100%;
+      width: 0%;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 1000;
+      box-shadow: 0 0 20px rgba(255, 183, 0, 0.8);
+      animation: gradientFlow 3s linear infinite;
+    }
+    @keyframes gradientFlow {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 400% 50%; }
+    }
+
+    /* ===== هدر ===== */
+    .slide-header {
+      position: fixed;
+      top: 20px; right: 20px; left: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+      padding: 14px 28px;
+      background: rgba(10, 14, 39, 0.65);
+      backdrop-filter: blur(25px) saturate(180%);
+      border-radius: 60px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+    .slide-header .logo {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-weight: 800;
+      font-size: 1rem;
+    }
+    .slide-header .logo-icon {
+      position: relative;
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      color: white;
+      box-shadow: 0 8px 20px rgba(255, 183, 0, 0.4);
+      animation: chipPulse 3s infinite ease-in-out;
+    }
+    @keyframes chipPulse {
+      0%, 100% { box-shadow: 0 8px 20px rgba(255, 183, 0, 0.4); }
+      50% { box-shadow: 0 8px 40px rgba(255, 183, 0, 0.8); }
+    }
+    .slide-header .slide-info {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.85);
+    }
+    .slide-header .slide-info i { color: var(--accent); margin-left: 6px; }
+
+    /* ===== کنترل‌ها ===== */
+    .controls {
+      position: fixed;
+      top: 100px; left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 100;
+    }
+    .ctrl-btn {
+      width: 50px; height: 50px;
+      border-radius: 16px;
+      background: rgba(10, 14, 39, 0.7);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      font-size: 1.1rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .ctrl-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .ctrl-btn i { position: relative; z-index: 1; }
+    .ctrl-btn:hover {
+      transform: translateY(-4px) scale(1.05);
+      border-color: var(--accent);
+      box-shadow: 0 10px 30px rgba(255, 183, 0, 0.4);
+    }
+    .ctrl-btn:hover::before { opacity: 0.2; }
+    .ctrl-btn.active {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 10px 30px rgba(255, 183, 0, 0.6);
+    }
+
+    /* ===== اسلایدها ===== */
+    .slides-container {
+      width: 100%;
+      height: 100vh;
+      position: relative;
+      z-index: 10;
+    }
+    .slide {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 110px 60px 130px;
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0.9) rotateY(15deg);
+      transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-style: preserve-3d;
+      overflow-y: auto;
+    }
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1) rotateY(0deg);
+    }
+
+    /* ===== انیمیشن ورود ===== */
+    .animate-in {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .slide.active .animate-in { opacity: 1; transform: translateY(0); }
+    .slide.active .animate-in:nth-child(1) { transition-delay: 0.15s; }
+    .slide.active .animate-in:nth-child(2) { transition-delay: 0.3s; }
+    .slide.active .animate-in:nth-child(3) { transition-delay: 0.45s; }
+    .slide.active .animate-in:nth-child(4) { transition-delay: 0.6s; }
+    .slide.active .animate-in:nth-child(5) { transition-delay: 0.75s; }
+    .slide.active .animate-in:nth-child(6) { transition-delay: 0.9s; }
+
+    /* ===== اسلاید عنوان ===== */
+    .title-slide {
+      text-align: center;
+      position: relative;
+    }
+    .title-slide .hero-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0.35;
+      z-index: -1;
+    }
+    .title-slide .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, rgba(5,8,24,0.3) 0%, rgba(5,8,24,0.85) 70%);
+      z-index: -1;
+    }
+
+    .title-slide .main-icon {
+      font-size: 7rem;
+      margin-bottom: 30px;
+      display: inline-block;
+      background: linear-gradient(135deg, #ffb700, #ff6b35, #ec4899);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 40px rgba(255, 183, 0, 0.6));
+      animation: iconFloat 3s infinite ease-in-out;
+    }
+    @keyframes iconFloat {
+      0%, 100% { transform: translateY(0) rotate(-5deg); }
+      50% { transform: translateY(-20px) rotate(5deg); }
+    }
+
+    .title-slide .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: linear-gradient(135deg, rgba(255, 183, 0, 0.15), rgba(255, 107, 53, 0.1));
+      border: 2px solid rgba(255, 183, 0, 0.5);
+      padding: 12px 28px;
+      border-radius: 60px;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 25px;
+      font-size: 1rem;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 0 40px rgba(255, 183, 0, 0.3);
+    }
+    .badge .pulse-dot {
+      width: 10px; height: 10px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulseDot 1.5s infinite;
+    }
+    @keyframes pulseDot {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 183, 0, 0.7); }
+      50% { transform: scale(1.2); box-shadow: 0 0 0 12px rgba(255, 183, 0, 0); }
+    }
+
+    .title-slide h1 {
+      font-size: 5rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #ffffff 0%, #ffb700 40%, #ff6b35 70%, #ec4899 100%);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 25px;
+      line-height: 1.15;
+      animation: titleGradient 5s ease infinite;
+      text-shadow: 0 0 80px rgba(255, 183, 0, 0.3);
+    }
+    @keyframes titleGradient {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .title-slide .subtitle {
+      font-size: 1.8rem;
+      color: rgba(255, 255, 255, 0.85);
+      margin-bottom: 45px;
+      font-weight: 300;
+      letter-spacing: 1px;
+    }
+
+    .title-slide .instructor-card {
+      display: inline-flex;
+      align-items: center;
+      gap: 18px;
+      background: rgba(10, 14, 39, 0.6);
+      backdrop-filter: blur(20px);
+      padding: 20px 36px;
+      border-radius: 24px;
+      border: 1px solid rgba(255, 183, 0, 0.3);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      text-align: right;
+    }
+    .title-slide .instructor-avatar {
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      color: white;
+      box-shadow: 0 8px 20px rgba(255, 183, 0, 0.4);
+    }
+    .title-slide .instructor-info .name {
+      font-weight: 800;
+      font-size: 1.15rem;
+      color: white;
+      margin-bottom: 4px;
+    }
+    .title-slide .instructor-info .title {
+      font-size: 0.85rem;
+      color: rgba(255, 183, 0, 0.9);
+    }
+
+    /* ===== آیکون‌های شناور ===== */
+    .floating-icons {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: -1;
+    }
+    .float-icon {
+      position: absolute;
+      font-size: 3rem;
+      background: linear-gradient(135deg, rgba(255,183,0,0.4), rgba(255,107,53,0.2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: floatIcon 10s infinite ease-in-out;
+      filter: drop-shadow(0 0 20px rgba(255, 183, 0, 0.3));
+    }
+    @keyframes floatIcon {
+      0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+      33% { transform: translateY(-40px) rotate(15deg) scale(1.15); }
+      66% { transform: translateY(20px) rotate(-10deg) scale(0.9); }
+    }
+    .float-icon:nth-child(1) { top: 12%; left: 8%; animation-delay: 0s; font-size: 4rem; }
+    .float-icon:nth-child(2) { top: 20%; right: 10%; animation-delay: 1.5s; font-size: 3rem; }
+    .float-icon:nth-child(3) { bottom: 22%; left: 12%; animation-delay: 3s; font-size: 3.5rem; }
+    .float-icon:nth-child(4) { bottom: 28%; right: 8%; animation-delay: 4.5s; font-size: 4.5rem; }
+    .float-icon:nth-child(5) { top: 45%; left: 4%; animation-delay: 2s; font-size: 3rem; }
+    .float-icon:nth-child(6) { top: 55%; right: 4%; animation-delay: 5s; font-size: 3.5rem; }
+
+    /* ===== اسلاید محتوا ===== */
+    .content-slide { align-items: stretch; }
+
+    .content-slide .slide-title {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .content-slide .slide-title .title-icon-wrap {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 80px; height: 80px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(255, 183, 0, 0.2), rgba(255, 107, 53, 0.1));
+      border: 2px solid rgba(255, 183, 0, 0.4);
+      font-size: 2.2rem;
+      color: var(--accent);
+      margin-bottom: 14px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 0 60px rgba(255, 183, 0, 0.3);
+      animation: iconRotate 6s infinite ease-in-out;
+    }
+    @keyframes iconRotate {
+      0%, 100% { transform: rotate(-5deg); }
+      50% { transform: rotate(5deg); }
+    }
+    .content-slide .slide-title h2 {
+      font-size: 2.5rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #fff, #ffb700);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+    }
+    .content-slide .slide-title .subtitle-bar {
+      display: inline-block;
+      width: 120px; height: 5px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 5px;
+      box-shadow: 0 0 20px rgba(255, 183, 0, 0.6);
+    }
+
+    .content-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      max-width: 1300px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* ===== اسلاید سوال ===== */
+    .question-slide { text-align: center; padding: 100px 80px; }
+    .question-slide .question-img {
+      width: 340px;
+      max-width: 70%;
+      height: auto;
+      border-radius: 24px;
+      margin-bottom: 30px;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 183, 0, 0.2);
+      animation: questionBounce 3s infinite ease-in-out;
+    }
+    @keyframes questionBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+    .question-slide h2 {
+      font-size: 2.8rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #fff, #ffb700, #ff6b35);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 30px;
+      line-height: 1.4;
+      animation: titleGradient 4s ease infinite;
+    }
+    .question-slide p {
+      font-size: 1.35rem;
+      color: rgba(255,255,255,0.92);
+      line-height: 2;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .question-slide .hint {
+      margin-top: 35px;
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      padding: 18px 36px;
+      background: linear-gradient(135deg, rgba(255, 183, 0, 0.15), rgba(255, 107, 53, 0.1));
+      border-radius: 60px;
+      font-size: 1.1rem;
+      color: rgba(255,255,255,0.9);
+      border: 1px solid rgba(255, 183, 0, 0.4);
+      box-shadow: 0 0 40px rgba(255, 183, 0, 0.3);
+      backdrop-filter: blur(10px);
+    }
+    .question-slide .hint i { color: var(--accent); font-size: 1.4rem; animation: pulseDot 1.5s infinite; }
+    .question-slide .hint strong { color: var(--accent); font-weight: 800; }
+
+    /* ===== تعریف بزرگ ===== */
+    .big-definition {
+      background: linear-gradient(145deg, rgba(10, 14, 39, 0.9), rgba(30, 40, 70, 0.7));
+      backdrop-filter: blur(20px);
+      border: 2px solid rgba(255, 183, 0, 0.4);
+      border-radius: 40px;
+      padding: 30px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 30px 80px rgba(255, 183, 0, 0.15);
+      display: flex;
+      align-items: center;
+      gap: 40px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .big-definition::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2), var(--purple), var(--accent));
+      background-size: 400% 400%;
+      border-radius: 40px;
+      z-index: -1;
+      animation: borderGlow 4s ease infinite;
+      opacity: 0.6;
+    }
+    @keyframes borderGlow {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    .big-definition .def-image {
+      flex-shrink: 0;
+      width: 260px;
+      max-width: 100%;
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      border: 1px solid rgba(255, 183, 0, 0.3);
+    }
+    .big-definition .def-text { flex: 1; min-width: 280px; text-align: right; }
+    .big-definition h3 {
+      font-size: 1.9rem;
+      color: var(--accent);
+      margin-bottom: 20px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .big-definition p {
+      font-size: 1.25rem;
+      line-height: 2.1;
+      color: rgba(255,255,255,0.95);
+      font-weight: 300;
+    }
+    .big-definition p strong {
+      color: var(--accent);
+      font-weight: 800;
+      text-shadow: 0 0 30px rgba(255, 183, 0, 0.5);
+    }
+    .big-definition p em {
+      color: var(--success);
+      font-style: normal;
+      font-weight: 700;
+    }
+
+    /* ===== مقایسه سه‌گانه ===== */
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      width: 100%;
+    }
+    @media (max-width: 900px) { .comparison-grid { grid-template-columns: 1fr; } }
+
+    .comparison-card {
+      background: linear-gradient(145deg, rgba(10, 14, 39, 0.9), rgba(30, 40, 70, 0.7));
+      backdrop-filter: blur(20px);
+      border-radius: 32px;
+      padding: 24px;
+      text-align: center;
+      border: 2px solid transparent;
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+    .comparison-card:hover {
+      transform: translateY(-12px);
+      box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6);
+    }
+    .comparison-card .comp-img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+    }
+    .comparison-card h3 {
+      font-size: 1.4rem;
+      margin-bottom: 12px;
+      color: white;
+      font-weight: 800;
+    }
+    .comparison-card p {
+      font-size: 0.92rem;
+      color: rgba(255, 255, 255, 0.85);
+      line-height: 1.75;
+      margin-bottom: 16px;
+    }
+    .comparison-card .example-box {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 14px;
+      padding: 12px;
+      font-size: 0.82rem;
+      color: var(--accent);
+      font-weight: 600;
+      border-right: 4px solid var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: center;
+    }
+    .comparison-card.sensor { border-color: rgba(255, 183, 0, 0.4); }
+    .comparison-card.transducer { border-color: rgba(0, 212, 170, 0.4); }
+    .comparison-card.transmitter { border-color: rgba(168, 85, 247, 0.4); }
+
+    /* ===== مثال ترموکوپل ===== */
+    .example-showcase {
+      display: flex;
+      align-items: center;
+      gap: 40px;
+      background: linear-gradient(145deg, rgba(10, 14, 39, 0.85), rgba(30, 40, 70, 0.6));
+      backdrop-filter: blur(20px);
+      border-radius: 40px;
+      padding: 40px;
+      border: 1px solid rgba(255, 183, 0, 0.2);
+      flex-wrap: wrap;
+      justify-content: center;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+    }
+    .example-visual-wrap {
+      flex-shrink: 0;
+      width: 280px;
+      max-width: 100%;
+      position: relative;
+      border-radius: 28px;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(255, 183, 0, 0.25);
+      border: 2px solid rgba(255, 183, 0, 0.3);
+    }
+    .example-visual-wrap img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .example-text {
+      flex: 1;
+      min-width: 300px;
+    }
+    .example-text h3 {
+      font-size: 1.7rem;
+      color: var(--accent);
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+    }
+    .example-text .dual-role {
+      display: flex;
+      gap: 12px;
+      margin: 18px 0;
+      flex-wrap: wrap;
+    }
+    .role-tag {
+      padding: 10px 22px;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .role-tag.sensor-role {
+      background: linear-gradient(135deg, rgba(255, 183, 0, 0.25), rgba(255, 107, 53, 0.15));
+      color: var(--accent);
+      border: 1px solid var(--accent);
+    }
+    .role-tag.transducer-role {
+      background: linear-gradient(135deg, rgba(0, 212, 170, 0.25), rgba(6, 182, 212, 0.15));
+      color: var(--success);
+      border: 1px solid var(--success);
+    }
+    .example-text p {
+      line-height: 1.95;
+      color: rgba(255,255,255,0.9);
+      font-size: 1rem;
+    }
+    .example-text p strong { color: var(--accent); }
+
+    /* ===== بلوک دیاگرام ===== */
+    .block-diagram-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+      width: 100%;
+    }
+    .block-diagram-img {
+      width: 100%;
+      max-width: 1100px;
+      height: auto;
+      border-radius: 28px;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 183, 0, 0.2);
+    }
+    .block-diagram {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      max-width: 1200px;
+      width: 100%;
+    }
+    .block-box {
+      background: linear-gradient(145deg, rgba(10, 14, 39, 0.85), rgba(30, 40, 70, 0.6));
+      backdrop-filter: blur(20px);
+      border: 2px solid rgba(255, 183, 0, 0.3);
+      border-radius: 20px;
+      padding: 20px 16px;
+      min-width: 150px;
+      text-align: center;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    }
+    .block-box:hover {
+      transform: translateY(-8px) scale(1.05);
+      border-color: var(--accent);
+      box-shadow: 0 25px 50px rgba(255, 183, 0, 0.4);
+    }
+    .block-box .block-icon {
+      font-size: 2.4rem;
+      margin-bottom: 10px;
+      display: block;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 15px rgba(255, 183, 0, 0.5));
+    }
+    .block-box .block-label {
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: white;
+    }
+    .block-box .block-desc {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.7);
+      margin-top: 6px;
+    }
+    .block-arrow {
+      font-size: 1.8rem;
+      color: var(--accent);
+      animation: arrowPulse 1.8s infinite ease-in-out;
+      filter: drop-shadow(0 0 15px rgba(255, 183, 0, 0.6));
+    }
+    @keyframes arrowPulse {
+      0%, 100% { transform: translateX(0); opacity: 0.7; }
+      50% { transform: translateX(-10px); opacity: 1; }
+    }
+
+    /* ===== کاربردها ===== */
+    .apps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .app-card {
+      background: linear-gradient(145deg, rgba(10, 14, 39, 0.85), rgba(30, 40, 70, 0.6));
+      backdrop-filter: blur(20px);
+      border-radius: 26px;
+      padding: 20px;
+      text-align: center;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    .app-card:hover {
+      transform: translateY(-10px);
+      border-color: var(--accent);
+      box-shadow: 0 30px 60px rgba(255, 183, 0, 0.3);
+    }
+    .app-card .app-img-wrap {
+      width: 100%;
+      height: 130px;
+      border-radius: 20px;
+      overflow: hidden;
+      margin-bottom: 14px;
+      border: 1px solid rgba(255, 183, 0, 0.2);
+      position: relative;
+    }
+    .app-card .app-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+      display: block;
+    }
+    .app-card:hover .app-img { transform: scale(1.1); }
+    .app-card h4 {
+      font-size: 1.05rem;
+      margin-bottom: 8px;
+      color: #fff;
+      font-weight: 700;
+    }
+    .app-card p {
+      font-size: 0.82rem;
+      color: rgba(255, 255, 255, 0.75);
+      line-height: 1.65;
+    }
+    .app-card .sensor-type {
+      display: inline-block;
+      margin-top: 10px;
+      font-size: 0.72rem;
+      padding: 4px 12px;
+      background: rgba(255, 183, 0, 0.15);
+      color: var(--accent);
+      border-radius: 20px;
+      font-weight: 700;
+      border: 1px solid rgba(255, 183, 0, 0.3);
+    }
+
+    /* ===== جمع‌بندی ===== */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+      width: 100%;
+    }
+    .content-card {
+      background: linear-gradient(145deg, rgba(10, 14, 39, 0.85), rgba(30, 40, 70, 0.6));
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 26px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+    .content-card:hover {
+      transform: translateY(-10px);
+      border-color: rgba(255, 183, 0, 0.4);
+      box-shadow: 0 30px 60px rgba(255, 183, 0, 0.2);
+    }
+    .content-card .card-icon {
+      width: 60px; height: 60px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.7rem;
+      margin-bottom: 18px;
+      color: white;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    }
+    .content-card h3 {
+      font-size: 1.2rem;
+      margin-bottom: 12px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .content-card p {
+      font-size: 0.92rem;
+      color: rgba(255, 255, 255, 0.8);
+      line-height: 1.85;
+    }
+
+    /* ============================================
+       ===== تمرین‌های کلاسی - طراحی دقیق و کامل =====
+       ============================================ */
+
+    .exercises-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 100%;
+      max-height: 65vh;
+      overflow-y: auto;
+      padding-left: 8px;
+    }
+
+    /* اسکرول‌بار داخلی */
+    .exercises-container::-webkit-scrollbar { width: 6px; }
+    .exercises-container::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); border-radius: 6px; }
+    .exercises-container::-webkit-scrollbar-thumb { background: rgba(255, 183, 0, 0.5); border-radius: 6px; }
+
+    /* گروه تمرین‌ها */
+    .exercise-group {
+      background: linear-gradient(145deg, rgba(10, 14, 39, 0.85), rgba(30, 40, 70, 0.6));
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 24px 28px;
+      border-right: 6px solid var(--accent);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .exercise-group::before {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 100%; height: 100%;
+      background: radial-gradient(circle at top right, rgba(255, 183, 0, 0.08), transparent 60%);
+      pointer-events: none;
+    }
+    .exercise-group:hover {
+      transform: translateX(-6px);
+      box-shadow: 0 20px 45px rgba(255, 183, 0, 0.2);
+    }
+    .exercise-group.group-conceptual { border-right-color: #ffb700; }
+    .exercise-group.group-practical { border-right-color: #00d4aa; }
+    .exercise-group.group-written { border-right-color: #a855f7; }
+    .exercise-group.group-challenge {
+      border-right-color: #ff4757;
+      background: linear-gradient(145deg, rgba(30, 10, 20, 0.85), rgba(60, 20, 40, 0.6));
+    }
+
+    .exercise-group-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 18px;
+      position: relative;
+      z-index: 1;
+    }
+    .exercise-group-icon {
+      width: 50px; height: 50px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      color: white;
+      flex-shrink: 0;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+    .exercise-group.group-conceptual .exercise-group-icon {
+      background: linear-gradient(135deg, #ffb700, #ff6b35);
+    }
+    .exercise-group.group-practical .exercise-group-icon {
+      background: linear-gradient(135deg, #00d4aa, #06b6d4);
+    }
+    .exercise-group.group-written .exercise-group-icon {
+      background: linear-gradient(135deg, #a855f7, #ec4899);
+    }
+    .exercise-group.group-challenge .exercise-group-icon {
+      background: linear-gradient(135deg, #ff4757, #ff6b35);
+      animation: challengePulse 2s infinite;
+    }
+    @keyframes challengePulse {
+      0%, 100% { box-shadow: 0 10px 20px rgba(0,0,0,0.3), 0 0 0 0 rgba(255, 71, 87, 0.5); }
+      50% { box-shadow: 0 10px 20px rgba(0,0,0,0.3), 0 0 0 12px rgba(255, 71, 87, 0); }
+    }
+
+    .exercise-group-header h4 {
+      font-size: 1.15rem;
+      color: white;
+      font-weight: 800;
+      margin: 0;
+    }
+    .exercise-group-header .group-subtitle {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.6);
+      margin-top: 4px;
+    }
+
+    /* لیست تمرین‌ها */
+    .exercise-list {
+      list-style: none;
+      padding: 0;
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .exercise-list li {
+      display: flex;
+      gap: 12px;
+      padding: 12px 16px;
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 14px;
+      color: rgba(255, 255, 255, 0.92);
+      line-height: 1.85;
+      font-size: 0.92rem;
+      transition: all 0.3s ease;
+      border-right: 3px solid transparent;
+    }
+    .exercise-list li:hover {
+      background: rgba(255, 183, 0, 0.08);
+      border-right-color: var(--accent);
+      transform: translateX(-4px);
+    }
+    .exercise-list li .q-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: white;
+      font-weight: 800;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+      box-shadow: 0 4px 10px rgba(255, 183, 0, 0.3);
+    }
+    .exercise-group.group-practical .exercise-list li .q-num {
+      background: linear-gradient(135deg, #00d4aa, #06b6d4);
+      box-shadow: 0 4px 10px rgba(0, 212, 170, 0.3);
+    }
+    .exercise-group.group-written .exercise-list li .q-num {
+      background: linear-gradient(135deg, #a855f7, #ec4899);
+      box-shadow: 0 4px 10px rgba(168, 85, 247, 0.3);
+    }
+    .exercise-list li .q-text { flex: 1; }
+    .exercise-list li .q-text strong { color: var(--accent); }
+    .exercise-list li .q-text em {
+      color: #06b6d4;
+      font-style: normal;
+      font-weight: 700;
+      background: rgba(6, 182, 212, 0.1);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+    }
+
+    /* چالش خلاقانه */
+    .challenge-box {
+      background: linear-gradient(135deg, rgba(255, 71, 87, 0.15), rgba(255, 183, 0, 0.08));
+      border: 2px dashed rgba(255, 71, 87, 0.5);
+      border-radius: 20px;
+      padding: 20px 22px;
+      position: relative;
+      z-index: 1;
+    }
+    .challenge-box .challenge-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #ff6b35;
+      font-weight: 800;
+      font-size: 1.1rem;
+      margin-bottom: 12px;
+    }
+    .challenge-box .challenge-title i {
+      animation: starSpin 3s infinite linear;
+    }
+    @keyframes starSpin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .challenge-box p {
+      color: rgba(255, 255, 255, 0.92);
+      line-height: 1.95;
+      font-size: 0.95rem;
+      margin-bottom: 10px;
+    }
+    .challenge-box p strong { color: #ff6b35; }
+    .challenge-box .challenge-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 0.82rem;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .challenge-box .challenge-footer .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 71, 87, 0.15);
+      color: #ff6b35;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-weight: 700;
+      border: 1px solid rgba(255, 71, 87, 0.3);
+    }
+    .challenge-box .challenge-footer .source {
+      color: rgba(255, 183, 0, 0.8);
+      font-weight: 600;
+    }
+
+    /* ===== ناوبری ===== */
+    .slide-nav {
+      position: fixed;
+      bottom: 30px; left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      background: rgba(10, 14, 39, 0.75);
+      backdrop-filter: blur(25px);
+      padding: 14px 28px;
+      border-radius: 60px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      z-index: 100;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+    .nav-btn {
+      width: 54px; height: 54px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      font-size: 1.3rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      transform: scale(1.15);
+      box-shadow: 0 0 30px rgba(255, 183, 0, 0.7);
+      border-color: var(--accent);
+    }
+    .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .slide-counter {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: white;
+      min-width: 100px;
+      text-align: center;
+      letter-spacing: 1px;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 10px 20px;
+      border-radius: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .slide-counter .current {
+      color: var(--accent);
+      font-size: 1.4rem;
+      font-weight: 900;
+      text-shadow: 0 0 20px rgba(255, 183, 0, 0.6);
+    }
+
+    /* ===== نقاط ناوبری ===== */
+    .dots-nav {
+      position: fixed;
+      left: 30px; top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      z-index: 100;
+    }
+    .dot {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 2px solid transparent;
+    }
+    .dot:hover {
+      background: rgba(255, 183, 0, 0.5);
+      transform: scale(1.3);
+    }
+    .dot.active {
+      background: var(--accent);
+      box-shadow: 0 0 20px var(--accent);
+      transform: scale(1.5);
+    }
+
+    /* ===== اسلاید پایانی ===== */
+    .end-slide { text-align: center; }
+    .end-slide .end-icon {
+      font-size: 7rem;
+      margin-bottom: 25px;
+      display: inline-block;
+      animation: endBounce 2s infinite ease-in-out;
+      filter: drop-shadow(0 0 50px rgba(255, 183, 0, 0.6));
+    }
+    @keyframes endBounce {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-25px) scale(1.08); }
+    }
+    .end-slide h2 {
+      font-size: 3.5rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #fff, #ffb700, #ff6b35, #ec4899);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 20px;
+      animation: titleGradient 5s ease infinite;
+    }
+    .end-slide p {
+      font-size: 1.3rem;
+      color: rgba(255,255,255,0.85);
+      margin-bottom: 40px;
+    }
+    .end-slide .next-session {
+      display: inline-flex;
+      align-items: center;
+      gap: 20px;
+      padding: 20px 44px;
+      background: linear-gradient(135deg, rgba(255, 183, 0, 0.15), rgba(255, 107, 53, 0.1));
+      border: 2px solid var(--accent);
+      border-radius: 70px;
+      font-size: 1.1rem;
+      color: var(--accent);
+      font-weight: 700;
+      box-shadow: 0 0 50px rgba(255, 183, 0, 0.3);
+      backdrop-filter: blur(10px);
+    }
+    .end-slide .next-session .arrow-icon {
+      width: 46px; height: 46px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #050818;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      animation: arrowMove2 2s infinite ease-in-out;
+    }
+    @keyframes arrowMove2 {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(-8px); }
+    }
+
+    /* ===== توست ===== */
+    .toast {
+      position: fixed;
+      bottom: 120px; left: 50%;
+      transform: translateX(-50%) translateY(100px) scale(0.8);
+      background: linear-gradient(135deg, rgba(10, 14, 39, 0.95), rgba(30, 40, 70, 0.95));
+      backdrop-filter: blur(20px);
+      color: white;
+      padding: 16px 32px;
+      border-radius: 60px;
+      font-weight: 600;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255, 183, 0, 0.3) inset;
+      opacity: 0;
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 2000;
+      border: 1px solid rgba(255, 183, 0, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      pointer-events: none;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0) scale(1);
+    }
+    .toast i { color: var(--accent); font-size: 1.2rem; }
+
+    /* ===== ریسپانسیو ===== */
+    @media (max-width: 900px) {
+      .slide { padding: 110px 25px 130px; }
+      .title-slide h1 { font-size: 2.6rem; }
+      .title-slide .main-icon { font-size: 4.5rem; }
+      .title-slide .subtitle { font-size: 1.15rem; }
+      .content-slide .slide-title h2 { font-size: 1.9rem; }
+      .question-slide { padding: 100px 30px; }
+      .question-slide h2 { font-size: 1.9rem; }
+      .question-slide p { font-size: 1.05rem; }
+      .big-definition { padding: 25px 20px; gap: 25px; }
+      .big-definition p { font-size: 1.05rem; }
+      .big-definition h3 { font-size: 1.4rem; }
+      .big-definition .def-image { width: 100%; max-width: 280px; }
+      .end-slide h2 { font-size: 2rem; }
+      .end-slide .end-icon { font-size: 5rem; }
+      .dots-nav { display: none; }
+      .slide-header .slide-info span:not(:first-child) { display: none; }
+      .block-diagram { flex-direction: column; }
+      .block-arrow { transform: rotate(90deg); }
+      .example-showcase { padding: 25px 20px; gap: 25px; }
+      .controls { top: 90px; left: 10px; }
+      .ctrl-btn { width: 42px; height: 42px; }
+      .question-slide .question-img { width: 100%; max-width: 320px; }
+      .exercise-group { padding: 18px 18px; }
+      .exercise-list li { font-size: 0.85rem; padding: 10px 12px; }
+    }
+
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+  </style>
+</head>
+<body>
+
+  <!-- پس‌زمینه -->
+  <div class="starfield" id="starfield"></div>
+
+  <!-- حباب‌های نئونی -->
+  <div class="neon-bubble"></div>
+  <div class="neon-bubble"></div>
+  <div class="neon-bubble"></div>
+  <div class="neon-bubble"></div>
+
+  <!-- نوار پیشرفت -->
+  <div class="progress-bar" id="progressBar"></div>
+
+  <!-- هدر -->
+  <header class="slide-header">
+    <div class="logo">
+      <div class="logo-icon"><i class="fas fa-microchip"></i></div>
+      <span>سیستم‌های اندازه‌گیری و سنسورها</span>
+    </div>
+    <div class="slide-info">
+      <span><i class="fas fa-user-tie"></i> دکتر مسعود گوهری‌منش</span>
+      <span><i class="fas fa-university"></i> دانشگاه تربت حیدریه</span>
+    </div>
+  </header>
+
+  <!-- کنترل‌ها -->
+  <div class="controls">
+    <button class="ctrl-btn active" id="soundToggle" title="افکت صوتی">
+      <i class="fas fa-volume-up"></i>
+    </button>
+    <button class="ctrl-btn" id="musicToggle" title="موسیقی پس‌زمینه">
+      <i class="fas fa-music"></i>
+    </button>
+    <button class="ctrl-btn" id="fullscreenBtn" title="تمام صفحه">
+      <i class="fas fa-expand"></i>
+    </button>
+  </div>
+
+  <!-- نقاط ناوبری -->
+  <div class="dots-nav" id="dotsNav"></div>
+
+  <!-- اسلایدها -->
+  <div class="slides-container" id="slidesContainer">
+
+    <!-- اسلاید 1: عنوان -->
+    <section class="slide active title-slide" data-slide="0">
+      <div class="hero-bg" style="background-image: url('images/hero-sensors.jpg');"></div>
+      <div class="hero-overlay"></div>
+
+      <div class="floating-icons">
+        <i class="fas fa-thermometer-half float-icon"></i>
+        <i class="fas fa-tachometer-alt float-icon"></i>
+        <i class="fas fa-weight-scale float-icon"></i>
+        <i class="fas fa-satellite-dish float-icon"></i>
+        <i class="fas fa-wave-square float-icon"></i>
+        <i class="fas fa-microchip float-icon"></i>
+      </div>
+
+      <i class="fas fa-microchip main-icon animate-in"></i>
+      <div class="badge animate-in">
+        <span class="pulse-dot"></span>
+        جلسه اول — فاز ۱: مبانی نظری
+      </div>
+      <h1 class="animate-in">مفاهیم پایه اندازه‌گیری</h1>
+      <p class="subtitle animate-in">سنسور، ترانسدیوسر و ترانسمیتر</p>
+      <div class="instructor-card animate-in">
+        <div class="instructor-avatar"><i class="fas fa-user-tie"></i></div>
+        <div class="instructor-info">
+          <div class="name">دکتر مسعود گوهری‌منش</div>
+          <div class="title">دانشیار گروه مهندسی مکانیک دانشگاه تربت حیدریه</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- اسلاید 2: سوال انگیزشی -->
+    <section class="slide question-slide" data-slide="1">
+      <img src="images/question-scene.jpg" alt="سوال انگیزشی" class="question-img animate-in">
+      <h2 class="animate-in">آیا تا به حال فکر کرده‌اید...</h2>
+      <p class="animate-in">
+        چگونه گوشی شما می‌فهمد که انگشتتان را روی صفحه گذاشته‌اید؟<br>
+        چگونه ترموستات خانه، دمای اتاق را تنظیم می‌کند؟<br>
+        چگونه خودروی شما می‌فهمد که باید کیسه هوا را باز کند؟
+      </p>
+      <div class="hint animate-in">
+        <i class="fas fa-lightbulb"></i>
+        پاسخ همه این سوالات در یک کلمه است: <strong>سنسور</strong>
+      </div>
+    </section>
+
+    <!-- اسلاید 3: تعریف اندازه‌گیری -->
+    <section class="slide content-slide" data-slide="2">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-ruler-combined"></i></div>
+        <h2>اندازه‌گیری چیست؟</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="big-definition animate-in">
+          <img src="images/measurement-concept.jpg" alt="مفهوم اندازه‌گیری" class="def-image">
+          <div class="def-text">
+            <h3><i class="fas fa-quote-right"></i> تعریف اندازه‌گیری</h3>
+            <p>
+              فرآیند تعیین مقدار یک کمیت فیزیکی با مقایسه آن با یک استاندارد مشخص را
+              <strong>اندازه‌گیری</strong> می‌نامند.
+              <br><br>
+              نتیجه این فرآیند همیشه یک <strong>عدد</strong> به همراه <em>یکا</em> است.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- اسلاید 4: سه مفهوم کلیدی -->
+    <section class="slide content-slide" data-slide="3">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-search-plus"></i></div>
+        <h2>سه مفهوم کلیدی</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="comparison-grid">
+          <div class="comparison-card sensor animate-in">
+            <img src="images/sensor.jpg" alt="سنسور" class="comp-img">
+            <h3>سنسور (Sensor)</h3>
+            <p>عنصری که یک کمیت فیزیکی را <strong>حس</strong> می‌کند و به سیگنال قابل استفاده تبدیل می‌نماید.</p>
+            <div class="example-box">🌡️ ترموکوپل، LDR، پیزوالکتریک</div>
+          </div>
+          <div class="comparison-card transducer animate-in">
+            <img src="images/transducer.jpg" alt="ترانسدیوسر" class="comp-img">
+            <h3>ترانسدیوسر (Transducer)</h3>
+            <p>عنصری که یک شکل از <strong>انرژی</strong> را به شکل دیگر تبدیل می‌کند.</p>
+            <div class="example-box">🔊 بلندگو، میکروفون، پیزوالکتریک</div>
+          </div>
+          <div class="comparison-card transmitter animate-in">
+            <img src="images/transmitter.jpg" alt="ترانسمیتر" class="comp-img">
+            <h3>ترانسمیتر (Transmitter)</h3>
+            <p>سیگنال سنسور را به <strong>استاندارد صنعتی</strong> (مثل ۴-۲۰mA) تبدیل و ارسال می‌کند.</p>
+            <div class="example-box">📡 ترانسمیتر فشار صنعتی</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- اسلاید 5: تفاوت‌های کلیدی -->
+    <section class="slide content-slide" data-slide="4">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-lightbulb"></i></div>
+        <h2>تفاوت‌های کلیدی</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="cards-grid">
+          <div class="content-card animate-in">
+            <div class="card-icon" style="background: linear-gradient(135deg, #ffb700, #ff6b35);">
+              <i class="fas fa-eye"></i>
+            </div>
+            <h3>سنسور</h3>
+            <p>همیشه <strong>ورودی</strong> است — کمیت فیزیکی را از محیط می‌گیرد. خروجی آن یک سیگنال الکتریکی، نوری، مکانیکی و... است.</p>
+          </div>
+          <div class="content-card animate-in">
+            <div class="card-icon" style="background: linear-gradient(135deg, #00d4aa, #06b6d4);">
+              <i class="fas fa-sync-alt"></i>
+            </div>
+            <h3>ترانسدیوسر</h3>
+            <p>مفهومی <strong>عام‌تر</strong> از سنسور است. هر سنسور یک ترانسدیوسر است، اما هر ترانسدیوسری الزاماً سنسور نیست.</p>
+          </div>
+          <div class="content-card animate-in">
+            <div class="card-icon" style="background: linear-gradient(135deg, #a855f7, #ec4899);">
+              <i class="fas fa-signal"></i>
+            </div>
+            <h3>ترانسمیتر</h3>
+            <p>ترکیبی از <strong>سنسور + مبدل سیگنال + مدار ارسال</strong>. خروجی آن برای انتقال در فواصل طولانی بهینه شده است.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- اسلاید 6: مثال ترموکوپل -->
+    <section class="slide content-slide" data-slide="5">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-fire"></i></div>
+        <h2>مثال کلیدی: ترموکوپل</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="example-showcase animate-in">
+          <div class="example-visual-wrap">
+            <img src="images/thermocouple-real.jpg" alt="ترموکوپل">
+          </div>
+
+          <div class="example-text">
+            <h3><i class="fas fa-star" style="color: var(--accent);"></i> یک عنصر، دو نقش!</h3>
+            <div class="dual-role">
+              <span class="role-tag sensor-role"><i class="fas fa-eye"></i> سنسور: دما را حس می‌کند</span>
+              <span class="role-tag transducer-role"><i class="fas fa-bolt"></i> ترانسدیوسر: گرما را به ولتاژ تبدیل می‌کند</span>
+            </div>
+            <p>
+              ترموکوپل از دو فلز غیرهم‌جنس ساخته می‌شود. وقتی دو سر آن در دماهای مختلف قرار گیرد،
+              <strong>نیروی محرکه الکتریکی</strong> (emf) تولید می‌شود.
+              این پدیده به <strong>«اثر سیبک»</strong> معروف است.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- اسلاید 7: بلوک دیاگرام -->
+    <section class="slide content-slide" data-slide="6">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-project-diagram"></i></div>
+        <h2>بلوک‌دیاگرام سیستم اندازه‌گیری</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="block-diagram-wrap">
+          <img src="images/block-diagram-real.jpg" alt="بلوک دیاگرام" class="block-diagram-img">
+
+          <div class="block-diagram">
+            <div class="block-box animate-in">
+              <span class="block-icon"><i class="fas fa-thermometer-half"></i></span>
+              <div class="block-label">کمیت فیزیکی</div>
+              <div class="block-desc">دما، فشار، نور و...</div>
+            </div>
+            <span class="block-arrow animate-in"><i class="fas fa-arrow-left"></i></span>
+            <div class="block-box animate-in">
+              <span class="block-icon"><i class="fas fa-eye"></i></span>
+              <div class="block-label">سنسور / ترانسدیوسر</div>
+              <div class="block-desc">تبدیل به سیگنال</div>
+            </div>
+            <span class="block-arrow animate-in"><i class="fas fa-arrow-left"></i></span>
+            <div class="block-box animate-in">
+              <span class="block-icon"><i class="fas fa-filter"></i></span>
+              <div class="block-label">شرط‌سازی سیگنال</div>
+              <div class="block-desc">تقویت، فیلتر</div>
+            </div>
+            <span class="block-arrow animate-in"><i class="fas fa-arrow-left"></i></span>
+            <div class="block-box animate-in">
+              <span class="block-icon"><i class="fas fa-microchip"></i></span>
+              <div class="block-label">پردازش / نمایش</div>
+              <div class="block-desc">ADC، میکروکنترلر</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- اسلاید 8: کاربردها -->
+    <section class="slide content-slide" data-slide="7">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-home"></i></div>
+        <h2>سنسورها در زندگی روزمره</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="apps-grid">
+          <div class="app-card animate-in">
+            <div class="app-img-wrap">
+              <img src="images/smartphone-sensors.jpg" alt="گوشی هوشمند" class="app-img">
+            </div>
+            <h4>گوشی هوشمند</h4>
+            <p>تشخیص لمس، چرخش صفحه، تنظیم روشنایی</p>
+            <span class="sensor-type">سنسور خازنی + شتاب‌سنج</span>
+          </div>
+          <div class="app-card animate-in">
+            <div class="app-img-wrap">
+              <img src="images/thermostat-home.jpg" alt="ترموستات خانه" class="app-img">
+            </div>
+            <h4>ترموستات خانه</h4>
+            <p>کنترل دمای محیط به صورت خودکار</p>
+            <span class="sensor-type">ترمیستور / DHT</span>
+          </div>
+          <div class="app-card animate-in">
+            <div class="app-img-wrap">
+              <img src="images/car-safety.jpg" alt="خودروی هوشمند" class="app-img">
+            </div>
+            <h4>خودروی هوشمند</h4>
+            <p>کیسه هوا، سیستم ترمز ABS، پارک خودکار</p>
+            <span class="sensor-type">شتاب‌سنج + اولتراسونیک</span>
+          </div>
+          <div class="app-card animate-in">
+            <div class="app-img-wrap">
+              <img src="images/smart-lighting.jpg" alt="روشنایی هوشمند" class="app-img">
+            </div>
+            <h4>روشنایی هوشمند</h4>
+            <p>روشن/خاموش شدن خودکار چراغ‌ها</p>
+            <span class="sensor-type">PIR + LDR</span>
+          </div>
+          <div class="app-card animate-in">
+            <div class="app-img-wrap">
+              <img src="images/medical-devices.jpg" alt="تجهیزات پزشکی" class="app-img">
+            </div>
+            <h4>تجهیزات پزشکی</h4>
+            <p>فشارسنج، پالس‌اکسیمتر، نوار قلب</p>
+            <span class="sensor-type">فشار + نوری</span>
+          </div>
+          <div class="app-card animate-in">
+            <div class="app-img-wrap">
+              <img src="images/industrial-automation.jpg" alt="اتوماسیون صنعتی" class="app-img">
+            </div>
+            <h4>اتوماسیون صنعتی</h4>
+            <p>کنترل فرآیند، پایش خط تولید</p>
+            <span class="sensor-type">همه انواع سنسورها</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- اسلاید 9: جمع‌بندی -->
+    <section class="slide content-slide" data-slide="8">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-clipboard-check"></i></div>
+        <h2>جمع‌بندی جلسه</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="cards-grid">
+          <div class="content-card animate-in">
+            <div class="card-icon" style="background: linear-gradient(135deg, #ffb700, #ff6b35);">
+              <i class="fas fa-check"></i>
+            </div>
+            <h3>۱. سنسور</h3>
+            <p>کمیت فیزیکی را <strong>حس</strong> می‌کند و به سیگنال قابل استفاده تبدیل می‌نماید.</p>
+          </div>
+          <div class="content-card animate-in">
+            <div class="card-icon" style="background: linear-gradient(135deg, #00d4aa, #06b6d4);">
+              <i class="fas fa-check"></i>
+            </div>
+            <h3>۲. ترانسدیوسر</h3>
+            <p>یک شکل از <strong>انرژی</strong> را به شکل دیگر تبدیل می‌کند.</p>
+          </div>
+          <div class="content-card animate-in">
+            <div class="card-icon" style="background: linear-gradient(135deg, #a855f7, #ec4899);">
+              <i class="fas fa-check"></i>
+            </div>
+            <h3>۳. ترانسمیتر</h3>
+            <p>سیگنال را به <strong>استاندارد صنعتی</strong> تبدیل و برای انتقال آماده می‌کند.</p>
+          </div>
+          <div class="content-card animate-in">
+            <div class="card-icon" style="background: linear-gradient(135deg, #06b6d4, #2a5298);">
+              <i class="fas fa-check"></i>
+            </div>
+            <h3>۴. ترموکوپل</h3>
+            <p>هم <strong>سنسور</strong> است و هم <strong>ترانسدیوسر</strong> — نمونه‌ای کلاسیک از هم‌پوشانی مفاهیم.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================
+         اسلاید 10: تمرین‌های کلاسی (دقیق و کامل)
+         ============================================ -->
+    <section class="slide content-slide" data-slide="9">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-pen-fancy"></i></div>
+        <h2>تمرین‌های کلاسی</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="exercises-container">
+
+          <!-- الف) سؤالات مفهومی -->
+          <div class="exercise-group group-conceptual animate-in">
+            <div class="exercise-group-header">
+              <div class="exercise-group-icon"><i class="fas fa-question-circle"></i></div>
+              <div>
+                <h4>الف) سؤالات مفهومی</h4>
+                <div class="group-subtitle">مباحث نظری جلسه — تفکر و تحلیل</div>
+              </div>
+            </div>
+            <ul class="exercise-list">
+              <li>
+                <span class="q-num">۱</span>
+                <span class="q-text">
+                  تفاوت اساسی بین «سنسور» و «ترانسدیوسر» چیست؟ با ذکر یک مثال از هر کدام توضیح دهید.
+                </span>
+              </li>
+              <li>
+                <span class="q-num">۲</span>
+                <span class="q-text">
+                  چرا یک <strong>ترموکوپل</strong> هم سنسور و هم ترانسدیوسر محسوب می‌شود؟ این هم‌پوشانی از کجا ناشی می‌شود؟
+                </span>
+              </li>
+              <li>
+                <span class="q-num">۳</span>
+                <span class="q-text">
+                  نقش «ترانسمیتر» در سیستم اندازه‌گیری چیست و چه تفاوتی با سنسور دارد؟ چرا در صنعت از ترانسمیتر استفاده می‌شود؟
+                </span>
+              </li>
+              <li>
+                <span class="q-num">۴</span>
+                <span class="q-text">
+                  آیا یک <strong>پتانسیومتر</strong> می‌تواند هم سنسور و هم ترانسدیوسر باشد؟ چرا؟ استدلال خود را با بلوک‌دیاگرام نشان دهید.
+                </span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- ب) تمرین‌های عملی -->
+          <div class="exercise-group group-practical animate-in">
+            <div class="exercise-group-header">
+              <div class="exercise-group-icon"><i class="fas fa-flask"></i></div>
+              <div>
+                <h4>ب) تمرین‌های عملی</h4>
+                <div class="group-subtitle">شامل کار با دوربین گوشی و جستجوی مقالهٔ بین‌المللی</div>
+              </div>
+            </div>
+            <ul class="exercise-list">
+              <li>
+                <span class="q-num">۱</span>
+                <span class="q-text">
+                  <strong>کار با دوربین گوشی:</strong> از سه سنسور مختلف اطراف خود
+                  (دوربین گوشی، اثر انگشت، سنسور مجاورت) عکس بگیرید و برای هر کدام
+                  <em>کمیت فیزیکی اندازه‌گیری‌شده</em> و <em>نوع ترانسدیوسر</em> را مشخص کنید.
+                </span>
+              </li>
+              <li>
+                <span class="q-num">۲</span>
+                <span class="q-text">
+                  <strong>جستجوی مقاله:</strong> عبارت «<em>sensor vs transducer difference</em>» را
+                  در <strong>Google Scholar</strong> جستجو کنید، یک مقالهٔ معتبر بیابید و
+                  خلاصه‌ای ۵ خطی از تفاوت‌های ذکرشده ارائه دهید.
+                </span>
+              </li>
+              <li>
+                <span class="q-num">۳</span>
+                <span class="q-text">
+                  <strong>تمرین دسته‌بندی:</strong> جدولی از <strong>۱۰ وسیلهٔ اندازه‌گیری</strong>
+                  اطراف خود تهیه کنید و در سه ستون <em>سنسور / ترانسدیوسر / ترانسمیتر</em> دسته‌بندی کنید.
+                  برای هر مورد، دلیل انتخاب خود را در یک جمله بنویسید.
+                </span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- ج) تمرین نوشتاری -->
+          <div class="exercise-group group-written animate-in">
+            <div class="exercise-group-header">
+              <div class="exercise-group-icon"><i class="fas fa-pen-nib"></i></div>
+              <div>
+                <h4>ج) تمرین نوشتاری</h4>
+                <div class="group-subtitle">تحلیل و مستندسازی</div>
+              </div>
+            </div>
+            <ul class="exercise-list">
+              <li>
+                <span class="q-num">۱</span>
+                <span class="q-text">
+                  یک <strong>سیستم اندازه‌گیری واقعی</strong> (مثلاً ترموستات خانه،
+                  فشارسنج دیجیتال یا سنسور پارک خودرو) را انتخاب کنید و
+                  اجزای آن را بر اساس <em>بلوک‌دیاگرام سیستم اندازه‌گیری</em>
+                  (کمیت فیزیکی ← سنسور ← شرط‌سازی ← پردازش) تحلیل کنید.
+                </span>
+              </li>
+              <li>
+                <span class="q-num">۲</span>
+                <span class="q-text">
+                  در یک پاراگراف توضیح دهید چرا در سیستم‌های صنعتی،
+                  <strong>ترانسمیتر</strong> ترجیح داده می‌شود و صرفاً سنسور کافی نیست.
+                  به <em>انتقال سیگنال در فواصل طولانی</em> و <em>مصونیت در برابر نویز</em> اشاره کنید.
+                </span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- د) چالش خلاقانه -->
+          <div class="exercise-group group-challenge animate-in">
+            <div class="exercise-group-header">
+              <div class="exercise-group-icon"><i class="fas fa-star"></i></div>
+              <div>
+                <h4>د) چالش خلاقانهٔ کلاسی ★</h4>
+                <div class="group-subtitle">مسابقهٔ گروهی — امتیاز ویژه</div>
+              </div>
+            </div>
+            <div class="challenge-box">
+              <div class="challenge-title">
+                <i class="fas fa-trophy"></i>
+                «شکارچی سنسور» — Sensor Hunter Challenge
+              </div>
+              <p>
+                گروه‌های سه‌نفره در <strong>۱۰ دقیقه</strong> باید در محوطهٔ دانشکده
+                <strong>پنج سنسور متفاوت</strong> پیدا کرده و با عکس مستند کنند.
+                برای هر سنسور، <strong>کمیت فیزیکی</strong> و <strong>نوع ترانسدیوسر</strong> را مشخص نمایند.
+              </p>
+              <p>
+                🏆 <strong>معیار داوری:</strong> سرعت + صحت دسته‌بندی + خلاقیت در مستندسازی.
+                گروه برنده، امتیاز ویژهٔ کلاسی دریافت می‌کند.
+              </p>
+              <div class="challenge-footer">
+                <span class="tag"><i class="fas fa-clock"></i> ۱۰ دقیقه</span>
+                <span class="tag"><i class="fas fa-users"></i> گروه‌های سه‌نفره</span>
+                <span class="tag"><i class="fas fa-camera"></i> مستندسازی با عکس</span>
+                <span class="source"><i class="fas fa-bookmark"></i> منابع: ۱، ۳، ۱۹</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- اسلاید 11: چالش - اسلاید جداگانه -->
+    <section class="slide question-slide" data-slide="10">
+      <span class="question-icon" style="font-size:6rem;">🏆</span>
+      <h2 class="animate-in">جمع‌بندی نهایی</h2>
+      <p class="animate-in" style="font-size:1.5rem;">
+        در این جلسه یاد گرفتیم که:
+      </p>
+      <p class="animate-in" style="font-size:1.15rem; line-height: 2.2;">
+        <strong style="color: var(--accent);">سنسور</strong> کمیت فیزیکی را حس می‌کند،
+        <strong style="color: var(--success);">ترانسدیوسر</strong> انرژی را تبدیل می‌کند،
+        و <strong style="color: var(--purple);">ترانسمیتر</strong> سیگنال را برای انتقال آماده می‌سازد.
+      </p>
+      <div class="hint animate-in">
+        <i class="fas fa-lightbulb"></i>
+        جلسه بعد: <strong>سیگنال‌ها و استانداردهای صنعتی</strong>
+      </div>
+    </section>
+
+    <!-- اسلاید 12: پایان -->
+    <section class="slide end-slide" data-slide="11">
+      <span class="end-icon">🎓</span>
+      <h2 class="animate-in">پایان جلسه اول</h2>
+      <p class="animate-in">از توجه و همراهی شما سپاسگزارم</p>
+      <div class="next-session animate-in">
+        <div class="arrow-icon"><i class="fas fa-arrow-left"></i></div>
+        <div>
+          <div style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 4px;">جلسه بعدی:</div>
+          <div>سیگنال‌ها و استانداردهای صنعتی</div>
+        </div>
+      </div>
+      <p class="animate-in" style="margin-top: 40px; font-size: 0.95rem; color: rgba(255,255,255,0.6);">
+        <i class="fas fa-book" style="color: var(--accent);"></i> منابع پیشنهادی: Sensors and Transducers (Sinclair) — فصل ۱
+      </p>
+    </section>
+
+  </div>
+
+  <!-- ناوبری -->
+  <nav class="slide-nav">
+    <button class="nav-btn" id="prevBtn" title="اسلاید قبلی">
+      <i class="fas fa-chevron-right"></i>
+    </button>
+    <div class="slide-counter">
+      <span class="current" id="currentSlide">۱</span> / <span id="totalSlides">۱۲</span>
+    </div>
+    <button class="nav-btn" id="nextBtn" title="اسلاید بعدی">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+  </nav>
+
+  <!-- توست -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    (function() {
+      const slides = document.querySelectorAll('.slide');
+      const totalSlides = slides.length;
+      let currentIndex = 0;
+      let soundEnabled = true;
+      let musicEnabled = false;
+      let audioCtx = null;
+      let musicOscillators = [];
+
+      const progressBar = document.getElementById('progressBar');
+      const currentSlideSpan = document.getElementById('currentSlide');
+      const totalSlidesSpan = document.getElementById('totalSlides');
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const dotsNav = document.getElementById('dotsNav');
+      const toast = document.getElementById('toast');
+
+      totalSlidesSpan.textContent = toPersianNumber(totalSlides);
+
+      // ===== ستاره‌های پس‌زمینه =====
+      const starfield = document.getElementById('starfield');
+      for (let i = 0; i < 120; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        const size = Math.random() * 2.5 + 0.5;
+        star.style.width = size + 'px';
+        star.style.height = size + 'px';
+        star.style.left = Math.random() * 100 + '%';
+        star.style.top = Math.random() * 100 + '%';
+        star.style.animationDelay = Math.random() * 3 + 's';
+        star.style.animationDuration = (2 + Math.random() * 3) + 's';
+        const colors = ['#ffffff', '#ffb700', '#06b6d4', '#a855f7', '#00d4aa'];
+        star.style.color = colors[Math.floor(Math.random() * colors.length)];
+        star.style.background = 'currentColor';
+        starfield.appendChild(star);
+      }
+
+      // ===== نقاط ناوبری =====
+      slides.forEach((_, i) => {
+        const dot = document.createElement('div');
+        dot.className = 'dot' + (i === 0 ? ' active' : '');
+        dot.title = `اسلاید ${toPersianNumber(i + 1)}`;
+        dot.addEventListener('click', () => goToSlide(i));
+        dotsNav.appendChild(dot);
+      });
+
+      function toPersianNumber(num) {
+        const p = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+        return String(num).replace(/\d/g, d => p[d]);
+      }
+
+      // ===== صدا =====
+      function initAudio() {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+      }
+
+      function playClickSound() {
+        if (!soundEnabled) return;
+        try {
+          initAudio();
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.connect(gain); gain.connect(audioCtx.destination);
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.12);
+          gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
+          osc.start(); osc.stop(audioCtx.currentTime + 0.12);
+        } catch(e){}
+      }
+
+      function playTransitionSound() {
+        if (!soundEnabled) return;
+        try {
+          initAudio();
+          [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.type = 'sine';
+            osc.frequency.value = f;
+            const t = audioCtx.currentTime + i * 0.06;
+            gain.gain.setValueAtTime(0.05, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+            osc.start(t); osc.stop(t + 0.25);
+          });
+        } catch(e){}
+      }
+
+      function playSuccessSound() {
+        if (!soundEnabled) return;
+        try {
+          initAudio();
+          [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((f, i) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.type = 'triangle';
+            osc.frequency.value = f;
+            const t = audioCtx.currentTime + i * 0.08;
+            gain.gain.setValueAtTime(0.06, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+            osc.start(t); osc.stop(t + 0.3);
+          });
+        } catch(e){}
+      }
+
+      function startMusic() {
+        if (!audioCtx) initAudio();
+        if (musicOscillators.length > 0) return;
+        const notes = [130.81, 164.81, 196.00, 261.63];
+        notes.forEach((freq, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          const lfo = audioCtx.createOscillator();
+          const lfoGain = audioCtx.createGain();
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          lfo.connect(lfoGain);
+          lfoGain.connect(gain.gain);
+          lfo.frequency.value = 0.1 + idx * 0.05;
+          lfoGain.gain.value = 0.015;
+          gain.gain.value = 0.02 + idx * 0.005;
+          osc.start();
+          lfo.start();
+          musicOscillators.push({ osc, lfo, gain });
+        });
+      }
+
+      function stopMusic() {
+        musicOscillators.forEach(({ osc, lfo, gain }) => {
+          try {
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+            setTimeout(() => { try { osc.stop(); lfo.stop(); } catch(e){} }, 600);
+          } catch(e){}
+        });
+        musicOscillators = [];
+      }
+
+      // ===== ناوبری =====
+      function goToSlide(index) {
+        if (index < 0 || index >= totalSlides) return;
+        if (index === totalSlides - 1) playSuccessSound();
+        else playTransitionSound();
+
+        slides[currentIndex].classList.remove('active');
+        slides[index].classList.add('active');
+
+        document.querySelectorAll('.dot')[currentIndex].classList.remove('active');
+        document.querySelectorAll('.dot')[index].classList.add('active');
+
+        currentIndex = index;
+        currentSlideSpan.textContent = toPersianNumber(currentIndex + 1);
+
+        const progress = ((currentIndex + 1) / totalSlides) * 100;
+        progressBar.style.width = progress + '%';
+
+        prevBtn.disabled = currentIndex === 0;
+        nextBtn.disabled = currentIndex === totalSlides - 1;
+      }
+
+      function nextSlide() { goToSlide(currentIndex + 1); }
+      function prevSlide() { goToSlide(currentIndex - 1); }
+
+      nextBtn.addEventListener('click', nextSlide);
+      prevBtn.addEventListener('click', prevSlide);
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') nextSlide();
+        else if (e.key === 'ArrowRight') prevSlide();
+        else if (e.key === ' ') { e.preventDefault(); nextSlide(); }
+        else if (e.key === 'Home') goToSlide(0);
+        else if (e.key === 'End') goToSlide(totalSlides - 1);
+      });
+
+      let touchStartX = 0;
+      document.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+      }, { passive: true });
+      document.addEventListener('touchend', (e) => {
+        const diff = touchStartX - e.changedTouches[0].screenX;
+        if (Math.abs(diff) > 50) {
+          if (diff > 0) nextSlide();
+          else prevSlide();
+        }
+      }, { passive: true });
+
+      // ===== کنترل صدا =====
+      const soundToggle = document.getElementById('soundToggle');
+      soundToggle.addEventListener('click', () => {
+        soundEnabled = !soundEnabled;
+        soundToggle.classList.toggle('active', soundEnabled);
+        soundToggle.querySelector('i').className = soundEnabled ? 'fas fa-volume-up' : 'fas fa-volume-mute';
+        if (soundEnabled) playClickSound();
+      });
+
+      const musicToggle = document.getElementById('musicToggle');
+      musicToggle.addEventListener('click', () => {
+        musicEnabled = !musicEnabled;
+        musicToggle.classList.toggle('active', musicEnabled);
+        if (musicEnabled) {
+          initAudio();
+          startMusic();
+          showToast('<i class="fas fa-music"></i> موسیقی پس‌زمینه فعال شد');
+        } else {
+          stopMusic();
+          showToast('<i class="fas fa-volume-mute"></i> موسیقی خاموش شد');
+        }
+      });
+
+      document.getElementById('fullscreenBtn').addEventListener('click', () => {
+        playClickSound();
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen();
+          document.getElementById('fullscreenBtn').querySelector('i').className = 'fas fa-compress';
+        } else {
+          document.exitFullscreen();
+          document.getElementById('fullscreenBtn').querySelector('i').className = 'fas fa-expand';
+        }
+      });
+
+      // ===== توست =====
+      let toastTimeout;
+      function showToast(msg, duration = 2500) {
+        clearTimeout(toastTimeout);
+        toast.innerHTML = msg;
+        toast.classList.add('show');
+        toastTimeout = setTimeout(() => toast.classList.remove('show'), duration);
+      }
+
+      // ===== کلیک روی کارت‌ها =====
+      document.querySelectorAll('.block-box').forEach(box => {
+        box.addEventListener('click', () => {
+          playClickSound();
+          const label = box.querySelector('.block-label').textContent;
+          showToast(`<i class="fas fa-search"></i> ${label}`);
+        });
+      });
+
+      document.querySelectorAll('.comparison-card').forEach(card => {
+        card.addEventListener('click', () => {
+          playClickSound();
+          const title = card.querySelector('h3').textContent;
+          showToast(`<i class="fas fa-info-circle"></i> ${title}`);
+        });
+      });
+
+      document.querySelectorAll('.app-card').forEach(card => {
+        card.addEventListener('click', () => {
+          playClickSound();
+          const title = card.querySelector('h4').textContent;
+          showToast(`<i class="fas fa-star"></i> ${title}`);
+        });
+      });
+
+      document.querySelectorAll('.content-card').forEach(card => {
+        card.addEventListener('click', playClickSound);
+      });
+
+      // ===== کلیک روی تمرین‌ها =====
+      document.querySelectorAll('.exercise-list li').forEach(li => {
+        li.addEventListener('click', () => {
+          playClickSound();
+          showToast('<i class="fas fa-check-circle"></i> تمرین انتخاب شد', 1500);
+        });
+      });
+
+      // ===== مقداردهی اولیه =====
+      goToSlide(0);
+      setTimeout(() => {
+        showToast('<i class="fas fa-hand-sparkles"></i> خوش آمدید به جلسه اول — مفاهیم پایه اندازه‌گیری', 4000);
+      }, 800);
+    })();
+  </script>
+</body>
+</html>

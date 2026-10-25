@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>سیستم‌های اندازه‌گیری و کنترل — دکتر مسعود گوهری‌منش</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --primary: #1e3c72;
+      --secondary: #2a5298;
+      --accent: #ffb700;
+      --accent2: #ff6b35;
+      --success: #00d4aa;
+      --danger: #ff4757;
+      --purple: #a855f7;
+      --pink: #ec4899;
+      --cyan: #06b6d4;
+      --phase1: #1e3c72;
+      --phase2: #2a5298;
+      --phase3: #1e6f5c;
+      --phase4: #b86b1e;
+      --phase5: #6a2c70;
+      --phase6: #b33939;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Vazirmatn', 'Segoe UI', Tahoma, sans-serif;
+      background: linear-gradient(135deg, #f0f4fa 0%, #d9e2ef 50%, #e8eef8 100%);
+      color: #1a2639;
+      padding: 20px;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* ===== حباب‌های شناور ===== */
+    .bubble {
+      position: fixed;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.35);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 8px 32px rgba(0, 30, 60, 0.12);
+      animation: floatBubble 22s infinite ease-in-out;
+      pointer-events: none;
+      z-index: 0;
+    }
+    @keyframes floatBubble {
+      0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.5; }
+      50% { transform: translate(40px, -50px) scale(1.15); opacity: 0.85; }
+    }
+    .bubble:nth-child(1) { width: 130px; height: 130px; top: 8%; left: 4%; animation-duration: 25s; }
+    .bubble:nth-child(2) { width: 90px; height: 90px; top: 65%; left: 88%; animation-duration: 20s; animation-delay: 2s; }
+    .bubble:nth-child(3) { width: 220px; height: 220px; top: 35%; left: 75%; animation-duration: 30s; animation-delay: 5s; background: radial-gradient(circle, rgba(255,183,0,0.15), rgba(255,255,255,0.05)); }
+    .bubble:nth-child(4) { width: 70px; height: 70px; top: 80%; left: 12%; animation-duration: 18s; animation-delay: 1s; }
+    .bubble:nth-child(5) { width: 170px; height: 170px; top: 12%; left: 55%; animation-duration: 28s; animation-delay: 8s; background: radial-gradient(circle, rgba(168,85,247,0.12), rgba(255,255,255,0.05)); }
+
+    /* ===== ذرات نورانی ===== */
+    .particle {
+      position: fixed;
+      width: 4px;
+      height: 4px;
+      background: rgba(42, 82, 152, 0.4);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      animation: particleFloat 15s infinite linear;
+    }
+    @keyframes particleFloat {
+      0% { transform: translateY(100vh) scale(0); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(-100vh) scale(1); opacity: 0; }
+    }
+
+    .dashboard {
+      position: relative;
+      z-index: 10;
+      max-width: 1450px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* ===== هدر ===== */
+    .header {
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(20px);
+      border-radius: 32px;
+      padding: 32px 40px;
+      box-shadow: 0 20px 50px rgba(0, 20, 40, 0.15), inset 0 1px 4px rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      top: -50%; right: -20%;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(255, 183, 0, 0.08), transparent 70%);
+      pointer-events: none;
+    }
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      position: relative;
+      z-index: 1;
+    }
+    .header-left h1 {
+      font-size: 2.2rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #1e3c72, #2a5298, #ff6b35);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      line-height: 1.3;
+      animation: titleGradient 6s ease infinite;
+    }
+    @keyframes titleGradient {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    .header-left h1 i {
+      font-size: 2.4rem;
+      -webkit-text-fill-color: #2a5298;
+      animation: chipPulse 3s infinite ease-in-out;
+    }
+    @keyframes chipPulse {
+      0%, 100% { transform: rotate(-5deg) scale(1); }
+      50% { transform: rotate(5deg) scale(1.1); }
+    }
+    .instructor-info {
+      margin-top: 16px;
+      background: linear-gradient(135deg, rgba(30, 60, 114, 0.06), rgba(42, 82, 152, 0.04));
+      padding: 14px 22px;
+      border-radius: 18px;
+      border-right: 5px solid #2a5298;
+      display: inline-block;
+    }
+    .instructor-info .name {
+      font-weight: 800;
+      color: #1e3c72;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .instructor-info .title {
+      font-size: 0.9rem;
+      color: #4a5b7a;
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .header-badges {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: flex-end;
+    }
+    .header-badge {
+      background: linear-gradient(135deg, #2a5298, #1e3c72);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 60px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 8px 20px rgba(30, 60, 114, 0.35);
+      font-size: 0.9rem;
+    }
+    .header-badge.secondary {
+      background: linear-gradient(135deg, #ffb700, #ff6b35);
+      box-shadow: 0 8px 20px rgba(255, 183, 0, 0.35);
+    }
+
+    /* ===== نوار آمار ===== */
+    .stats-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 14px;
+    }
+    .stat-mini {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 18px 16px;
+      text-align: center;
+      box-shadow: 0 8px 20px rgba(0, 20, 40, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-mini::before {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 100%; height: 3px;
+      background: linear-gradient(90deg, #2a5298, #ffb700);
+      transform: scaleX(0);
+      transition: transform 0.4s ease;
+    }
+    .stat-mini:hover::before { transform: scaleX(1); }
+    .stat-mini:hover { transform: translateY(-4px); box-shadow: 0 15px 35px rgba(30, 60, 114, 0.12); }
+    .stat-mini i { font-size: 1.6rem; color: #2a5298; margin-bottom: 8px; display: block; }
+    .stat-mini .num {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: #1e3c72;
+      line-height: 1;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-mini .lbl { font-size: 0.78rem; color: #4a5b7a; font-weight: 600; margin-top: 4px; }
+
+    /* ===== بخش عنوان جلسات ===== */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding: 8px 8px 0;
+    }
+    .section-title {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: #1e3c72;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .section-title i {
+      font-size: 1.8rem;
+      color: #2a5298;
+    }
+    .legend-box {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(10px);
+      padding: 10px 18px;
+      border-radius: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.9);
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #4a5b7a;
+    }
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      box-shadow: 0 0 8px currentColor;
+    }
+
+    /* ===== فازها ===== */
+    .phases-container {
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+    .phase-section {
+      background: rgba(255, 255, 255, 0.55);
+      backdrop-filter: blur(15px);
+      border-radius: 32px;
+      padding: 26px;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      box-shadow: 0 15px 40px rgba(0, 20, 40, 0.07);
+    }
+    .phase-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 2px solid rgba(42, 82, 152, 0.1);
+      flex-wrap: wrap;
+    }
+    .phase-number {
+      width: 50px; height: 50px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      font-weight: 900;
+      color: white;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+    .phase-info h3 {
+      font-size: 1.25rem;
+      color: #1e3c72;
+      font-weight: 800;
+    }
+    .phase-info p {
+      font-size: 0.85rem;
+      color: #5a6b8a;
+      margin-top: 2px;
+    }
+    .phase-sessions-count {
+      margin-right: auto;
+      background: rgba(42, 82, 152, 0.1);
+      color: #2a5298;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    /* ===== کارت جلسه ===== */
+    .sessions-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 18px;
+    }
+
+    .session-card {
+      background: white;
+      border-radius: 24px;
+      padding: 0;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+      border: 1px solid rgba(30, 60, 114, 0.08);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .session-card.available {
+      cursor: pointer;
+    }
+    .session-card.available:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 25px 50px rgba(30, 60, 114, 0.18);
+      border-color: rgba(42, 82, 152, 0.35);
+    }
+    .session-card.coming-soon {
+      opacity: 0.75;
+      cursor: not-allowed;
+    }
+    .session-card.coming-soon:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 15px 35px rgba(30, 60, 114, 0.1);
+    }
+
+    /* نوار بالای کارت - رنگ فاز */
+    .card-phase-bar {
+      height: 5px;
+      width: 100%;
+    }
+    .card-phase-1 { background: linear-gradient(90deg, #1e3c72, #2a5298); }
+    .card-phase-2 { background: linear-gradient(90deg, #2a5298, #4a72c8); }
+    .card-phase-3 { background: linear-gradient(90deg, #1e6f5c, #00d4aa); }
+    .card-phase-4 { background: linear-gradient(90deg, #b86b1e, #ffb700); }
+    .card-phase-5 { background: linear-gradient(90deg, #6a2c70, #ec4899); }
+    .card-phase-6 { background: linear-gradient(90deg, #b33939, #ff4757); }
+
+    .card-body {
+      padding: 22px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+      gap: 10px;
+    }
+    .card-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 42px;
+      height: 42px;
+      padding: 0 12px;
+      border-radius: 12px;
+      font-weight: 900;
+      font-size: 1.05rem;
+      color: white;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+      flex-shrink: 0;
+    }
+    .card-phase-1 .card-number { background: linear-gradient(135deg, #1e3c72, #2a5298); }
+    .card-phase-2 .card-number { background: linear-gradient(135deg, #2a5298, #4a72c8); }
+    .card-phase-3 .card-number { background: linear-gradient(135deg, #1e6f5c, #00d4aa); }
+    .card-phase-4 .card-number { background: linear-gradient(135deg, #b86b1e, #ffb700); }
+    .card-phase-5 .card-number { background: linear-gradient(135deg, #6a2c70, #ec4899); }
+    .card-phase-6 .card-number { background: linear-gradient(135deg, #b33939, #ff4757); }
+
+    .card-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+    }
+    .card-status.ready {
+      background: rgba(0, 212, 170, 0.15);
+      color: #1e6f5c;
+      border: 1px solid rgba(0, 212, 170, 0.4);
+    }
+    .card-status.coming {
+      background: rgba(255, 183, 0, 0.15);
+      color: #b86b1e;
+      border: 1px solid rgba(255, 183, 0, 0.4);
+    }
+    .card-status.ready i { animation: pulseReady 2s infinite; }
+    @keyframes pulseReady {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+    }
+
+    .session-card h3 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #1a2639;
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+
+    .card-meta {
+      display: flex;
+      gap: 12px;
+      font-size: 0.76rem;
+      color: #6a7896;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .card-meta span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .card-meta i { color: #2a5298; font-size: 0.85rem; }
+
+    .card-objective {
+      font-size: 0.82rem;
+      color: #5a6b8a;
+      line-height: 1.65;
+      padding-top: 12px;
+      border-top: 1px dashed rgba(0,0,0,0.07);
+      margin-top: auto;
+      margin-bottom: 16px;
+    }
+
+    .card-action {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 12px 18px;
+      border-radius: 14px;
+      font-weight: 800;
+      font-size: 0.9rem;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Vazirmatn', sans-serif;
+      text-decoration: none;
+    }
+
+    .card-action.enter-btn {
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: white;
+      box-shadow: 0 6px 15px rgba(30, 60, 114, 0.3);
+    }
+    .card-action.enter-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 25px rgba(30, 60, 114, 0.45);
+      background: linear-gradient(135deg, #2a5298, #4a72c8);
+    }
+    .card-action.enter-btn i { transition: transform 0.3s ease; }
+    .card-action.enter-btn:hover i { transform: translateX(-5px); }
+
+    .card-action.soon-btn {
+      background: rgba(255, 183, 0, 0.12);
+      color: #b86b1e;
+      border: 2px dashed rgba(255, 183, 0, 0.5);
+      cursor: not-allowed;
+    }
+    .card-action.soon-btn i { animation: hourglass 3s infinite ease-in-out; }
+    @keyframes hourglass {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(180deg); }
+    }
+
+    /* ===== بخش اطلاعات دوره ===== */
+    .info-section {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(15px);
+      border-radius: 28px;
+      padding: 28px;
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      box-shadow: 0 15px 40px rgba(0, 20, 40, 0.07);
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+    }
+    .info-card {
+      background: linear-gradient(135deg, #f8faff, #eef4ff);
+      border-radius: 20px;
+      padding: 22px;
+      border-right: 5px solid #2a5298;
+      transition: all 0.3s ease;
+    }
+    .info-card:hover {
+      transform: translateX(-6px);
+      box-shadow: 0 12px 25px rgba(30, 60, 114, 0.1);
+    }
+    .info-card i {
+      font-size: 1.8rem;
+      color: #2a5298;
+      margin-bottom: 12px;
+      display: block;
+    }
+    .info-card h4 {
+      font-size: 1rem;
+      color: #1e3c72;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .info-card p {
+      font-size: 0.85rem;
+      color: #4a5b7a;
+      line-height: 1.7;
+    }
+
+    /* ===== فوتر ===== */
+    .footer {
+      text-align: center;
+      padding: 26px 20px;
+      color: #4a5b7a;
+      font-size: 0.9rem;
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(12px);
+      border-radius: 30px;
+      margin-top: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+    .footer strong {
+      color: #1e3c72;
+      font-weight: 800;
+    }
+    .footer .powered {
+      margin-top: 10px;
+      font-size: 0.8rem;
+      color: #8a94a8;
+      letter-spacing: 0.5px;
+    }
+
+    /* ===== دکمه بازگشت به بالا ===== */
+    .back-to-top {
+      position: fixed;
+      bottom: 30px;
+      left: 30px;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: white;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      box-shadow: 0 10px 25px rgba(30, 60, 114, 0.4);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(20px);
+      transition: all 0.3s ease;
+      z-index: 100;
+    }
+    .back-to-top.visible {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    .back-to-top:hover {
+      transform: translateY(-5px) scale(1.08);
+      box-shadow: 0 15px 35px rgba(30, 60, 114, 0.5);
+    }
+
+    /* ===== توست ===== */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: rgba(30, 60, 114, 0.96);
+      color: white;
+      padding: 14px 24px;
+      border-radius: 60px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transform: translateX(200px);
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      max-width: 80vw;
+    }
+    .toast.show {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    .toast i { color: #ffb700; font-size: 1.1rem; }
+
+    /* ===== ریسپانسیو ===== */
+    @media (max-width: 768px) {
+      body { padding: 12px; }
+      .header { padding: 22px 20px; }
+      .header-left h1 { font-size: 1.5rem; }
+      .header-left h1 i { font-size: 1.6rem; }
+      .instructor-info { padding: 12px 16px; }
+      .instructor-info .name { font-size: 0.95rem; }
+      .instructor-info .title { font-size: 0.8rem; }
+      .header-badges { align-items: flex-start; }
+      .header-badge { font-size: 0.8rem; padding: 10px 18px; }
+      .section-title { font-size: 1.2rem; }
+      .phase-section { padding: 20px 16px; }
+      .sessions-row { grid-template-columns: 1fr; }
+      .phase-number { width: 42px; height: 42px; font-size: 1.1rem; }
+      .phase-info h3 { font-size: 1.05rem; }
+      .back-to-top { bottom: 20px; left: 20px; width: 46px; height: 46px; }
+      .toast { right: 12px; left: 12px; bottom: 20px; transform: translateY(100px); }
+      .toast.show { transform: translateY(0); }
+    }
+
+    /* ===== اسکرول‌بار ===== */
+    ::-webkit-scrollbar { width: 10px; }
+    ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.05); }
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #2a5298, #1e3c72);
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #ffb700, #ff6b35); }
+
+    /* ===== انیمیشن ورود کارت‌ها ===== */
+    @keyframes cardFadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .session-card {
+      animation: cardFadeIn 0.5s ease backwards;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- حباب‌های شناور -->
+  <div class="bubble"></div>
+  <div class="bubble"></div>
+  <div class="bubble"></div>
+  <div class="bubble"></div>
+  <div class="bubble"></div>
+
+  <div class="dashboard">
+
+    <!-- ===== هدر ===== -->
+    <header class="header">
+      <div class="header-content">
+        <div class="header-left">
+          <h1>
+            <i class="fas fa-microchip"></i>
+            سیستم‌های اندازه‌گیری و کنترل
+          </h1>
+          <div class="instructor-info">
+            <div class="name">
+              <i class="fas fa-user-tie"></i>
+              دکتر مسعود گوهری‌منش
+            </div>
+            <div class="title">
+              <i class="fas fa-university"></i>
+              دانشیار گروه مهندسی مکانیک دانشگاه تربت حیدریه
+            </div>
+          </div>
+        </div>
+        <div class="header-badges">
+          <div class="header-badge">
+            <i class="fas fa-calendar-alt"></i>
+            ۲۴ جلسه | ۶ فاز
+          </div>
+          <div class="header-badge secondary">
+            <i class="fas fa-rocket"></i>
+            ۲ جلسه آماده | ۲۲ به‌زودی
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ===== نوار آمار ===== -->
+    <div class="stats-strip">
+      <div class="stat-mini">
+        <i class="fas fa-book-open"></i>
+        <div class="num">۲</div>
+        <div class="lbl">جلسه آماده</div>
+      </div>
+      <div class="stat-mini">
+        <i class="fas fa-hourglass-half"></i>
+        <div class="num">۲۲</div>
+        <div class="lbl">به‌زودی</div>
+      </div>
+      <div class="stat-mini">
+        <i class="fas fa-layer-group"></i>
+        <div class="num">۶</div>
+        <div class="lbl">فاز آموزشی</div>
+      </div>
+      <div class="stat-mini">
+        <i class="fas fa-project-diagram"></i>
+        <div class="num">۲۰</div>
+        <div class="lbl">پروژه پایانی</div>
+      </div>
+      <div class="stat-mini">
+        <i class="fas fa-flask"></i>
+        <div class="num">۱۰+</div>
+        <div class="lbl">سنسور</div>
+      </div>
+    </div>
+
+    <!-- ===== عنوان جلسات ===== -->
+    <div class="section-header">
+      <div class="section-title">
+        <i class="fas fa-list-ul"></i>
+        جلسات دوره
+      </div>
+      <div class="legend-box">
+        <div class="legend-item">
+          <span class="legend-dot" style="background: #00d4aa; color: #00d4aa;"></span>
+          آماده
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot" style="background: #ffb700; color: #ffb700;"></span>
+          به‌زودی
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== فازها ===== -->
+    <div class="phases-container" id="phasesContainer"></div>
+
+    <!-- ===== اطلاعات دوره ===== -->
+    <div class="info-section">
+      <div class="section-title" style="margin-bottom: 22px;">
+        <i class="fas fa-info-circle"></i>
+        درباره دوره
+      </div>
+      <div class="info-grid">
+        <div class="info-card">
+          <i class="fas fa-graduation-cap"></i>
+          <h4>سطح و مخاطب</h4>
+          <p>دانشجویان کارشناسی مهندسی برق، مکانیک، مکاترونیک و رباتیک</p>
+        </div>
+        <div class="info-card">
+          <i class="fas fa-clock"></i>
+          <h4>ساختار</h4>
+          <p>۲۴ جلسه ۹۰ دقیقه‌ای — ۶ فاز آموزشی — ۲۰ پروژه زنجیره‌ای</p>
+        </div>
+        <div class="info-card">
+          <i class="fas fa-microchip"></i>
+          <h4>رویکرد عملیاتی</h4>
+          <p>یادگیری پروژه‌محور بر پایه Arduino UNO، ESP32 و ESP32-CAM</p>
+        </div>
+        <div class="info-card">
+          <i class="fas fa-flask"></i>
+          <h4>سخت‌افزار مورد نیاز</h4>
+          <p>Arduino، ESP32، DHT22، BMP280، HC-SR04، PIR، MPU6050 و ...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== فوتر ===== -->
+    <footer class="footer">
+      <div>
+        <i class="fas fa-graduation-cap" style="color: #2a5298; font-size: 1.3rem;"></i>
+        <strong style="margin-right: 8px;">سیستم‌های اندازه‌گیری و کنترل</strong>
+      </div>
+      <div style="margin-top: 8px; font-size: 0.82rem;">
+        دکتر مسعود گوهری‌منش — دانشگاه تربت حیدریه
+      </div>
+      <div class="powered">
+        Powered by M. Goharimanesh
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- دکمه بازگشت به بالا -->
+  <button class="back-to-top" id="backToTop" title="بازگشت به بالا">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+
+  <!-- توست -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ===== داده‌های فازها و جلسات =====
+    const phases = [
+      {
+        number: 1,
+        title: 'فاز ۱: مبانی نظری',
+        subtitle: 'مفاهیم پایه، سیگنال‌ها، SI، عدم‌قطعیت',
+        color: '#1e3c72',
+        sessions: [
+          { id: 1, title: 'مفاهیم پایه اندازه‌گیری', type: 'نظری', objective: 'تفاوت سنسور، ترانسدیوسر و ترانسمیتر با مثال', ready: true, link: 'sessions/session-01/index.html' },
+          { id: 2, title: 'سیگنال‌ها و استانداردهای صنعتی', type: 'نظری', objective: 'آنالوگ، دیجیتال، ۴-۲۰mA و PWM', ready: true, link: 'sessions/session-02/index.html' },
+          { id: 3, title: 'دستگاه بین‌المللی یکاها (SI)', type: 'نظری', objective: 'کمیت‌های SI و تحلیل دیمانسپون', ready: false },
+          { id: 4, title: 'مشخصات سنسور و عدم قطعیت', type: 'نظری', objective: 'دقت، صحت و بودجه عدم قطعیت', ready: false }
+        ]
+      },
+      {
+        number: 2,
+        title: 'فاز ۲: مهارت‌های پایه Arduino',
+        subtitle: 'برنامه‌نویسی، I/O، نمایشگر، دما',
+        color: '#2a5298',
+        sessions: [
+          { id: 5, title: 'آشنایی با Arduino', type: 'عملی', objective: 'نصب IDE و اولین برنامه Blink', ready: false },
+          { id: 6, title: 'ورودی/خروجی آنالوگ و دیجیتال', type: 'عملی', objective: 'analogRead، digitalRead و PWM', ready: false },
+          { id: 7, title: 'نمایشگر OLED و LCD', type: 'عملی', objective: 'پروتکل I2C و راه‌اندازی OLED', ready: false },
+          { id: 8, title: 'اندازه‌گیری دما', type: 'عملی', objective: 'LM35، DHT22 و DS18B20', ready: false }
+        ]
+      },
+      {
+        number: 3,
+        title: 'فاز ۳: سنسورهای پایه',
+        subtitle: 'فشار، فاصله، مجاورت، سطح و دبی + میان‌ترم',
+        color: '#1e6f5c',
+        sessions: [
+          { id: 9, title: 'اندازه‌گیری فشار', type: 'عملی', objective: 'Bourdon، کرنش‌سنج و BMP280', ready: false },
+          { id: 10, title: 'فاصله‌سنج اولتراسونیک', type: 'عملی', objective: 'HC-SR04 و زمان پرواز صوت', ready: false },
+          { id: 11, title: 'سنسورهای مجاورتی', type: 'عملی', objective: 'PIR، القایی و نوری', ready: false },
+          { id: 12, title: 'سطح و دبی سیال + میان‌ترم', type: 'عملی + آزمون', objective: 'سطح‌سنجی و فلومتر مغناطیسی', ready: false }
+        ]
+      },
+      {
+        number: 4,
+        title: 'فاز ۴: سنسورهای پیشرفته',
+        subtitle: 'هال، شتاب/ژیرو، ESP32-CAM، پروژه تصویری',
+        color: '#b86b1e',
+        sessions: [
+          { id: 13, title: 'اثر هال و اندازه‌گیری سرعت', type: 'عملی', objective: 'Hall Effect و RPM', ready: false },
+          { id: 14, title: 'شتاب‌سنج و ژیروسکوپ', type: 'عملی', objective: 'ADXL345 و MPU6050', ready: false },
+          { id: 15, title: 'آشنایی با ESP32-CAM', type: 'عملی', objective: 'وب‌سرور تصویری زنده', ready: false },
+          { id: 16, title: 'پروژه تصویری: ذخیره‌سازی و نظارت', type: 'عملی', objective: 'ذخیره روی SD و نظارت', ready: false }
+        ]
+      },
+      {
+        number: 5,
+        title: 'فاز ۵: IoT و تحلیل داده',
+        subtitle: 'پروژه ترکیبی، MQTT، Python، ایمنی خودرو',
+        color: '#6a2c70',
+        sessions: [
+          { id: 17, title: 'پروژه ترکیبی: دما + تصویر', type: 'عملی', objective: 'هشدار Telegram شرطی', ready: false },
+          { id: 18, title: 'مبانی اینترنت اشیا (IoT)', type: 'عملی', objective: 'MQTT و ThingsBoard', ready: false },
+          { id: 19, title: 'تحلیل داده با Python', type: 'عملی', objective: 'PySerial و Matplotlib', ready: false },
+          { id: 20, title: 'ایمنی خودرو و سنسورهای برخورد', type: 'عملی', objective: 'Airbag و تست تصادف', ready: false }
+        ]
+      },
+      {
+        number: 6,
+        title: 'فاز ۶: پروژه و یکپارچه‌سازی',
+        subtitle: 'رفع اشکال، ارائه‌ها، دموی جامع نهایی',
+        color: '#b33939',
+        sessions: [
+          { id: 21, title: 'مرور، رفع اشکال و مشاوره', type: 'مشاوره', objective: 'کلینیک پروژه و مشاوره', ready: false },
+          { id: 22, title: 'ارائه پروژه‌ها - بخش اول', type: 'ارائه', objective: '۱۰ پروژه اول', ready: false },
+          { id: 23, title: 'ارائه پروژه‌ها - بخش دوم', type: 'ارائه', objective: '۱۰ پروژه دوم', ready: false },
+          { id: 24, title: 'یکپارچه‌سازی نهایی و دموی جامع', type: 'دموی نهایی', objective: 'سیستم پایش هوشمند کامل', ready: false }
+        ]
+      }
+    ];
+
+    // ===== رندر فازها و کارت‌های جلسه =====
+    const phasesContainer = document.getElementById('phasesContainer');
+
+    phases.forEach((phase, phaseIdx) => {
+      const phaseDiv = document.createElement('div');
+      phaseDiv.className = 'phase-section';
+
+      const readyCount = phase.sessions.filter(s => s.ready).length;
+
+      phaseDiv.innerHTML = `
+        <div class="phase-header">
+          <div class="phase-number" style="background: linear-gradient(135deg, ${phase.color}, ${shadeColor(phase.color, 20)});">
+            ${toPersian(phase.number)}
+          </div>
+          <div class="phase-info">
+            <h3>${phase.title}</h3>
+            <p>${phase.subtitle}</p>
+          </div>
+          <div class="phase-sessions-count">
+            <i class="fas fa-video"></i>
+            ${toPersian(readyCount)} از ${toPersian(phase.sessions.length)} آماده
+          </div>
+        </div>
+        <div class="sessions-row" id="phase-${phase.number}-row"></div>
+      `;
+      phasesContainer.appendChild(phaseDiv);
+
+      const row = phaseDiv.querySelector(`#phase-${phase.number}-row`);
+
+      phase.sessions.forEach((session, idx) => {
+        const card = document.createElement('div');
+        card.className = `session-card ${session.ready ? 'available' : 'coming-soon'}`;
+        card.style.animationDelay = `${(phaseIdx * 0.05) + (idx * 0.08)}s`;
+
+        const phaseClass = `card-phase-${phase.number}`;
+
+        card.innerHTML = `
+          <div class="card-phase-bar ${phaseClass}"></div>
+          <div class="card-body ${phaseClass}">
+            <div class="card-top">
+              <div class="card-number">${toPersian(session.id)}</div>
+              ${session.ready
+                ? `<span class="card-status ready"><i class="fas fa-circle"></i> آماده</span>`
+                : `<span class="card-status coming"><i class="fas fa-hourglass-half"></i> به‌زودی</span>`
+              }
+            </div>
+            <h3>${session.title}</h3>
+            <div class="card-meta">
+              <span><i class="fas fa-clock"></i> ۹۰ دقیقه</span>
+              <span><i class="fas fa-tag"></i> ${session.type}</span>
+            </div>
+            <div class="card-objective">
+              <i class="fas fa-bullseye" style="color: ${phase.color}; margin-left: 4px;"></i>
+              ${session.objective}
+            </div>
+            ${session.ready
+              ? `<a href="${session.link}" class="card-action enter-btn">
+                   <i class="fas fa-arrow-left"></i>
+                   ورود به جلسه
+                 </a>`
+              : `<button class="card-action soon-btn" disabled>
+                   <i class="fas fa-hourglass-half"></i>
+                   در حال آماده‌سازی
+                 </button>`
+            }
+          </div>
+        `;
+
+        // کلیک روی کارت‌های آماده
+        if (session.ready) {
+          card.addEventListener('click', (e) => {
+            // اگر روی لینک کلیک نشده
+            if (!e.target.closest('.card-action')) {
+              playClickSound();
+              showToast(`<i class="fas fa-rocket"></i> در حال ورود به جلسه ${toPersian(session.id)}...`);
+              setTimeout(() => {
+                window.location.href = session.link;
+              }, 600);
+            }
+          });
+        } else {
+          card.addEventListener('click', () => {
+            playClickSound();
+            showToast(`<i class="fas fa-hourglass-half"></i> جلسه ${toPersian(session.id)} به‌زودی آماده می‌شود`);
+          });
+        }
+
+        // افکت صوتی روی دکمه ورود
+        const enterBtn = card.querySelector('.enter-btn');
+        if (enterBtn) {
+          enterBtn.addEventListener('click', () => {
+            playClickSound();
+          });
+        }
+
+        row.appendChild(card);
+      });
+    });
+
+    // ===== توابع کمکی =====
+    function toPersian(num) {
+      const persian = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+      return String(num).replace(/\d/g, d => persian[d]);
+    }
+
+    function shadeColor(color, percent) {
+      const num = parseInt(color.replace('#',''), 16);
+      const amt = Math.round(2.55 * percent);
+      const R = Math.min(255, Math.max(0, (num >> 16) + amt));
+      const G = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amt));
+      const B = Math.min(255, Math.max(0, (num & 0x0000FF) + amt));
+      return '#' + (0x1000000 + R*0x10000 + G*0x100 + B).toString(16).slice(1);
+    }
+
+    // ===== صدا =====
+    let soundEnabled = true;
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playClickSound() {
+      if (!soundEnabled) return;
+      try {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.12);
+      } catch(e){}
+    }
+
+    // ===== توست =====
+    const toastEl = document.getElementById('toast');
+    let toastTimeout;
+
+    function showToast(msg) {
+      clearTimeout(toastTimeout);
+      toastEl.innerHTML = msg;
+      toastEl.classList.add('show');
+      toastTimeout = setTimeout(() => {
+        toastEl.classList.remove('show');
+      }, 2800);
+    }
+
+    // ===== دکمه بازگشت به بالا =====
+    const backToTop = document.getElementById('backToTop');
+
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 300) {
+        backToTop.classList.add('visible');
+      } else {
+        backToTop.classList.remove('visible');
+      }
+    });
+
+    backToTop.addEventListener('click', () => {
+      playClickSound();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // ===== ذرات نورانی =====
+    function createParticles() {
+      for (let i = 0; i < 15; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.animationDelay = Math.random() * 15 + 's';
+        p.style.animationDuration = (12 + Math.random() * 10) + 's';
+        const colors = ['rgba(42, 82, 152, 0.5)', 'rgba(255, 183, 0, 0.5)', 'rgba(168, 85, 247, 0.4)', 'rgba(0, 212, 170, 0.4)'];
+        p.style.background = colors[Math.floor(Math.random() * colors.length)];
+        p.style.boxShadow = `0 0 10px ${p.style.background}`;
+        document.body.appendChild(p);
+      }
+    }
+
+    // ===== مقداردهی اولیه =====
+    createParticles();
+
+    setTimeout(() => {
+      showToast('<i class="fas fa-hand-sparkles"></i> به دوره سیستم‌های اندازه‌گیری و کنترل خوش آمدید');
+    }, 800);
+
+    console.log('✅ صفحه اصلی آماده است');
+  </script>
+</body>
+</html>
