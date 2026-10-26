@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>جلسه ۷: نمایشگر OLED و LCD — سیستم‌های اندازه‌گیری و کنترل</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;300;400;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --accent: #ffb700; --accent2: #ff6b35; --success: #00d4aa;
+      --danger: #ff4757; --purple: #a855f7; --pink: #ec4899;
+      --cyan: #06b6d4; --dark: #050818; --wokwi: #00979c;
+    }
+    html, body {
+      font-family: 'Vazirmatn', sans-serif; background: #050818;
+      color: white; height: 100vh; overflow: hidden; position: relative;
+    }
+    .starfield {
+      position: fixed; inset: 0; z-index: 1;
+      background:
+        radial-gradient(ellipse at 20% 30%, rgba(102, 126, 234, 0.35) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 70%, rgba(240, 147, 251, 0.25) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(0, 212, 170, 0.15) 0%, transparent 60%),
+        linear-gradient(135deg, #050818 0%, #0f1c3f 50%, #1a1f3a 100%);
+    }
+    .star {
+      position: absolute; background: white; border-radius: 50%;
+      animation: twinkle 3s infinite ease-in-out; pointer-events: none;
+      box-shadow: 0 0 6px currentColor;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.5); }
+    }
+    .neon-bubble {
+      position: fixed; border-radius: 50%; filter: blur(60px);
+      opacity: 0.5; animation: floatBubble 25s infinite ease-in-out;
+      pointer-events: none; z-index: 2;
+    }
+    @keyframes floatBubble {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(60px, -80px) scale(1.2); }
+      66% { transform: translate(-40px, 60px) scale(0.9); }
+    }
+    .neon-bubble:nth-child(1) { width: 400px; height: 400px; top: -10%; left: -5%; background: #6d28d9; animation-duration: 22s; }
+    .neon-bubble:nth-child(2) { width: 350px; height: 350px; top: 60%; right: -8%; background: #ff6b35; animation-duration: 28s; animation-delay: 3s; }
+    .neon-bubble:nth-child(3) { width: 300px; height: 300px; bottom: -10%; left: 30%; background: #00d4aa; animation-duration: 25s; animation-delay: 5s; }
+    .neon-bubble:nth-child(4) { width: 250px; height: 250px; top: 30%; right: 30%; background: #ec4899; animation-duration: 30s; animation-delay: 8s; }
+    .progress-bar {
+      position: fixed; top: 0; right: 0; height: 5px;
+      background: linear-gradient(90deg, #06b6d4, #a855f7, #ff6b35, #ffb700, #06b6d4);
+      background-size: 400% 100%; width: 0%;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 1000; box-shadow: 0 0 20px rgba(255, 183, 0, 0.8);
+      animation: gradientFlow 3s linear infinite;
+    }
+    @keyframes gradientFlow {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 400% 50%; }
+    }
+    .slide-header {
+      position: fixed; top: 20px; right: 20px; left: 20px;
+      display: flex; justify-content: space-between; align-items: center;
+      z-index: 100; padding: 14px 28px;
+      background: rgba(10, 14, 39, 0.65); backdrop-filter: blur(25px) saturate(180%);
+      border-radius: 60px; border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .slide-header .logo { display: flex; align-items: center; gap: 14px; font-weight: 800; font-size: 1rem; }
+    .slide-header .logo-icon {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 12px; display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; color: white; box-shadow: 0 8px 20px rgba(255, 183, 0, 0.4);
+      animation: chipPulse 3s infinite ease-in-out;
+    }
+    @keyframes chipPulse {
+      0%, 100% { box-shadow: 0 8px 20px rgba(255, 183, 0, 0.4); }
+      50% { box-shadow: 0 8px 40px rgba(255, 183, 0, 0.8); }
+    }
+    .slide-header .slide-info { display: flex; align-items: center; gap: 20px; font-size: 0.9rem; color: rgba(255, 255, 255, 0.85); }
+    .slide-header .slide-info i { color: var(--accent); margin-left: 6px; }
+    .controls {
+      position: fixed; top: 100px; left: 20px;
+      display: flex; flex-direction: column; gap: 10px; z-index: 100;
+    }
+    .ctrl-btn {
+      width: 50px; height: 50px; border-radius: 16px;
+      background: rgba(10, 14, 39, 0.7); backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.15); color: white;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.3s ease; font-size: 1.1rem;
+    }
+    .ctrl-btn:hover { transform: translateY(-4px) scale(1.05); border-color: var(--accent); box-shadow: 0 10px 30px rgba(255, 183, 0, 0.4); }
+    .ctrl-btn.active { background: linear-gradient(135deg, var(--accent), var(--accent2)); }
+    .slides-container { width: 100%; height: 100vh; position: relative; z-index: 10; }
+    .slide {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      padding: 110px 40px 130px; opacity: 0; visibility: hidden;
+      transform: scale(0.9) rotateY(15deg);
+      transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1); overflow-y: auto;
+    }
+    .slide.active { opacity: 1; visibility: visible; transform: scale(1) rotateY(0deg); }
+    .animate-in { opacity: 0; transform: translateY(40px); transition: all 1s cubic-bezier(0.4, 0, 0.2, 1); }
+    .slide.active .animate-in { opacity: 1; transform: translateY(0); }
+    .slide.active .animate-in:nth-child(1) { transition-delay: 0.15s; }
+    .slide.active .animate-in:nth-child(2) { transition-delay: 0.3s; }
+    .slide.active .animate-in:nth-child(3) { transition-delay: 0.45s; }
+    .slide.active .animate-in:nth-child(4) { transition-delay: 0.6s; }
+    .slide.active .animate-in:nth-child(5) { transition-delay: 0.75s; }
+    .slide.active .animate-in:nth-child(6) { transition-delay: 0.9s; }
+    .title-slide { text-align: center; position: relative; }
+    .title-slide .hero-bg { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0.35; z-index: -1; }
+    .title-slide .hero-overlay { position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(5,8,24,0.3) 0%, rgba(5,8,24,0.85) 70%); z-index: -1; }
+    .title-slide .main-icon {
+      font-size: 7rem; margin-bottom: 30px; display: inline-block;
+      background: linear-gradient(135deg, #ffb700, #ff6b35, #ec4899);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; filter: drop-shadow(0 0 40px rgba(255, 183, 0, 0.6));
+      animation: iconFloat 3s infinite ease-in-out;
+    }
+    @keyframes iconFloat { 0%, 100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-20px) rotate(5deg); } }
+    .title-slide .badge {
+      display: inline-flex; align-items: center; gap: 12px;
+      background: linear-gradient(135deg, rgba(255, 183, 0, 0.15), rgba(255, 107, 53, 0.1));
+      border: 2px solid rgba(255, 183, 0, 0.5); padding: 12px 28px;
+      border-radius: 60px; color: var(--accent); font-weight: 700;
+      margin-bottom: 25px; font-size: 1rem; backdrop-filter: blur(10px);
+    }
+    .badge .pulse-dot { width: 10px; height: 10px; background: var(--accent); border-radius: 50%; animation: pulseDot 1.5s infinite; }
+    @keyframes pulseDot { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 183, 0, 0.7); } 50% { transform: scale(1.2); box-shadow: 0 0 0 12px rgba(255, 183, 0, 0); } }
+    .title-slide h1 {
+      font-size: 4rem; font-weight: 900;
+      background: linear-gradient(135deg, #ffffff 0%, #ffb700 40%, #ff6b35 70%, #ec4899 100%);
+      background-size: 200% 200%; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; margin-bottom: 25px; line-height: 1.2; animation: titleGradient 5s ease infinite;
+    }
+    @keyframes titleGradient { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+    .title-slide .subtitle { font-size: 1.5rem; color: rgba(255, 255, 255, 0.85); margin-bottom: 45px; font-weight: 300; }
+    .title-slide .instructor-card {
+      display: inline-flex; align-items: center; gap: 18px;
+      background: rgba(10, 14, 39, 0.6); backdrop-filter: blur(20px);
+      padding: 20px 36px; border-radius: 24px; border: 1px solid rgba(255, 183, 0, 0.3); text-align: right;
+    }
+    .title-slide .instructor-avatar { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: white; }
+    .title-slide .instructor-info .name { font-weight: 800; font-size: 1.15rem; color: white; margin-bottom: 4px; }
+    .title-slide .instructor-info .title { font-size: 0.85rem; color: rgba(255, 183, 0, 0.9); }
+    .floating-icons { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: -1; }
+    .float-icon {
+      position: absolute; font-size: 3rem;
+      background: linear-gradient(135deg, rgba(255,183,0,0.4), rgba(255,107,53,0.2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; animation: floatIcon 10s infinite ease-in-out;
+    }
+    @keyframes floatIcon { 0%, 100% { transform: translateY(0) rotate(0deg) scale(1); } 33% { transform: translateY(-40px) rotate(15deg) scale(1.15); } 66% { transform: translateY(20px) rotate(-10deg) scale(0.9); } }
+    .float-icon:nth-child(1) { top: 12%; left: 8%; animation-delay: 0s; font-size: 4rem; }
+    .float-icon:nth-child(2) { top: 20%; right: 10%; animation-delay: 1.5s; font-size: 3rem; }
+    .float-icon:nth-child(3) { bottom: 22%; left: 12%; animation-delay: 3s; font-size: 3.5rem; }
+    .float-icon:nth-child(4) { bottom: 28%; right: 8%; animation-delay: 4.5s; font-size: 4.5rem; }
+    .float-icon:nth-child(5) { top: 45%; left: 4%; animation-delay: 2s; font-size: 3rem; }
+    .float-icon:nth-child(6) { top: 55%; right: 4%; animation-delay: 5s; font-size: 3.5rem; }
+    .content-slide { align-items: stretch; }
+    .content-slide .slide-title { text-align: center; margin-bottom: 26px; }
+    .content-slide .slide-title .title-icon-wrap {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 75px; height: 75px; border-radius: 22px;
+      background: linear-gradient(135deg, rgba(255, 183, 0, 0.2), rgba(255, 107, 53, 0.1));
+      border: 2px solid rgba(255, 183, 0, 0.4); font-size: 2rem; color: var(--accent);
+      margin-bottom: 14px; backdrop-filter: blur(20px); animation: iconRotate 6s infinite ease-in-out;
+    }
+    @keyframes iconRotate { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+    .content-slide .slide-title h2 {
+      font-size: 2.3rem; font-weight: 900;
+      background: linear-gradient(135deg, #fff, #ffb700);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; margin-bottom: 12px;
+    }
+    .content-slide .slide-title .subtitle-bar { display: inline-block; width: 120px; height: 5px; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 5px; }
+    .content-body { flex: 1; display: flex; flex-direction: column; justify-content: center; max-width: 1300px; margin: 0 auto; width: 100%; }
+    .question-slide { text-align: center; padding: 100px 60px; }
+    .question-slide .question-img { width: 400px; max-width: 80%; height: auto; border-radius: 24px; margin-bottom: 30px; animation: questionBounce 3s infinite ease-in-out; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5); border: 2px solid rgba(255, 183, 0, 0.3); }
+    @keyframes questionBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+    .question-slide h2 {
+      font-size: 2.4rem; font-weight: 900;
+      background: linear-gradient(135deg, #fff, #ffb700, #ff6b35);
+      background-size: 200% 200%; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; margin-bottom: 30px; line-height: 1.4; animation: titleGradient 4s ease infinite;
+    }
+    .question-slide p { font-size: 1.15rem; color: rgba(255,255,255,0.92); line-height: 2; max-width: 1000px; margin: 0 auto; }
+    .question-slide .hint { margin-top: 30px; display: inline-flex; align-items: center; gap: 14px; padding: 16px 32px; background: linear-gradient(135deg, rgba(255, 183, 0, 0.15), rgba(255, 107, 53, 0.1)); border-radius: 60px; font-size: 1rem; color: rgba(255,255,255,0.9); border: 1px solid rgba(255, 183, 0, 0.4); backdrop-filter: blur(10px); }
+    .question-slide .hint i { color: var(--accent); font-size: 1.4rem; animation: pulseDot 1.5s infinite; }
+    .question-slide .hint strong { color: var(--accent); font-weight: 800; }
+    .duo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; width: 100%; }
+    @media (max-width: 900px) { .duo-grid { grid-template-columns: 1fr; } }
+    .duo-card { background: linear-gradient(145deg, rgba(10, 14, 39, 0.9), rgba(30, 40, 70, 0.7)); backdrop-filter: blur(20px); border-radius: 28px; padding: 24px; border: 2px solid transparent; transition: all 0.5s ease; text-align: center; }
+    .duo-card:hover { transform: translateY(-10px); }
+    .duo-card.i2c { border-color: rgba(6, 182, 212, 0.5); }
+    .duo-card.spi { border-color: rgba(255, 183, 0, 0.5); }
+    .duo-card h3 { font-size: 1.4rem; margin-bottom: 12px; font-weight: 800; }
+    .duo-card.i2c h3 { color: var(--cyan); }
+    .duo-card.spi h3 { color: var(--accent); }
+    .duo-card p { font-size: 0.92rem; color: rgba(255,255,255,0.85); line-height: 1.8; }
+    .code-block {
+      background: rgba(0, 0, 0, 0.75); border-radius: 16px; padding: 20px; margin: 16px 0;
+      font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.82rem;
+      direction: ltr; text-align: left; color: #d4d4d4;
+      border-right: 4px solid var(--accent); line-height: 1.75; overflow-x: auto; max-height: 400px;
+    }
+    .code-block .kw { color: #ff6b35; font-weight: 700; }
+    .code-block .num { color: #ffb700; }
+    .code-block .cmt { color: #6a8aa8; font-style: italic; }
+    .code-block .fn { color: #a855f7; }
+    .code-block .str { color: #00d4aa; }
+    .code-block .var { color: #06b6d4; }
+    .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; width: 100%; }
+    .info-card { background: linear-gradient(145deg, rgba(10, 14, 39, 0.85), rgba(30, 40, 70, 0.6)); backdrop-filter: blur(20px); border-radius: 20px; padding: 20px; border-right: 4px solid var(--accent); transition: all 0.3s ease; }
+    .info-card:hover { transform: translateX(-6px); box-shadow: 0 15px 30px rgba(255, 183, 0, 0.15); }
+    .info-card .info-icon { font-size: 1.8rem; margin-bottom: 10px; color: var(--accent); }
+    .info-card h5 { font-size: 0.95rem; color: white; margin-bottom: 8px; font-weight: 800; }
+    .info-card p { font-size: 0.82rem; color: rgba(255, 255, 255, 0.8); line-height: 1.75; }
+    /* شبیه‌ساز OLED */
+    .oled-sim { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; width: 100%; max-width: 1200px; margin: 0 auto; }
+    @media (max-width: 900px) { .oled-sim { grid-template-columns: 1fr; } }
+    .oled-display {
+      background: #000; border-radius: 16px; padding: 20px; border: 3px solid #222;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 0 60px rgba(6, 182, 212, 0.1);
+      aspect-ratio: 2 / 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
+      font-family: 'Fira Code', monospace; position: relative; overflow: hidden;
+    }
+    .oled-display::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(6, 182, 212, 0.03) 2px, rgba(6, 182, 212, 0.03) 4px); pointer-events: none; }
+    .oled-text { color: #06b6d4; font-size: 1.4rem; text-shadow: 0 0 10px rgba(6, 182, 212, 0.8); letter-spacing: 2px; text-align: center; z-index: 1; line-height: 1.5; }
+    .oled-sub { color: #ffb700; font-size: 0.9rem; text-shadow: 0 0 8px rgba(255, 183, 0, 0.8); margin-top: 8px; z-index: 1; }
+    .oled-controls { display: flex; flex-direction: column; gap: 14px; background: rgba(10, 14, 39, 0.85); backdrop-filter: blur(20px); border-radius: 20px; padding: 20px; border: 1px solid rgba(6, 182, 212, 0.3); }
+    .oled-controls h4 { color: var(--cyan); font-size: 0.95rem; display: flex; align-items: center; gap: 8px; font-weight: 800; }
+    .oled-input-wrap { background: rgba(0, 0, 0, 0.3); border-radius: 12px; padding: 12px; }
+    .oled-input-wrap label { display: block; font-size: 0.8rem; color: rgba(255, 255, 255, 0.8); margin-bottom: 6px; font-weight: 700; }
+    .oled-input-wrap input { width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(6, 182, 212, 0.3); background: rgba(0, 0, 0, 0.5); color: white; font-family: 'Vazirmatn', sans-serif; font-size: 0.9rem; }
+    .oled-input-wrap input:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 15px rgba(6, 182, 212, 0.3); }
+    /* پروژه‌های Wokwi */
+    .wokwi-project {
+      background: linear-gradient(145deg, rgba(0, 151, 156, 0.08), rgba(30, 40, 70, 0.7));
+      border-radius: 28px; padding: 24px; border: 2px solid rgba(0, 151, 156, 0.4);
+      display: grid; grid-template-columns: 1fr 1.2fr; gap: 24px; align-items: start;
+    }
+    @media (max-width: 900px) { .wokwi-project { grid-template-columns: 1fr; } }
+    .wokwi-info { display: flex; flex-direction: column; gap: 14px; }
+    .wokwi-badge { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, rgba(0, 151, 156, 0.2), rgba(0, 212, 170, 0.1)); border: 1px solid rgba(0, 151, 156, 0.5); padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; color: var(--wokwi); width: fit-content; }
+    .wokwi-info h3 { font-size: 1.35rem; font-weight: 900; color: var(--wokwi); display: flex; align-items: center; gap: 10px; margin: 0; }
+    .wokwi-info p { font-size: 0.88rem; color: rgba(255, 255, 255, 0.85); line-height: 1.85; margin: 0; }
+    .wokwi-goal { background: rgba(255, 183, 0, 0.08); border-radius: 14px; padding: 12px 16px; border-right: 4px solid var(--accent); font-size: 0.83rem; color: rgba(255, 255, 255, 0.9); line-height: 1.8; }
+    .wokwi-goal strong { color: var(--accent); }
+    .wokwi-link-btn {
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+      background: linear-gradient(135deg, #00979c, #00d4aa);
+      color: white; padding: 14px 24px; border-radius: 16px;
+      text-decoration: none; font-weight: 800; font-size: 0.95rem;
+      transition: all 0.3s ease; box-shadow: 0 8px 20px rgba(0, 151, 156, 0.4);
+      cursor: pointer; border: none; font-family: 'Vazirmatn', sans-serif;
+    }
+    .wokwi-link-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0, 151, 156, 0.6); color: white; }
+    .wokwi-code-section { display: flex; flex-direction: column; gap: 12px; }
+    .wokwi-tabs { display: flex; gap: 8px; background: rgba(0, 0, 0, 0.3); padding: 6px; border-radius: 14px; width: fit-content; }
+    .wokwi-tab { background: transparent; border: none; color: rgba(255, 255, 255, 0.7); padding: 8px 16px; border-radius: 10px; font-family: 'Vazirmatn', sans-serif; font-weight: 700; font-size: 0.8rem; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 6px; }
+    .wokwi-tab.active { background: linear-gradient(135deg, var(--wokwi), #00d4aa); color: white; }
+    .wokwi-tab:hover:not(.active) { background: rgba(255, 255, 255, 0.1); color: white; }
+    .code-panel { display: none; position: relative; }
+    .code-panel.active { display: block; }
+    .code-panel .code-block { font-size: 0.72rem; max-height: 300px; margin: 0; border-right-color: var(--wokwi); }
+    .copy-hint { font-size: 0.72rem; color: rgba(255,255,255,0.6); margin-top: 6px; display: flex; align-items: center; gap: 6px; }
+    /* کوییز */
+    .quiz-container { background: linear-gradient(145deg, rgba(10, 14, 39, 0.9), rgba(30, 40, 70, 0.7)); border-radius: 24px; padding: 24px; border: 2px solid rgba(168, 85, 247, 0.4); width: 100%; max-width: 900px; margin: 0 auto; }
+    .quiz-question { font-size: 1rem; color: rgba(255, 255, 255, 0.95); margin-bottom: 16px; font-weight: 700; line-height: 1.9; }
+    .quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    @media (max-width: 700px) { .quiz-options { grid-template-columns: 1fr; } }
+    .quiz-option { background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(255, 255, 255, 0.15); border-radius: 14px; padding: 14px 18px; color: white; cursor: pointer; transition: all 0.3s ease; text-align: right; font-family: 'Vazirmatn', sans-serif; font-size: 0.88rem; line-height: 1.6; }
+    .quiz-option:hover { background: rgba(168, 85, 247, 0.15); border-color: var(--purple); }
+    .quiz-option.correct { background: rgba(0, 212, 170, 0.2); border-color: var(--success); color: var(--success); }
+    .quiz-option.incorrect { background: rgba(255, 71, 87, 0.2); border-color: var(--danger); color: var(--danger); }
+    .quiz-option.disabled { cursor: not-allowed; opacity: 0.6; }
+    .quiz-feedback { background: rgba(255, 255, 255, 0.05); border-radius: 14px; padding: 14px; font-size: 0.85rem; line-height: 1.8; margin-top: 10px; display: none; }
+    .quiz-feedback.show { display: block; }
+    .quiz-feedback.success { background: rgba(0, 212, 170, 0.1); border-right: 4px solid var(--success); color: rgba(255, 255, 255, 0.9); }
+    .quiz-feedback.error { background: rgba(255, 71, 87, 0.1); border-right: 4px solid var(--danger); color: rgba(255, 255, 255, 0.9); }
+    /* تمرین‌ها */
+    .exercises-float-wrapper { position: relative; width: 100%; height: 60vh; max-height: 550px; }
+    .exercises-float-scroll { height: 100%; overflow-y: auto; overflow-x: hidden; padding: 6px 20px 40px 8px; display: flex; flex-direction: column; gap: 18px; }
+    .exercises-float-scroll::-webkit-scrollbar { width: 10px; }
+    .exercises-float-scroll::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); border-radius: 10px; }
+    .exercises-float-scroll::-webkit-scrollbar-thumb { background: linear-gradient(180deg, var(--accent), var(--accent2)); border-radius: 10px; border: 2px solid rgba(10, 14, 39, 0.9); }
+    .scroll-hint { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); background: rgba(255, 183, 0, 0.9); color: #050818; padding: 6px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; display: flex; align-items: center; gap: 6px; animation: bounceHint 2s infinite; pointer-events: none; z-index: 5; }
+    @keyframes bounceHint { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-6px); } }
+    .exercise-group { background: linear-gradient(145deg, rgba(10, 14, 39, 0.9), rgba(30, 40, 70, 0.7)); backdrop-filter: blur(20px); border-radius: 24px; padding: 24px 28px; border-right: 6px solid var(--accent); transition: all 0.4s ease; flex-shrink: 0; }
+    .exercise-group:hover { transform: translateX(-6px) scale(1.01); }
+    .exercise-group.group-conceptual { border-right-color: #ffb700; }
+    .exercise-group.group-practical { border-right-color: #00d4aa; }
+    .exercise-group.group-written { border-right-color: #a855f7; }
+    .exercise-group.group-challenge { border-right-color: #ff4757; background: linear-gradient(145deg, rgba(30, 10, 20, 0.9), rgba(60, 20, 40, 0.7)); }
+    .exercise-group-header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+    .exercise-group-icon { width: 50px; height: 50px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: white; flex-shrink: 0; }
+    .exercise-group.group-conceptual .exercise-group-icon { background: linear-gradient(135deg, #ffb700, #ff6b35); }
+    .exercise-group.group-practical .exercise-group-icon { background: linear-gradient(135deg, #00d4aa, #06b6d4); }
+    .exercise-group.group-written .exercise-group-icon { background: linear-gradient(135deg, #a855f7, #ec4899); }
+    .exercise-group.group-challenge .exercise-group-icon { background: linear-gradient(135deg, #ff4757, #ff6b35); }
+    .exercise-group-header h4 { font-size: 1.15rem; color: white; font-weight: 800; margin: 0; }
+    .exercise-group-header .group-subtitle { font-size: 0.8rem; color: rgba(255, 255, 255, 0.6); margin-top: 4px; }
+    .exercise-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+    .exercise-list li { display: flex; gap: 12px; padding: 12px 16px; background: rgba(0, 0, 0, 0.3); border-radius: 14px; color: rgba(255, 255, 255, 0.92); line-height: 1.85; font-size: 0.9rem; border-right: 3px solid transparent; }
+    .exercise-list li:hover { background: rgba(255, 183, 0, 0.08); border-right-color: var(--accent); }
+    .exercise-list li .q-num { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; font-weight: 800; font-size: 0.85rem; flex-shrink: 0; }
+    .exercise-group.group-practical .exercise-list li .q-num { background: linear-gradient(135deg, #00d4aa, #06b6d4); }
+    .exercise-group.group-written .exercise-list li .q-num { background: linear-gradient(135deg, #a855f7, #ec4899); }
+    .exercise-list li .q-text { flex: 1; }
+    .exercise-list li .q-text strong { color: var(--accent); }
+    .exercise-list li .q-text em { color: #06b6d4; font-style: normal; font-weight: 700; background: rgba(6, 182, 212, 0.1); padding: 2px 8px; border-radius: 6px; font-size: 0.82rem; }
+    .challenge-box { background: linear-gradient(135deg, rgba(255, 71, 87, 0.15), rgba(255, 183, 0, 0.08)); border: 2px dashed rgba(255, 71, 87, 0.5); border-radius: 20px; padding: 20px 22px; }
+    .challenge-box .challenge-title { display: flex; align-items: center; gap: 10px; color: #ff6b35; font-weight: 800; font-size: 1.05rem; margin-bottom: 12px; }
+    .challenge-box p { color: rgba(255, 255, 255, 0.92); line-height: 1.9; font-size: 0.92rem; margin-bottom: 8px; }
+    .challenge-box p strong { color: #ff6b35; }
+    .challenge-box .challenge-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.8rem; flex-wrap: wrap; gap: 10px; }
+    .challenge-box .challenge-footer .tag { display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 71, 87, 0.15); color: #ff6b35; padding: 6px 14px; border-radius: 20px; font-weight: 700; border: 1px solid rgba(255, 71, 87, 0.3); }
+    .slide-nav { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 24px; background: rgba(10, 14, 39, 0.75); backdrop-filter: blur(25px); padding: 14px 28px; border-radius: 60px; border: 1px solid rgba(255, 255, 255, 0.15); z-index: 100; }
+    .nav-btn { width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05)); border: 1px solid rgba(255, 255, 255, 0.2); color: white; font-size: 1.3rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; }
+    .nav-btn:hover:not(:disabled) { background: linear-gradient(135deg, var(--accent), var(--accent2)); transform: scale(1.15); }
+    .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .slide-counter { font-size: 1.05rem; font-weight: 700; color: white; min-width: 100px; text-align: center; background: rgba(0, 0, 0, 0.3); padding: 10px 20px; border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.1); }
+    .slide-counter .current { color: var(--accent); font-size: 1.4rem; font-weight: 900; }
+    .dots-nav { position: fixed; left: 30px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 12px; z-index: 100; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); cursor: pointer; transition: all 0.3s ease; }
+    .dot:hover { background: rgba(255, 183, 0, 0.5); transform: scale(1.3); }
+    .dot.active { background: var(--accent); box-shadow: 0 0 20px var(--accent); transform: scale(1.5); }
+    .end-slide { text-align: center; }
+    .end-slide .end-icon { font-size: 7rem; margin-bottom: 25px; display: inline-block; animation: endBounce 2s infinite ease-in-out; }
+    @keyframes endBounce { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-25px) scale(1.08); } }
+    .end-slide h2 { font-size: 3.2rem; font-weight: 900; background: linear-gradient(135deg, #fff, #ffb700, #ff6b35, #ec4899); background-size: 200% 200%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 20px; animation: titleGradient 5s ease infinite; }
+    .end-slide p { font-size: 1.2rem; color: rgba(255,255,255,0.85); margin-bottom: 40px; }
+    .end-slide .next-session { display: inline-flex; align-items: center; gap: 20px; padding: 20px 44px; background: linear-gradient(135deg, rgba(255, 183, 0, 0.15), rgba(255, 107, 53, 0.1)); border: 2px solid var(--accent); border-radius: 70px; font-size: 1.1rem; color: var(--accent); font-weight: 700; }
+    .end-slide .next-session .arrow-icon { width: 46px; height: 46px; border-radius: 50%; background: var(--accent); color: #050818; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; animation: arrowMove2 2s infinite ease-in-out; }
+    @keyframes arrowMove2 { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-8px); } }
+    .toast { position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%) translateY(100px) scale(0.8); background: linear-gradient(135deg, rgba(10, 14, 39, 0.95), rgba(30, 40, 70, 0.95)); backdrop-filter: blur(20px); color: white; padding: 16px 32px; border-radius: 60px; font-weight: 600; opacity: 0; transition: all 0.5s ease; z-index: 2000; border: 1px solid rgba(255, 183, 0, 0.3); display: flex; align-items: center; gap: 12px; pointer-events: none; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+    .toast i { color: var(--accent); font-size: 1.2rem; }
+    @media (max-width: 900px) { .slide { padding: 110px 20px 130px; } .title-slide h1 { font-size: 2.2rem; } .content-slide .slide-title h2 { font-size: 1.7rem; } .question-slide h2 { font-size: 1.7rem; } .end-slide h2 { font-size: 1.9rem; } .dots-nav { display: none; } }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+  </style>
+</head>
+<body>
+  <div class="starfield" id="starfield"></div>
+  <div class="neon-bubble"></div><div class="neon-bubble"></div><div class="neon-bubble"></div><div class="neon-bubble"></div>
+  <div class="progress-bar" id="progressBar"></div>
+  <header class="slide-header">
+    <div class="logo"><div class="logo-icon"><i class="fas fa-tv"></i></div><span>سیستم‌های اندازه‌گیری و کنترل</span></div>
+    <div class="slide-info"><span><i class="fas fa-user-tie"></i> دکتر مسعود گوهری‌منش</span><span><i class="fas fa-university"></i> دانشگاه تربت حیدریه</span></div>
+  </header>
+  <div class="controls">
+    <button class="ctrl-btn active" id="soundToggle" title="افکت صوتی"><i class="fas fa-volume-up"></i></button>
+    <button class="ctrl-btn" id="musicToggle" title="موسیقی پس‌زمینه"><i class="fas fa-music"></i></button>
+    <button class="ctrl-btn" id="fullscreenBtn" title="تمام صفحه"><i class="fas fa-expand"></i></button>
+  </div>
+  <div class="dots-nav" id="dotsNav"></div>
+
+  <div class="slides-container" id="slidesContainer">
+
+    <!-- ===== 1: عنوان ===== -->
+    <section class="slide active title-slide" data-slide="0">
+      <div class="hero-bg" style="background-image: url('images/hero-oled.jpg');"></div>
+      <div class="hero-overlay"></div>
+      <div class="floating-icons">
+        <i class="fas fa-tv float-icon"></i><i class="fas fa-palette float-icon"></i><i class="fas fa-code float-icon"></i>
+        <i class="fas fa-cable-car float-icon"></i><i class="fas fa-chart-line float-icon"></i><i class="fas fa-microchip float-icon"></i>
+      </div>
+      <i class="fas fa-tv main-icon animate-in"></i>
+      <div class="badge animate-in"><span class="pulse-dot"></span> جلسه هفتم — فاز ۲: مهارت‌های پایه Arduino</div>
+      <h1 class="animate-in">نمایشگر OLED و LCD</h1>
+      <p class="subtitle animate-in">پروتکل I2C، آدرس‌دهی و کتابخانه‌های نمایشگر</p>
+      <div class="instructor-card animate-in">
+        <div class="instructor-avatar"><i class="fas fa-user-tie"></i></div>
+        <div class="instructor-info"><div class="name">دکتر مسعود گوهری‌منش</div><div class="title">دانشیار گروه مهندسی مکانیک دانشگاه تربت حیدریه</div></div>
+      </div>
+    </section>
+
+    <!-- ===== 2: سوال انگیزشی ===== -->
+    <section class="slide question-slide" data-slide="1">
+      <img src="images/question-oled.jpg" alt="سوال" class="question-img animate-in">
+      <h2 class="animate-in">چگونه داده‌های سنسور را ببینیم؟</h2>
+      <p class="animate-in">یک سنسور دما را به Arduino وصل کرده‌اید. حالا چطور می‌توانید دما را ببینید؟<br><br><strong style="color: var(--accent);">Serial Monitor</strong> نیاز به کامپیوتر دارد.<br>اما اگر بخواهید یک دستگاه مستقل بسازید؟</p>
+      <div class="hint animate-in"><i class="fas fa-lightbulb"></i> پاسخ در <strong>نمایشگر OLED</strong> و <strong>پروتکل I2C</strong> نهفته است</div>
+    </section>
+
+    <!-- ===== 3: انواع OLED در صنعت ===== -->
+    <section class="slide content-slide" data-slide="2">
+      <div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-industry"></i></div><h2>📺 انواع نمایشگرهای OLED در صنعت</h2><span class="subtitle-bar"></span></div>
+      <div class="content-body">
+        <div style="background: linear-gradient(145deg, rgba(10, 14, 39, 0.9), rgba(30, 40, 70, 0.7)); backdrop-filter: blur(20px); border-radius: 28px; padding: 24px; border: 2px solid rgba(255, 183, 0, 0.4);" class="animate-in">
+          <table style="width: 100%; border-collapse: separate; border-spacing: 0; background: rgba(0, 0, 0, 0.3); border-radius: 16px; overflow: hidden;">
+            <thead><tr style="background: linear-gradient(135deg, rgba(255, 183, 0, 0.25), rgba(255, 107, 53, 0.15));"><th style="padding: 14px; color: var(--accent); font-weight: 800; text-align: right;">نوع</th><th style="padding: 14px; color: var(--accent); font-weight: 800; text-align: right;">اندازه</th><th style="padding: 14px; color: var(--accent); font-weight: 800; text-align: right;">ویژگی</th><th style="padding: 14px; color: var(--accent); font-weight: 800; text-align: right;">کاربرد</th></tr></thead>
+            <tbody style="color: rgba(255,255,255,0.9); font-size: 0.88rem;">
+              <tr><td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">PMOLED</td><td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">۰.۹۶ تا ۲ اینچ</td><td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">ارزان، کم‌مصرف</td><td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">دستگاه‌های قابل حمل</td></tr>
+              <tr><td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">AMOLED</td><td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">۱ تا ۷ اینچ</td><td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">کیفیت بالا، انعطاف‌پذیر</td><td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">گوشی، ساعت هوشمند</td></tr>
+              <tr><td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">Micro-OLED</td><td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">۰.۲ تا ۱.۵ اینچ</td><td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">چگالی پیکسل بسیار بالا</td><td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">VR/AR، دوربین</td></tr>
+              <tr><td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">OLED خودرویی</td><td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">۱۲ تا ۴۰ اینچ</td><td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">مقاوم، شفاف</td><td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">داشبورد خودرو</td></tr>
+              <tr><td style="padding: 12px;">OLED صنعتی</td><td style="padding: 12px;">۱۳ تا ۲۷ اینچ</td><td style="padding: 12px;">دقت رنگ بالا، عمر طولانی</td><td style="padding: 12px;">تجهیزات پزشکی</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="text-align: center; margin-top: 16px; font-size: 0.9rem; color: rgba(255,255,255,0.7);" class="animate-in"><i class="fas fa-info-circle" style="color: var(--accent);"></i> در این جلسه با <strong style="color: var(--accent);">OLED 128x64 SSD1306</strong> کار می‌کنیم.</p>
+      </div>
+    </section>
+
+    <!-- ===== 4: I2C در برابر SPI ===== -->
+    <section class="slide content-slide" data-slide="3">
+      <div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-network-wired"></i></div><h2>🔌 پروتکل I2C در برابر SPI</h2><span class="subtitle-bar"></span></div>
+      <div class="content-body">
+        <div class="duo-grid animate-in">
+          <div class="duo-card i2c"><h3>🔵 I2C</h3><p><strong>۲ سیم:</strong> SDA (داده) + SCL (کلاک)<br><br><span style="color: var(--success); font-weight: 700;">✓ فقط ۲ سیم</span><br><span style="color: var(--success); font-weight: 700;">✓ چند دستگاه با آدرس</span><br><span style="color: var(--success); font-weight: 700;">✓ استاندارد OLED</span><br><span style="color: var(--danger); font-weight: 700;">✗ کندتر از SPI</span></p></div>
+          <div class="duo-card spi"><h3>🟡 SPI</h3><p><strong>۴ سیم:</strong> MOSI + MISO + SCK + CS<br><br><span style="color: var(--success); font-weight: 700;">✓ بسیار سریع</span><br><span style="color: var(--success); font-weight: 700;">✓ مناسب نمایشگرهای بزرگ</span><br><span style="color: var(--danger); font-weight: 700;">✗ ۴ سیم</span><br><span style="color: var(--danger); font-weight: 700;">✗ هر دستگاه CS جداگانه</span></p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 5: آدرس‌دهی I2C ===== -->
+    <section class="slide content-slide" data-slide="4">
+      <div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-tag"></i></div><h2>🏷️ آدرس‌دهی I2C — هر دستگاه یک آدرس</h2><span class="subtitle-bar"></span></div>
+      <div class="content-body">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; width: 100%;">
+          <img src="images/i2c-addresses.jpg" alt="آدرس I2C" style="width: 100%; border-radius: 24px; border: 2px solid rgba(6, 182, 212, 0.3);" class="animate-in">
+          <div class="animate-in">
+            <p style="font-size: 1rem; color: rgba(255,255,255,0.95); line-height: 2; margin-bottom: 16px;">در پروتکل I2C، هر دستگاه یک <strong style="color: var(--accent);">آدرس ۷ بیتی</strong> منحصر به فرد دارد.</p>
+            <div class="code-block" style="font-size: 0.82rem;">
+<span class="cmt">// آدرس‌های رایج I2C</span>
+<span class="cmt">// OLED SSD1306 → 0x3C یا 0x3D</span>
+<span class="cmt">// LCD PCF8574 → 0x27 یا 0x3F</span>
+<span class="cmt">// BMP280 → 0x76 یا 0x77</span>
+<span class="cmt">// MPU6050 → 0x68</span>
+
+<span class="kw">#include</span> <span class="str">&lt;Wire.h&gt;</span>
+<span class="kw">void</span> <span class="fn">setup</span>() { <span class="fn">Serial.begin</span>(<span class="num">9600</span>); <span class="fn">Wire.begin</span>(); }
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="kw">for</span>(<span class="kw">byte</span> addr = <span class="num">0</span>; addr &lt; <span class="num">127</span>; addr++) {
+    <span class="fn">Wire.beginTransmission</span>(addr);
+    <span class="kw">if</span> (<span class="fn">Wire.endTransmission</span>() == <span class="num">0</span>) {
+      <span class="fn">Serial.print</span>(<span class="str">"Found: 0x"</span>); <span class="fn">Serial.println</span>(addr, HEX);
+    }
+  }
+  <span class="fn">delay</span>(<span class="num">5000</span>);
+}</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 6: OLED در برابر LCD ===== -->
+    <section class="slide content-slide" data-slide="5">
+      <div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-balance-scale"></i></div><h2>⚖️ OLED در برابر LCD</h2><span class="subtitle-bar"></span></div>
+      <div class="content-body">
+        <img src="images/oled-vs-lcd.jpg" alt="OLED vs LCD" style="width: 100%; max-width: 800px; margin: 0 auto 20px; border-radius: 24px; border: 2px solid rgba(255, 183, 0, 0.3);" class="animate-in">
+        <div class="info-grid animate-in">
+          <div class="info-card" style="border-right-color: var(--cyan);"><div class="info-icon" style="color: var(--cyan);"><i class="fas fa-tv"></i></div><h5>OLED 128x64</h5><p>• پیکسل‌های خودنور<br>• کنتراست عالی<br>• مصرف کم<br>• گرافیکی</p></div>
+          <div class="info-card" style="border-right-color: var(--accent);"><div class="info-icon"><i class="fas fa-calculator"></i></div><h5>LCD 16x2</h5><p>• کاراکتری (۲ خط × ۱۶ کاراکتر)<br>• ارزان<br>• نیاز به نور پس‌زمینه<br>• برای متن ساده</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 7: شبیه‌ساز تعاملی OLED ===== -->
+    <section class="slide content-slide" data-slide="6">
+      <div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-flask"></i></div><h2>🧪 شبیه‌ساز تعاملی: نمایشگر OLED</h2><span class="subtitle-bar"></span></div>
+      <div class="content-body">
+        <div class="oled-sim animate-in">
+          <div>
+            <div class="oled-display"><div class="oled-text" id="oledText">Hello World</div><div class="oled-sub" id="oledSub">Arduino UNO</div></div>
+            <div style="margin-top: 12px; text-align: center; font-size: 0.8rem; color: rgba(255,255,255,0.6);"><i class="fas fa-info-circle" style="color: var(--cyan);"></i> OLED SSD1306 — آدرس I2C: 0x3C</div>
+          </div>
+          <div class="oled-controls">
+            <h4><i class="fas fa-keyboard"></i> ورودی‌ها</h4>
+            <div class="oled-input-wrap"><label>متن اصلی (خط ۱)</label><input type="text" id="oledInput1" value="Hello World" maxlength="20"></div>
+            <div class="oled-input-wrap"><label>متن فرعی (خط ۲)</label><input type="text" id="oledInput2" value="Arduino UNO" maxlength="20"></div>
+            <div style="background: rgba(0, 212, 170, 0.1); border-radius: 14px; padding: 12px 16px; border-right: 4px solid var(--success); font-size: 0.8rem; line-height: 1.8; color: rgba(255,255,255,0.9);"><strong style="color: var(--success);">💡 نکته:</strong> متن را تایپ کنید تا روی OLED نمایش داده شود.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 8: ۵ پروژه Wokwi (لینک مستقیم + کد قابل کپی) ===== -->
+    <section class="slide content-slide" data-slide="7">
+      <div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-cogs"></i></div><h2>🧪 ۵ پروژه Wokwi (کد را کپی کنید و در Wokwi اجرا کنید)</h2><span class="subtitle-bar"></span></div>
+      <div class="content-body">
+        <div style="display: flex; flex-direction: column; gap: 20px; max-height: 70vh; overflow-y: auto; padding-left: 8px;" class="animate-in">
+
+          <!-- پروژه ۱: LCD 16x2 I2C -->
+          <div class="wokwi-project">
+            <div class="wokwi-info">
+              <span class="wokwi-badge"><i class="fas fa-calculator"></i> پروژه ۱</span>
+              <h3>نمایشگر LCD 16x2 با I2C</h3>
+              <p>راه‌اندازی LCD کاراکتری با ماژول I2C. مقایسه عملی با OLED و درک تفاوت‌های کاربرد.</p>
+              <div class="wokwi-goal"><strong>🎯 هدف:</strong> نمایش متن «Ola Mundo!» روی LCD 16x2.</div>
+              <a href="https://wokwi.com/projects/458051418411957249" target="_blank" class="wokwi-link-btn"><i class="fas fa-external-link-alt"></i> باز کردن پروژه در Wokwi</a>
+              <div class="copy-hint"><i class="fas fa-copy"></i> کد را از تب کناری کپی کنید و در Wokwi جای‌گذاری کنید.</div>
+            </div>
+            <div class="wokwi-code-section">
+              <div class="wokwi-tabs"><button class="wokwi-tab active" onclick="switchTab(this, 'sketch1')"><i class="fas fa-code"></i> sketch.ino</button></div>
+              <div class="code-panel active" id="sketch1"><div class="code-block">
+<span class="kw">#include</span> <span class="str">&lt;Wire.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;LiquidCrystal_I2C.h&gt;</span>
+
+LiquidCrystal_I2C <span class="var">lcd</span>(<span class="num">0x27</span>, <span class="num">16</span>, <span class="num">2</span>);
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">lcd.init</span>();
+  <span class="fn">lcd.backlight</span>();
+  <span class="fn">Serial.begin</span>(<span class="num">9600</span>);
+  <span class="fn">lcd.setCursor</span>(<span class="num">0</span>, <span class="num">0</span>);
+  <span class="fn">lcd.print</span>(<span class="str">"Ola Mundo!"</span>);
+  <span class="fn">lcd.setCursor</span>(<span class="num">0</span>, <span class="num">1</span>);
+  <span class="fn">lcd.print</span>(<span class="str">"Sou a IHM"</span>);
+  <span class="fn">Serial.println</span>(<span class="str">"LCD ativo!"</span>);
+}
+<span class="kw">void</span> <span class="fn">loop</span>() {}</div></div>
+            </div>
+          </div>
+
+          <!-- پروژه ۲: DHT22 + LCD -->
+          <div class="wokwi-project">
+            <div class="wokwi-info">
+              <span class="wokwi-badge"><i class="fas fa-thermometer-half"></i> پروژه ۲</span>
+              <h3>نمایش دمای DHT22 روی LCD</h3>
+              <p>خواندن دما از سنسور DHT22 و نمایش آن روی LCD 16x2. کاربرد واقعی نمایشگر در سیستم‌های اندازه‌گیری.</p>
+              <div class="wokwi-goal"><strong>🎯 هدف:</strong> ساخت یک دماسنج دیجیتال ساده.</div>
+              <a href="https://wokwi.com/projects/458106288710643713" target="_blank" class="wokwi-link-btn"><i class="fas fa-external-link-alt"></i> باز کردن پروژه در Wokwi</a>
+              <div class="copy-hint"><i class="fas fa-copy"></i> کد را از تب کناری کپی کنید.</div>
+            </div>
+            <div class="wokwi-code-section">
+              <div class="wokwi-tabs"><button class="wokwi-tab active" onclick="switchTab(this, 'sketch2')"><i class="fas fa-code"></i> sketch.ino</button></div>
+              <div class="code-panel active" id="sketch2"><div class="code-block">
+<span class="kw">#include</span> <span class="str">&lt;Wire.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;LiquidCrystal_I2C.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;DHT.h&gt;</span>
+
+<span class="kw">#define</span> DHTPIN <span class="num">2</span>
+<span class="kw">#define</span> DHTTYPE DHT22
+DHT <span class="var">dht</span>(DHTPIN, DHTTYPE);
+LiquidCrystal_I2C <span class="var">lcd</span>(<span class="num">0x27</span>, <span class="num">16</span>, <span class="num">2</span>);
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">Serial.begin</span>(<span class="num">9600</span>);
+  <span class="fn">dht.begin</span>();
+  <span class="fn">lcd.init</span>();
+  <span class="fn">lcd.backlight</span>();
+}
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="kw">float</span> t = <span class="fn">dht.readTemperature</span>();
+  <span class="fn">lcd.clear</span>();
+  <span class="fn">lcd.setCursor</span>(<span class="num">0</span>, <span class="num">0</span>);
+  <span class="fn">lcd.print</span>(<span class="str">"Temp: "</span>);
+  <span class="fn">lcd.print</span>(t, <span class="num">1</span>);
+  <span class="fn">lcd.print</span>(<span class="str">" C"</span>);
+  <span class="fn">delay</span>(<span class="num">2000</span>);
+}</div></div>
+            </div>
+          </div>
+
+          <!-- پروژه ۳: OLED Hello World -->
+          <div class="wokwi-project">
+            <div class="wokwi-info">
+              <span class="wokwi-badge"><i class="fas fa-tv"></i> پروژه ۳</span>
+              <h3>نمایش متن روی OLED (Hello World)</h3>
+              <p>راه‌اندازی اولیه OLED SSD1306 و نمایش متن. پایه‌ای برای تمام پروژه‌های گرافیکی.</p>
+              <div class="wokwi-goal"><strong>🎯 هدف:</strong> نمایش «Hello» و «Arduino» روی OLED.</div>
+              <a href="https://wokwi.com/projects/448622359807729665" target="_blank" class="wokwi-link-btn"><i class="fas fa-external-link-alt"></i> باز کردن پروژه در Wokwi</a>
+              <div class="copy-hint"><i class="fas fa-copy"></i> این پروژه شامل سنسور خاک است؛ کد OLED را می‌توانید اقتباس کنید.</div>
+            </div>
+            <div class="wokwi-code-section">
+              <div class="wokwi-tabs"><button class="wokwi-tab active" onclick="switchTab(this, 'sketch3')"><i class="fas fa-code"></i> sketch.ino</button></div>
+              <div class="code-panel active" id="sketch3"><div class="code-block">
+<span class="kw">#include</span> <span class="str">&lt;Wire.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;Adafruit_GFX.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;Adafruit_SSD1306.h&gt;</span>
+
+<span class="kw">#define</span> SCREEN_WIDTH <span class="num">128</span>
+<span class="kw">#define</span> SCREEN_HEIGHT <span class="num">64</span>
+Adafruit_SSD1306 <span class="var">display</span>(SCREEN_WIDTH, SCREEN_HEIGHT, &amp;Wire, <span class="num">-1</span>);
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">display.begin</span>(SSD1306_SWITCHCAPVCC, <span class="num">0x3C</span>);
+  <span class="fn">display.clearDisplay</span>();
+  <span class="fn">display.setTextSize</span>(<span class="num">2</span>);
+  <span class="fn">display.setTextColor</span>(SSD1306_WHITE);
+  <span class="fn">display.setCursor</span>(<span class="num">10</span>, <span class="num">15</span>);
+  <span class="fn">display.println</span>(<span class="str">"Hello"</span>);
+  <span class="fn">display.setCursor</span>(<span class="num">10</span>, <span class="num">40</span>);
+  <span class="fn">display.println</span>(<span class="str">"Arduino"</span>);
+  <span class="fn">display.display</span>();
+}
+<span class="kw">void</span> <span class="fn">loop</span>() {}</div></div>
+            </div>
+          </div>
+
+          <!-- پروژه ۴: I2C Scanner -->
+          <div class="wokwi-project">
+            <div class="wokwi-info">
+              <span class="wokwi-badge"><i class="fas fa-search"></i> پروژه ۴</span>
+              <h3>اسکنر آدرس I2C</h3>
+              <p>پیدا کردن آدرس I2C دستگاه‌های متصل. مهارت حیاتی برای عیب‌یابی مدارات.</p>
+              <div class="wokwi-goal"><strong>🎯 هدف:</strong> یادگیری اسکن و شناسایی دستگاه‌های I2C.</div>
+              <a href="https://wokwi.com/projects/307244402749735490" target="_blank" class="wokwi-link-btn"><i class="fas fa-external-link-alt"></i> باز کردن پروژه در Wokwi</a>
+              <div class="copy-hint"><i class="fas fa-copy"></i> کد را کپی کنید و در Wokwi اجرا کنید.</div>
+            </div>
+            <div class="wokwi-code-section">
+              <div class="wokwi-tabs"><button class="wokwi-tab active" onclick="switchTab(this, 'sketch4')"><i class="fas fa-code"></i> sketch.ino</button></div>
+              <div class="code-panel active" id="sketch4"><div class="code-block">
+<span class="kw">#include</span> <span class="str">&lt;Wire.h&gt;</span>
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">Serial.begin</span>(<span class="num">9600</span>);
+  <span class="fn">Wire.begin</span>();
+  <span class="fn">Serial.println</span>(<span class="str">"I2C Scanner"</span>);
+}
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="kw">byte</span> count = <span class="num">0</span>;
+  <span class="kw">for</span> (<span class="kw">byte</span> addr = <span class="num">1</span>; addr &lt; <span class="num">127</span>; addr++) {
+    <span class="fn">Wire.beginTransmission</span>(addr);
+    <span class="kw">if</span> (<span class="fn">Wire.endTransmission</span>() == <span class="num">0</span>) {
+      <span class="fn">Serial.print</span>(<span class="str">"Found: 0x"</span>);
+      <span class="fn">Serial.println</span>(addr, HEX);
+      count++;
+    }
+  }
+  <span class="fn">Serial.print</span>(<span class="str">"Total: "</span>);
+  <span class="fn">Serial.println</span>(count);
+  <span class="fn">delay</span>(<span class="num">5000</span>);
+}</div></div>
+            </div>
+          </div>
+
+          <!-- پروژه ۵: داشبورد پیشرفته (سنسور خاک + OLED) -->
+          <div class="wokwi-project">
+            <div class="wokwi-info">
+              <span class="wokwi-badge"><i class="fas fa-chart-line"></i> پروژه ۵</span>
+              <h3>داشبورد سنسور خاک با OLED</h3>
+              <p>پروژه‌ای کامل‌تر: نمایش درصد رطوبت خاک، وضعیت (DRY/OK/WET) و حتی تصویر گیاه روی OLED.</p>
+              <div class="wokwi-goal"><strong>🎯 هدف:</strong> ترکیب سنسور آنالوگ، OLED و منطق شرطی در یک پروژه واقعی.</div>
+              <a href="https://wokwi.com/projects/448622359807729665" target="_blank" class="wokwi-link-btn"><i class="fas fa-external-link-alt"></i> باز کردن پروژه در Wokwi</a>
+              <div class="copy-hint"><i class="fas fa-copy"></i> این پروژه کامل‌ترین نمونه در این جلسه است.</div>
+            </div>
+            <div class="wokwi-code-section">
+              <div class="wokwi-tabs"><button class="wokwi-tab active" onclick="switchTab(this, 'sketch5')"><i class="fas fa-code"></i> sketch.ino (بخش OLED)</button></div>
+              <div class="code-panel active" id="sketch5"><div class="code-block">
+<span class="cmt">// بخش OLED پروژه سنسور خاک</span>
+<span class="kw">#include</span> <span class="str">&lt;Adafruit_SSD1306.h&gt;</span>
+<span class="kw">#define</span> SCREEN_WIDTH <span class="num">128</span>
+<span class="kw">#define</span> SCREEN_HEIGHT <span class="num">64</span>
+Adafruit_SSD1306 <span class="var">display</span>(SCREEN_WIDTH, SCREEN_HEIGHT, &amp;Wire, <span class="num">-1</span>);
+
+<span class="kw">void</span> <span class="fn">showOnOLED</span>(<span class="kw">int</span> percent, <span class="kw">int</span> raw) {
+  <span class="fn">display.clearDisplay</span>();
+  <span class="fn">display.setTextSize</span>(<span class="num">2</span>);
+  <span class="fn">display.setCursor</span>(<span class="num">0</span>, <span class="num">16</span>);
+  <span class="fn">display.print</span>(percent);
+  <span class="fn">display.println</span>(<span class="str">"%"</span>);
+  <span class="fn">display.setTextSize</span>(<span class="num">1</span>);
+  <span class="fn">display.setCursor</span>(<span class="num">0</span>, <span class="num">40</span>);
+  <span class="fn">display.print</span>(<span class="str">"Raw:"</span>);
+  <span class="fn">display.println</span>(raw);
+  <span class="kw">if</span> (percent &lt; <span class="num">30</span>) <span class="fn">display.println</span>(<span class="str">"DRY!"</span>);
+  <span class="kw">else if</span> (percent &lt; <span class="num">60</span>) <span class="fn">display.println</span>(<span class="str">"OK"</span>);
+  <span class="kw">else</span> <span class="fn">display.println</span>(<span class="str">"WET"</span>);
+  <span class="fn">display.display</span>();
+}</div></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 9: معرفی Velxio و Scratchboard ===== -->
+    <section class="slide content-slide" data-slide="8">
+      <div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-globe"></i></div><h2>🌐 شبیه‌سازهای جایگزین: Velxio و Scratchboard</h2><span class="subtitle-bar"></span></div>
+      <div class="content-body">
+        <div class="info-grid animate-in">
+          <div class="info-card" style="border-right-color: var(--wokwi);">
+            <div class="info-icon" style="color: var(--wokwi);"><i class="fas fa-check-circle"></i></div>
+            <h5>Wokwi (پیشنهادی)</h5>
+            <p>کامل‌ترین شبیه‌ساز آنلاین Arduino با پشتیبانی از OLED، LCD، DHT22 و کتابخانه‌های Adafruit. کدهای واقعی Arduino در مرورگر اجرا می‌شوند [citation:3].</p>
+          </div>
+          <div class="info-card" style="border-right-color: var(--purple);">
+            <div class="info-icon" style="color: var(--purple);"><i class="fas fa-microchip"></i></div>
+            <h5>Velxio</h5>
+            <p>شبیه‌ساز رایگان و متن‌باز. کد Arduino را با arduino-cli کامپایل می‌کند و روی یک پردازنده AVR8 شبیه‌سازی‌شده اجرا می‌کند. از OLED و LCD پشتیبانی می‌کند [citation:4][citation:10].</p>
+          </div>
+          <div class="info-card" style="border-right-color: var(--pink);">
+            <div class="info-icon" style="color: var(--pink);"><i class="fas fa-paint-brush"></i></div>
+            <h5>Scratchboard</h5>
+            <p>نسخه ۲ با موتور شبیه‌سازی WASM (Rust) بازنویسی شده. از LCD1602، LCD2004 و SSD1306 OLED پشتیبانی می‌کند. رایگان برای شروع، نسخه Maker با ۷ دلار در ماه [citation:5].</p>
+          </div>
+        </div>
+        <div style="background: rgba(255, 183, 0, 0.08); border-radius: 16px; padding: 16px 20px; border-right: 4px solid var(--accent); margin-top: 20px;" class="animate-in">
+          <p style="font-size: 0.9rem; color: rgba(255,255,255,0.9); margin: 0; line-height: 1.9;"><strong style="color: var(--accent);">💡 توصیه نهایی:</strong> برای این جلسه از <strong>Wokwi</strong> استفاده می‌کنیم چون هماهنگ با جلسات قبل است و کدهای آن مستقیماً روی سخت‌افزار واقعی هم کار می‌کنند. Velxio و Scratchboard گزینه‌های خوبی برای کاوش بیشتر هستند.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 10: کوییز تعاملی ===== -->
+    <section class="slide content-slide" data-slide="9">
+      <div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-question-circle"></i></div><h2>🧠 کوییز تعاملی</h2><span class="subtitle-bar"></span></div>
+      <div class="content-body">
+        <div class="quiz-container animate-in">
+          <div class="quiz-question" id="quizQuestion">سوال در حال بارگذاری...</div>
+          <div class="quiz-options" id="quizOptions"></div>
+          <div class="quiz-feedback" id="quizFeedback"></div>
+          <div style="display: flex; gap: 10px; margin-top: 16px;">
+            <button class="wokwi-link-btn" id="nextQuizBtn" style="flex: 1; background: linear-gradient(135deg, var(--accent), var(--accent2));"><i class="fas fa-arrow-left"></i> سوال بعدی</button>
+            <button class="wokwi-link-btn" id="resetQuizBtn" style="flex: 1; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);"><i class="fas fa-redo"></i> شروع مجدد</button>
+          </div>
+          <div style="text-align: center; margin-top: 12px; font-size: 0.85rem; color: rgba(255,255,255,0.7);">امتیاز: <span id="quizScore" style="color: var(--accent); font-weight: 900;">۰</span> از <span id="quizTotal" style="font-weight: 700;">۵</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 11: تمرین‌ها ===== -->
+    <section class="slide content-slide" data-slide="10">
+      <div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-pen-fancy"></i></div><h2>تمرین‌های کلاسی</h2><span class="subtitle-bar"></span></div>
+      <div class="content-body">
+        <div class="exercises-float-wrapper animate-in">
+          <div class="exercises-float-scroll">
+            <div class="exercise-group group-conceptual">
+              <div class="exercise-group-header"><div class="exercise-group-icon"><i class="fas fa-question-circle"></i></div><div><h4>الف) سؤالات مفهومی</h4><div class="group-subtitle">مباحث نظری — تفکر و تحلیل</div></div></div>
+              <ul class="exercise-list">
+                <li><span class="q-num">۱</span><span class="q-text">تفاوت <strong>I2C</strong> و <strong>SPI</strong> در چیست؟ کدام برای OLED مناسب‌تر است؟</span></li>
+                <li><span class="q-num">۲</span><span class="q-text">آدرس I2C چیست و چگونه می‌توان آن را برای OLED تغییر داد؟</span></li>
+                <li><span class="q-num">۳</span><span class="q-text">تفاوت LCD کاراکتری و OLED گرافیکی در چیست؟</span></li>
+                <li><span class="q-num">۴</span><span class="q-text">چرا SDA به A4 و SCL به A5 وصل می‌شود؟</span></li>
+                <li><span class="q-num">۵</span><span class="q-text">چگونه می‌توان چند دستگاه I2C را به Arduino وصل کرد؟</span></li>
+              </ul>
+            </div>
+            <div class="exercise-group group-practical">
+              <div class="exercise-group-header"><div class="exercise-group-icon"><i class="fas fa-flask"></i></div><div><h4>ب) تمرین‌های عملی</h4><div class="group-subtitle">کار با Wokwi و Arduino IDE</div></div></div>
+              <ul class="exercise-list">
+                <li><span class="q-num">۱</span><span class="q-text"><strong>پروژه Hello World:</strong> در Wokwi، OLED را راه‌اندازی کنید و متن «Hello Arduino» را نمایش دهید.</span></li>
+                <li><span class="q-num">۲</span><span class="q-text"><strong>نمایش داده سنسور:</strong> مقدار پتانسیومتر را روی OLED نمایش دهید.</span></li>
+                <li><span class="q-num">۳</span><span class="q-text"><strong>اسکن I2C:</strong> کد اسکنر را اجرا کنید و آدرس OLED خود را پیدا کنید.</span></li>
+                <li><span class="q-num">۴</span><span class="q-text"><strong>مقایسه:</strong> همان متن را روی LCD 16x2 و OLED نمایش دهید و تفاوت‌ها را یادداشت کنید.</span></li>
+                <li><span class="q-num">۵</span><span class="q-text"><strong>جستجوی مقاله:</strong> عبارت «<em>I2C OLED display Arduino interfacing</em>» را در Google Scholar جستجو کنید.</span></li>
+              </ul>
+            </div>
+            <div class="exercise-group group-written">
+              <div class="exercise-group-header"><div class="exercise-group-icon"><i class="fas fa-pen-nib"></i></div><div><h4>ج) تمرین نوشتاری</h4><div class="group-subtitle">تحلیل و مستندسازی</div></div></div>
+              <ul class="exercise-list">
+                <li><span class="q-num">۱</span><span class="q-text">تفاوت بین کتابخانه‌های <strong>Adafruit_SSD1306</strong> و <strong>U8g2</strong> برای OLED را مقایسه کنید.</span></li>
+                <li><span class="q-num">۲</span><span class="q-text">جدولی از آدرس‌های I2C رایج (OLED، LCD، BMP280، MPU6050) تهیه کنید.</span></li>
+              </ul>
+            </div>
+            <div class="exercise-group group-challenge">
+              <div class="exercise-group-header"><div class="exercise-group-icon"><i class="fas fa-star"></i></div><div><h4>د) چالش خلاقانهٔ کلاسی ★</h4><div class="group-subtitle">مسابقهٔ گروهی — امتیاز ویژه</div></div></div>
+              <div class="challenge-box">
+                <div class="challenge-title"><i class="fas fa-trophy"></i> «طراح داشبورد مینیاتوری» — Mini Dashboard Challenge</div>
+                <p>هر گروه یک <strong>صفحه‌ی نمایشی خلاقانه</strong> برای OLED طراحی می‌کند که شامل: 🎨 آیکون ساده، نوار پیشرفت، پیام متحرک، و داده‌های سنسور</p>
+                <p>🏆 بهترین طرح در گالری کلاسی به نمایش درمی‌آید و رأی‌گیری می‌شود.</p>
+                <div class="challenge-footer"><span class="tag"><i class="fas fa-clock"></i> ۱۵ دقیقه</span><span class="tag"><i class="fas fa-users"></i> گروه‌های سه‌نفره</span><span class="tag"><i class="fas fa-palette"></i> خلاقیت + فنی</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="scroll-hint"><i class="fas fa-mouse"></i> اسکرول کنید <i class="fas fa-arrow-down"></i></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 12: پرسش‌های پایانی ===== -->
+    <section class="slide content-slide" data-slide="11">
+      <div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-comments"></i></div><h2>🗣️ پرسش‌های پایانی کلاس</h2><span class="subtitle-bar"></span></div>
+      <div class="content-body">
+        <div class="quiz-container animate-in">
+          <div style="text-align: center; margin-bottom: 20px;"><i class="fas fa-lightbulb" style="font-size: 3rem; color: var(--accent);"></i><p style="font-size: 1rem; color: rgba(255,255,255,0.9); margin-top: 12px; line-height: 1.9;">لطفاً به این پرسش‌ها فکر کنید و پاسخ دهید:</p></div>
+          <div class="info-grid">
+            <div class="info-card" style="border-right-color: var(--accent);"><div class="info-icon"><i class="fas fa-question"></i></div><h5>۱. چرا از I2C استفاده می‌کنیم؟</h5><p>مزیت اصلی I2C نسبت به اتصال مستقیم (پارالل) چیست؟</p></div>
+            <div class="info-card" style="border-right-color: var(--cyan);"><div class="info-icon" style="color: var(--cyan);"><i class="fas fa-question"></i></div><h5>۲. اگر OLED کار نکند چه کنیم؟</h5><p>سه مرحله عیب‌یابی برای OLED که روشن نمی‌شود نام ببرید.</p></div>
+            <div class="info-card" style="border-right-color: var(--success);"><div class="info-icon" style="color: var(--success);"><i class="fas fa-question"></i></div><h5>۳. OLED یا LCD؟</h5><p>برای یک دستگاه قابل حمل، کدام را انتخاب می‌کنید و چرا؟</p></div>
+            <div class="info-card" style="border-right-color: var(--purple);"><div class="info-icon" style="color: var(--purple);"><i class="fas fa-question"></i></div><h5>۴. محدودیت OLED چیست؟</h5><p>چه زمانی نمی‌توان از OLED استفاده کرد؟</p></div>
+            <div class="info-card" style="border-right-color: var(--pink);"><div class="info-icon" style="color: var(--pink);"><i class="fas fa-question"></i></div><h5>۵. کاربرد صنعتی نمایشگر در مکانیک؟</h5><p>یک مثال واقعی از صنعت بیاورید.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 13: پایان ===== -->
+    <section class="slide end-slide" data-slide="12">
+      <span class="end-icon">🎓</span>
+      <h2 class="animate-in">پایان جلسه هفتم</h2>
+      <p class="animate-in">از داده‌های خام تا نمایش زیبا!</p>
+      <div class="next-session animate-in"><div class="arrow-icon"><i class="fas fa-arrow-left"></i></div><div><div style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 4px;">جلسه بعدی:</div><div>اندازه‌گیری دما</div></div></div>
+      <p class="animate-in" style="margin-top: 40px; font-size: 0.95rem; color: rgba(255,255,255,0.6);"><i class="fas fa-book" style="color: var(--accent);"></i> منابع پیشنهادی: Adafruit SSD1306 Library</p>
+    </section>
+
+  </div>
+
+  <nav class="slide-nav">
+    <button class="nav-btn" id="prevBtn" title="اسلاید قبلی"><i class="fas fa-chevron-right"></i></button>
+    <div class="slide-counter"><span class="current" id="currentSlide">۱</span> / <span id="totalSlides">۱۳</span></div>
+    <button class="nav-btn" id="nextBtn" title="اسلاید بعدی"><i class="fas fa-chevron-left"></i></button>
+  </nav>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    (function() {
+      const slides = document.querySelectorAll('.slide');
+      const totalSlides = slides.length;
+      let currentIndex = 0;
+      let soundEnabled = true;
+      let musicEnabled = false;
+      let audioCtx = null;
+      let musicOscillators = [];
+
+      const progressBar = document.getElementById('progressBar');
+      const currentSlideSpan = document.getElementById('currentSlide');
+      const totalSlidesSpan = document.getElementById('totalSlides');
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const dotsNav = document.getElementById('dotsNav');
+      const toast = document.getElementById('toast');
+
+      totalSlidesSpan.textContent = toPersianNumber(totalSlides);
+
+      const starfield = document.getElementById('starfield');
+      for (let i = 0; i < 120; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        const size = Math.random() * 2.5 + 0.5;
+        star.style.width = size + 'px'; star.style.height = size + 'px';
+        star.style.left = Math.random() * 100 + '%'; star.style.top = Math.random() * 100 + '%';
+        star.style.animationDelay = Math.random() * 3 + 's';
+        star.style.animationDuration = (2 + Math.random() * 3) + 's';
+        const colors = ['#ffffff', '#ffb700', '#06b6d4', '#a855f7', '#00d4aa'];
+        star.style.color = colors[Math.floor(Math.random() * colors.length)];
+        star.style.background = 'currentColor';
+        starfield.appendChild(star);
+      }
+
+      slides.forEach((_, i) => {
+        const dot = document.createElement('div');
+        dot.className = 'dot' + (i === 0 ? ' active' : '');
+        dot.title = `اسلاید ${toPersianNumber(i + 1)}`;
+        dot.addEventListener('click', () => goToSlide(i));
+        dotsNav.appendChild(dot);
+      });
+
+      function toPersianNumber(num) {
+        const p = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+        return String(num).replace(/\d/g, d => p[d]);
+      }
+
+      function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+      function playClickSound() { if (!soundEnabled) return; try { initAudio(); const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); osc.type = 'sine'; osc.frequency.setValueAtTime(880, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.12); gain.gain.setValueAtTime(0.08, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12); osc.start(); osc.stop(audioCtx.currentTime + 0.12); } catch(e){} }
+      function playTransitionSound() { if (!soundEnabled) return; try { initAudio(); [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => { const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); osc.type = 'sine'; osc.frequency.value = f; const t = audioCtx.currentTime + i * 0.06; gain.gain.setValueAtTime(0.05, t); gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25); osc.start(t); osc.stop(t + 0.25); }); } catch(e){} }
+      function playSuccessSound() { if (!soundEnabled) return; try { initAudio(); [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((f, i) => { const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); osc.type = 'triangle'; osc.frequency.value = f; const t = audioCtx.currentTime + i * 0.08; gain.gain.setValueAtTime(0.06, t); gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3); osc.start(t); osc.stop(t + 0.3); }); } catch(e){} }
+
+      function startMusic() { if (!audioCtx) initAudio(); if (musicOscillators.length > 0) return; const notes = [130.81, 164.81, 196.00, 261.63]; notes.forEach((freq, idx) => { const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); const lfo = audioCtx.createOscillator(); const lfoGain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); osc.type = 'sine'; osc.frequency.value = freq; lfo.connect(lfoGain); lfoGain.connect(gain.gain); lfo.frequency.value = 0.1 + idx * 0.05; lfoGain.gain.value = 0.015; gain.gain.value = 0.02 + idx * 0.005; osc.start(); lfo.start(); musicOscillators.push({ osc, lfo, gain }); }); }
+      function stopMusic() { musicOscillators.forEach(({ osc, lfo, gain }) => { try { gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5); setTimeout(() => { try { osc.stop(); lfo.stop(); } catch(e){} }, 600); } catch(e){} }); musicOscillators = []; }
+
+      function goToSlide(index) {
+        if (index < 0 || index >= totalSlides) return;
+        if (index === totalSlides - 1) playSuccessSound(); else playTransitionSound();
+        slides[currentIndex].classList.remove('active');
+        slides[index].classList.add('active');
+        document.querySelectorAll('.dot')[currentIndex].classList.remove('active');
+        document.querySelectorAll('.dot')[index].classList.add('active');
+        currentIndex = index;
+        currentSlideSpan.textContent = toPersianNumber(currentIndex + 1);
+        const progress = ((currentIndex + 1) / totalSlides) * 100;
+        progressBar.style.width = progress + '%';
+        prevBtn.disabled = currentIndex === 0;
+        nextBtn.disabled = currentIndex === totalSlides - 1;
+        if (index === 9) initQuiz();
+        if (index === 6) initOledSim();
+      }
+
+      function nextSlide() { goToSlide(currentIndex + 1); }
+      function prevSlide() { goToSlide(currentIndex - 1); }
+      nextBtn.addEventListener('click', nextSlide);
+      prevBtn.addEventListener('click', prevSlide);
+      document.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft') nextSlide(); else if (e.key === 'ArrowRight') prevSlide(); else if (e.key === ' ') { e.preventDefault(); nextSlide(); } else if (e.key === 'Home') goToSlide(0); else if (e.key === 'End') goToSlide(totalSlides - 1); });
+
+      let touchStartX = 0;
+      document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
+      document.addEventListener('touchend', (e) => { const diff = touchStartX - e.changedTouches[0].screenX; if (Math.abs(diff) > 50) { if (diff > 0) nextSlide(); else prevSlide(); } }, { passive: true });
+
+      const soundToggle = document.getElementById('soundToggle');
+      soundToggle.addEventListener('click', () => { soundEnabled = !soundEnabled; soundToggle.classList.toggle('active', soundEnabled); soundToggle.querySelector('i').className = soundEnabled ? 'fas fa-volume-up' : 'fas fa-volume-mute'; if (soundEnabled) playClickSound(); });
+
+      const musicToggle = document.getElementById('musicToggle');
+      musicToggle.addEventListener('click', () => { musicEnabled = !musicEnabled; musicToggle.classList.toggle('active', musicEnabled); if (musicEnabled) { initAudio(); startMusic(); showToast('<i class="fas fa-music"></i> موسیقی فعال شد'); } else { stopMusic(); showToast('<i class="fas fa-volume-mute"></i> موسیقی خاموش شد'); } });
+
+      document.getElementById('fullscreenBtn').addEventListener('click', () => { playClickSound(); if (!document.fullscreenElement) { document.documentElement.requestFullscreen(); document.getElementById('fullscreenBtn').querySelector('i').className = 'fas fa-compress'; } else { document.exitFullscreen(); document.getElementById('fullscreenBtn').querySelector('i').className = 'fas fa-expand'; } });
+
+      let toastTimeout;
+      function showToast(msg, duration = 2500) { clearTimeout(toastTimeout); toast.innerHTML = msg; toast.classList.add('show'); toastTimeout = setTimeout(() => toast.classList.remove('show'), duration); }
+
+      function initOledSim() {
+        const input1 = document.getElementById('oledInput1');
+        const input2 = document.getElementById('oledInput2');
+        const oledText = document.getElementById('oledText');
+        const oledSub = document.getElementById('oledSub');
+        if (!input1 || !oledText) return;
+        function update() { oledText.textContent = input1.value || '—'; oledSub.textContent = input2.value || '—'; }
+        input1.addEventListener('input', update);
+        input2.addEventListener('input', update);
+        update();
+      }
+
+      const quizData = [
+        { q: 'پروتکل I2C از چند سیم استفاده می‌کند؟', options: ['۱ سیم', '۲ سیم', '۳ سیم', '۴ سیم'], correct: 1, explanation: 'I2C از ۲ سیم استفاده می‌کند: SDA (داده) و SCL (کلاک)' },
+        { q: 'آدرس I2C رایج برای OLED SSD1306 چیست؟', options: ['0x27', '0x3C', '0x68', '0x76'], correct: 1, explanation: 'OLED SSD1306 معمولاً آدرس 0x3C دارد (گاهی 0x3D)' },
+        { q: 'در Arduino UNO، SDA به کدام پین وصل می‌شود؟', options: ['A0', 'A4', 'A5', 'D2'], correct: 1, explanation: 'SDA به A4 و SCL به A5 (در Arduino UNO)' },
+        { q: 'کدام کتابخانه برای OLED استفاده می‌شود؟', options: ['LiquidCrystal', 'Adafruit_SSD1306', 'Servo', 'DHT'], correct: 1, explanation: 'کتابخانه Adafruit_SSD1306 برای OLED گرافیکی استفاده می‌شود.' },
+        { q: 'تفاوت OLED و LCD در چیست؟', options: ['OLED خودنور است', 'LCD گرافیکی‌تر است', 'OLED کندتر است', 'LCD ارزان‌تر نیست'], correct: 0, explanation: 'OLED پیکسل‌های خودنور دارد و به نور پس‌زمینه نیاز ندارد.' }
+      ];
+
+      let currentQuizIndex = 0, quizScore = 0, answeredQuestions = new Set();
+
+      function initQuiz() { currentQuizIndex = 0; quizScore = 0; answeredQuestions.clear(); document.getElementById('quizScore').textContent = '۰'; document.getElementById('quizTotal').textContent = toPersianNumber(quizData.length); renderQuiz(); }
+
+      function renderQuiz() {
+        const question = quizData[currentQuizIndex];
+        document.getElementById('quizQuestion').textContent = `سوال ${toPersianNumber(currentQuizIndex + 1)}: ${question.q}`;
+        const optionsContainer = document.getElementById('quizOptions');
+        optionsContainer.innerHTML = '';
+        question.options.forEach((opt, idx) => { const btn = document.createElement('button'); btn.className = 'quiz-option'; btn.textContent = opt; btn.addEventListener('click', () => handleAnswer(idx)); optionsContainer.appendChild(btn); });
+        const feedback = document.getElementById('quizFeedback');
+        feedback.classList.remove('show', 'success', 'error'); feedback.textContent = '';
+      }
+
+      function handleAnswer(selectedIdx) {
+        const question = quizData[currentQuizIndex];
+        const options = document.querySelectorAll('#quizOptions .quiz-option');
+        options.forEach((opt, idx) => { opt.classList.add('disabled'); if (idx === question.correct) opt.classList.add('correct'); else if (idx === selectedIdx) opt.classList.add('incorrect'); });
+        const feedback = document.getElementById('quizFeedback'); feedback.classList.add('show');
+        if (selectedIdx === question.correct) {
+          feedback.classList.add('success'); feedback.innerHTML = `<i class="fas fa-check-circle"></i> <strong>پاسخ صحیح!</strong><br>${question.explanation}`;
+          if (!answeredQuestions.has(currentQuizIndex)) { quizScore++; answeredQuestions.add(currentQuizIndex); document.getElementById('quizScore').textContent = toPersianNumber(quizScore); }
+          playSuccessSound();
+        } else {
+          feedback.classList.add('error'); feedback.innerHTML = `<i class="fas fa-times-circle"></i> <strong>پاسخ نادرست</strong><br>${question.explanation}`; playClickSound();
+        }
+      }
+
+      document.getElementById('nextQuizBtn')?.addEventListener('click', () => { currentQuizIndex = (currentQuizIndex + 1) % quizData.length; renderQuiz(); });
+      document.getElementById('resetQuizBtn')?.addEventListener('click', () => { initQuiz(); });
+
+      window.switchTab = function(btn, panelId) {
+        const parent = btn.closest('.wokwi-code-section');
+        parent.querySelectorAll('.wokwi-tab').forEach(t => t.classList.remove('active'));
+        parent.querySelectorAll('.code-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(panelId).classList.add('active');
+      };
+
+      goToSlide(0);
+      setTimeout(() => { showToast('<i class="fas fa-hand-sparkles"></i> خوش آمدید به جلسه هفتم — نمایشگر OLED و LCD', 4000); }, 800);
+    })();
+  </script>
+</body>
+</html>
