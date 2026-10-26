@@ -1,0 +1,2664 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>جلسه ۶: ورودی/خروجی آنالوگ و دیجیتال — سیستم‌های اندازه‌گیری و کنترل</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;300;400;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --accent: #ffb700;
+      --accent2: #ff6b35;
+      --success: #00d4aa;
+      --danger: #ff4757;
+      --purple: #a855f7;
+      --pink: #ec4899;
+      --cyan: #06b6d4;
+      --dark: #050818;
+      --wokwi: #00979c;
+    }
+
+    html, body {
+      font-family: 'Vazirmatn', sans-serif;
+      background: #050818;
+      color: white;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .starfield {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      background:
+        radial-gradient(ellipse at 20% 30%, rgba(102, 126, 234, 0.35) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 70%, rgba(240, 147, 251, 0.25) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(0, 212, 170, 0.15) 0%, transparent 60%),
+        linear-gradient(135deg, #050818 0%, #0f1c3f 50%, #1a1f3a 100%);
+    }
+    .star {
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle 3s infinite ease-in-out;
+      pointer-events: none;
+      box-shadow: 0 0 6px currentColor;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.5); }
+    }
+
+    .neon-bubble {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.5;
+      animation: floatBubble 25s infinite ease-in-out;
+      pointer-events: none;
+      z-index: 2;
+    }
+    @keyframes floatBubble {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(60px, -80px) scale(1.2); }
+      66% { transform: translate(-40px, 60px) scale(0.9); }
+    }
+    .neon-bubble:nth-child(1) { width: 400px; height: 400px; top: -10%; left: -5%; background: #6d28d9; animation-duration: 22s; }
+    .neon-bubble:nth-child(2) { width: 350px; height: 350px; top: 60%; right: -8%; background: #ff6b35; animation-duration: 28s; animation-delay: 3s; }
+    .neon-bubble:nth-child(3) { width: 300px; height: 300px; bottom: -10%; left: 30%; background: #00d4aa; animation-duration: 25s; animation-delay: 5s; }
+    .neon-bubble:nth-child(4) { width: 250px; height: 250px; top: 30%; right: 30%; background: #ec4899; animation-duration: 30s; animation-delay: 8s; }
+
+    .progress-bar {
+      position: fixed;
+      top: 0; right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, #06b6d4, #a855f7, #ff6b35, #ffb700, #06b6d4);
+      background-size: 400% 100%;
+      width: 0%;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 1000;
+      box-shadow: 0 0 20px rgba(255, 183, 0, 0.8);
+      animation: gradientFlow 3s linear infinite;
+    }
+    @keyframes gradientFlow {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 400% 50%; }
+    }
+
+    .slide-header {
+      position: fixed;
+      top: 20px; right: 20px; left: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+      padding: 14px 28px;
+      background: rgba(10, 14, 39, 0.65);
+      backdrop-filter: blur(25px) saturate(180%);
+      border-radius: 60px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .slide-header .logo { display: flex; align-items: center; gap: 14px; font-weight: 800; font-size: 1rem; }
+    .slide-header .logo-icon {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      color: white;
+      box-shadow: 0 8px 20px rgba(255, 183, 0, 0.4);
+      animation: chipPulse 3s infinite ease-in-out;
+    }
+    @keyframes chipPulse {
+      0%, 100% { box-shadow: 0 8px 20px rgba(255, 183, 0, 0.4); }
+      50% { box-shadow: 0 8px 40px rgba(255, 183, 0, 0.8); }
+    }
+    .slide-header .slide-info { display: flex; align-items: center; gap: 20px; font-size: 0.9rem; color: rgba(255, 255, 255, 0.85); }
+    .slide-header .slide-info i { color: var(--accent); margin-left: 6px; }
+
+    .controls {
+      position: fixed;
+      top: 100px; left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 100;
+    }
+    .ctrl-btn {
+      width: 50px; height: 50px;
+      border-radius: 16px;
+      background: rgba(10, 14, 39, 0.7);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      font-size: 1.1rem;
+    }
+    .ctrl-btn:hover {
+      transform: translateY(-4px) scale(1.05);
+      border-color: var(--accent);
+      box-shadow: 0 10px 30px rgba(255, 183, 0, 0.4);
+    }
+    .ctrl-btn.active { background: linear-gradient(135deg, var(--accent), var(--accent2)); }
+
+    .slides-container { width: 100%; height: 100vh; position: relative; z-index: 10; }
+    .slide {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 110px 40px 130px;
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0.9) rotateY(15deg);
+      transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow-y: auto;
+    }
+    .slide.active { opacity: 1; visibility: visible; transform: scale(1) rotateY(0deg); }
+
+    .animate-in {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .slide.active .animate-in { opacity: 1; transform: translateY(0); }
+    .slide.active .animate-in:nth-child(1) { transition-delay: 0.15s; }
+    .slide.active .animate-in:nth-child(2) { transition-delay: 0.3s; }
+    .slide.active .animate-in:nth-child(3) { transition-delay: 0.45s; }
+    .slide.active .animate-in:nth-child(4) { transition-delay: 0.6s; }
+    .slide.active .animate-in:nth-child(5) { transition-delay: 0.75s; }
+    .slide.active .animate-in:nth-child(6) { transition-delay: 0.9s; }
+
+    .title-slide { text-align: center; position: relative; }
+    .title-slide .hero-bg {
+      position: absolute; inset: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0.35;
+      z-index: -1;
+    }
+    .title-slide .hero-overlay {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at center, rgba(5,8,24,0.3) 0%, rgba(5,8,24,0.85) 70%);
+      z-index: -1;
+    }
+    .title-slide .main-icon {
+      font-size: 7rem;
+      margin-bottom: 30px;
+      display: inline-block;
+      background: linear-gradient(135deg, #ffb700, #ff6b35, #ec4899);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 40px rgba(255, 183, 0, 0.6));
+      animation: iconFloat 3s infinite ease-in-out;
+    }
+    @keyframes iconFloat {
+      0%, 100% { transform: translateY(0) rotate(-5deg); }
+      50% { transform: translateY(-20px) rotate(5deg); }
+    }
+    .title-slide .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: linear-gradient(135deg, rgba(255, 183, 0, 0.15), rgba(255, 107, 53, 0.1));
+      border: 2px solid rgba(255, 183, 0, 0.5);
+      padding: 12px 28px;
+      border-radius: 60px;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 25px;
+      font-size: 1rem;
+      backdrop-filter: blur(10px);
+    }
+    .badge .pulse-dot {
+      width: 10px; height: 10px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulseDot 1.5s infinite;
+    }
+    @keyframes pulseDot {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 183, 0, 0.7); }
+      50% { transform: scale(1.2); box-shadow: 0 0 0 12px rgba(255, 183, 0, 0); }
+    }
+    .title-slide h1 {
+      font-size: 4rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #ffffff 0%, #ffb700 40%, #ff6b35 70%, #ec4899 100%);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 25px;
+      line-height: 1.2;
+      animation: titleGradient 5s ease infinite;
+    }
+    @keyframes titleGradient {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    .title-slide .subtitle { font-size: 1.5rem; color: rgba(255, 255, 255, 0.85); margin-bottom: 45px; font-weight: 300; }
+    .title-slide .instructor-card {
+      display: inline-flex;
+      align-items: center;
+      gap: 18px;
+      background: rgba(10, 14, 39, 0.6);
+      backdrop-filter: blur(20px);
+      padding: 20px 36px;
+      border-radius: 24px;
+      border: 1px solid rgba(255, 183, 0, 0.3);
+      text-align: right;
+    }
+    .title-slide .instructor-avatar {
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      color: white;
+    }
+    .title-slide .instructor-info .name { font-weight: 800; font-size: 1.15rem; color: white; margin-bottom: 4px; }
+    .title-slide .instructor-info .title { font-size: 0.85rem; color: rgba(255, 183, 0, 0.9); }
+
+    .floating-icons { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: -1; }
+    .float-icon {
+      position: absolute;
+      font-size: 3rem;
+      background: linear-gradient(135deg, rgba(255,183,0,0.4), rgba(255,107,53,0.2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: floatIcon 10s infinite ease-in-out;
+    }
+    @keyframes floatIcon {
+      0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+      33% { transform: translateY(-40px) rotate(15deg) scale(1.15); }
+      66% { transform: translateY(20px) rotate(-10deg) scale(0.9); }
+    }
+    .float-icon:nth-child(1) { top: 12%; left: 8%; animation-delay: 0s; font-size: 4rem; }
+    .float-icon:nth-child(2) { top: 20%; right: 10%; animation-delay: 1.5s; font-size: 3rem; }
+    .float-icon:nth-child(3) { bottom: 22%; left: 12%; animation-delay: 3s; font-size: 3.5rem; }
+    .float-icon:nth-child(4) { bottom: 28%; right: 8%; animation-delay: 4.5s; font-size: 4.5rem; }
+    .float-icon:nth-child(5) { top: 45%; left: 4%; animation-delay: 2s; font-size: 3rem; }
+    .float-icon:nth-child(6) { top: 55%; right: 4%; animation-delay: 5s; font-size: 3.5rem; }
+
+    .content-slide { align-items: stretch; }
+    .content-slide .slide-title { text-align: center; margin-bottom: 26px; }
+    .content-slide .slide-title .title-icon-wrap {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 75px; height: 75px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, rgba(255, 183, 0, 0.2), rgba(255, 107, 53, 0.1));
+      border: 2px solid rgba(255, 183, 0, 0.4);
+      font-size: 2rem;
+      color: var(--accent);
+      margin-bottom: 14px;
+      backdrop-filter: blur(20px);
+      animation: iconRotate 6s infinite ease-in-out;
+    }
+    @keyframes iconRotate {
+      0%, 100% { transform: rotate(-5deg); }
+      50% { transform: rotate(5deg); }
+    }
+    .content-slide .slide-title h2 {
+      font-size: 2.3rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #fff, #ffb700);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+    }
+    .content-slide .slide-title .subtitle-bar {
+      display: inline-block;
+      width: 120px; height: 5px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 5px;
+    }
+
+    .content-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      max-width: 1300px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .question-slide { text-align: center; padding: 100px 60px; }
+    .question-slide .question-img {
+      width: 400px;
+      max-width: 80%;
+      height: auto;
+      border-radius: 24px;
+      margin-bottom: 30px;
+      animation: questionBounce 3s infinite ease-in-out;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+      border: 2px solid rgba(255, 183, 0, 0.3);
+    }
+    @keyframes questionBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+    .question-slide h2 {
+      font-size: 2.4rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #fff, #ffb700, #ff6b35);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 30px;
+      line-height: 1.4;
+      animation: titleGradient 4s ease infinite;
+    }
+    .question-slide p { font-size: 1.15rem; color: rgba(255,255,255,0.92); line-height: 2; max-width: 1000px; margin: 0 auto; }
+    .question-slide .hint {
+      margin-top: 30px;
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 32px;
+      background: linear-gradient(135deg, rgba(255, 183, 0, 0.15), rgba(255, 107, 53, 0.1));
+      border-radius: 60px;
+      font-size: 1rem;
+      color: rgba(255,255,255,0.9);
+      border: 1px solid rgba(255, 183, 0, 0.4);
+      backdrop-filter: blur(10px);
+    }
+    .question-slide .hint i { color: var(--accent); font-size: 1.4rem; animation: pulseDot 1.5s infinite; }
+    .question-slide .hint strong { color: var(--accent); font-weight: 800; }
+
+    /* کارت‌های مقایسه */
+    .duo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; width: 100%; }
+    @media (max-width: 900px) { .duo-grid { grid-template-columns: 1fr; } }
+    .duo-card {
+      background: linear-gradient(145deg, rgba(10, 14, 39, 0.9), rgba(30, 40, 70, 0.7));
+      backdrop-filter: blur(20px);
+      border-radius: 28px;
+      padding: 24px;
+      border: 2px solid transparent;
+      transition: all 0.5s ease;
+      text-align: center;
+    }
+    .duo-card:hover { transform: translateY(-10px); }
+    .duo-card.analog { border-color: rgba(6, 182, 212, 0.5); }
+    .duo-card.digital { border-color: rgba(255, 183, 0, 0.5); }
+    .duo-card h3 { font-size: 1.4rem; margin-bottom: 12px; font-weight: 800; }
+    .duo-card.analog h3 { color: var(--cyan); }
+    .duo-card.digital h3 { color: var(--accent); }
+    .duo-card p { font-size: 0.92rem; color: rgba(255,255,255,0.85); line-height: 1.8; }
+
+    /* کد */
+    .code-block {
+      background: rgba(0, 0, 0, 0.75);
+      border-radius: 16px;
+      padding: 20px;
+      margin: 16px 0;
+      font-family: 'Fira Code', 'Courier New', monospace;
+      font-size: 0.85rem;
+      direction: ltr;
+      text-align: left;
+      color: #d4d4d4;
+      border-right: 4px solid var(--accent);
+      line-height: 1.8;
+      overflow-x: auto;
+      max-height: 450px;
+    }
+    .code-block .kw { color: #ff6b35; font-weight: 700; }
+    .code-block .num { color: #ffb700; }
+    .code-block .cmt { color: #6a8aa8; font-style: italic; }
+    .code-block .fn { color: #a855f7; }
+    .code-block .str { color: #00d4aa; }
+    .code-block .var { color: #06b6d4; }
+    .code-block .op { color: #ec4899; }
+
+    /* کارت‌های اطلاعات */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+      width: 100%;
+    }
+    .info-card {
+      background: linear-gradient(145deg, rgba(10, 14, 39, 0.85), rgba(30, 40, 70, 0.6));
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 20px;
+      border-right: 4px solid var(--accent);
+      transition: all 0.3s ease;
+    }
+    .info-card:hover {
+      transform: translateX(-6px);
+      box-shadow: 0 15px 30px rgba(255, 183, 0, 0.15);
+    }
+    .info-card .info-icon { font-size: 1.8rem; margin-bottom: 10px; color: var(--accent); }
+    .info-card h5 { font-size: 0.95rem; color: white; margin-bottom: 8px; font-weight: 800; }
+    .info-card p { font-size: 0.82rem; color: rgba(255, 255, 255, 0.8); line-height: 1.75; }
+
+    /* شبیه‌ساز پایه */
+    .simulator-base {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      width: 100%;
+      background: linear-gradient(145deg, rgba(10, 14, 39, 0.9), rgba(30, 40, 70, 0.7));
+      backdrop-filter: blur(20px);
+      border-radius: 28px;
+      padding: 28px;
+      border: 2px solid rgba(0, 212, 170, 0.4);
+    }
+    @media (max-width: 900px) { .simulator-base { grid-template-columns: 1fr; } }
+
+    .sim-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .sim-controls h4 {
+      color: var(--accent);
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+      font-weight: 800;
+    }
+
+    .sim-slider-wrap {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 16px;
+      padding: 16px;
+    }
+    .sim-slider-wrap label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.85);
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+    .sim-slider-wrap label span { color: var(--accent); font-size: 1.05rem; }
+    input[type="range"] {
+      width: 100%;
+      height: 8px;
+      border-radius: 4px;
+      background: linear-gradient(90deg, var(--cyan), var(--accent), var(--accent2));
+      outline: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: white;
+      border: 3px solid var(--accent);
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    .sim-values {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+    .sim-value-box {
+      background: rgba(0, 0, 0, 0.45);
+      border-radius: 14px;
+      padding: 12px;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .sim-value-box .label { font-size: 0.7rem; color: rgba(255,255,255,0.7); margin-bottom: 6px; font-weight: 600; }
+    .sim-value-box .value {
+      font-family: 'Fira Code', monospace;
+      font-size: 1.2rem;
+      font-weight: 900;
+      color: var(--accent);
+    }
+    .sim-value-box.alt .value { color: var(--cyan); }
+    .sim-value-box.alt2 .value { color: var(--success); }
+
+    .sim-led-container {
+      background: rgba(0, 0, 0, 0.35);
+      border-radius: 20px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 120px;
+    }
+    .sim-led {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #333, #111);
+      box-shadow: 0 0 20px rgba(255, 183, 0, 0.1);
+      transition: all 0.15s ease;
+    }
+
+    /* نمودار ADC */
+    .chart-container {
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 20px;
+      padding: 20px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    .chart-container h4 {
+      color: var(--accent);
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+    }
+    .chart-container canvas {
+      flex: 1;
+      max-height: 300px;
+    }
+
+    /* MediaPipe */
+    .mediapipe-layout {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 20px;
+      width: 100%;
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+    @media (max-width: 900px) { .mediapipe-layout { grid-template-columns: 1fr; } }
+
+    .camera-wrapper {
+      position: relative;
+      border-radius: 24px;
+      overflow: hidden;
+      background: #000;
+      border: 2px solid rgba(255, 183, 0, 0.5);
+      aspect-ratio: 4 / 3;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+    }
+    #cameraVideo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+      display: block;
+    }
+    #handCanvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      transform: scaleX(-1);
+    }
+
+    .camera-status {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(255, 183, 0, 0.4);
+      z-index: 5;
+    }
+    .camera-status.active { color: var(--success); border-color: var(--success); }
+    .camera-status.active .status-dot { background: var(--success); animation: pulseDot 1.5s infinite; }
+    .camera-status .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .ar-led-overlay {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #333, #111);
+      border: 2px solid rgba(255, 183, 0, 0.5);
+      box-shadow: 0 0 20px rgba(255, 183, 0, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: rgba(255, 255, 255, 0.3);
+      transition: all 0.15s ease;
+      z-index: 5;
+    }
+    .ar-led-overlay.on {
+      background: radial-gradient(circle at 30% 30%, #fff, #ffb700);
+      color: white;
+    }
+
+    .mp-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background: rgba(10, 14, 39, 0.85);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 20px;
+      border: 1px solid rgba(255, 183, 0, 0.3);
+    }
+    .mp-controls h4 {
+      color: var(--accent);
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+    }
+    .mp-hint {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.85);
+      line-height: 1.8;
+      background: rgba(0, 212, 170, 0.08);
+      padding: 12px 16px;
+      border-radius: 12px;
+      border-right: 4px solid var(--success);
+    }
+    .mp-hint strong { color: var(--success); }
+
+    .mp-values {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .mp-btn {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      padding: 12px 20px;
+      border-radius: 14px;
+      color: white;
+      font-family: 'Vazirmatn', sans-serif;
+      font-weight: 800;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 15px rgba(255, 183, 0, 0.3);
+    }
+    .mp-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(255, 183, 0, 0.5);
+    }
+    .mp-btn.secondary {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: none;
+    }
+
+    /* تاریخچه */
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+    }
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      gap: 20px;
+      background: linear-gradient(145deg, rgba(10, 14, 39, 0.85), rgba(30, 40, 70, 0.6));
+      border-radius: 16px;
+      padding: 16px 20px;
+      border-right: 4px solid var(--accent);
+      transition: all 0.3s ease;
+    }
+    .timeline-item:hover {
+      transform: translateX(-6px);
+    }
+    .timeline-year {
+      font-size: 1.1rem;
+      font-weight: 900;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Fira Code', monospace;
+    }
+    .timeline-content h5 {
+      font-size: 0.95rem;
+      color: white;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .timeline-content p {
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.85);
+      line-height: 1.8;
+    }
+
+    /* کارت‌های ترفند */
+    .tricks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      width: 100%;
+    }
+    .trick-card {
+      background: linear-gradient(145deg, rgba(10, 14, 39, 0.85), rgba(30, 40, 70, 0.6));
+      border-radius: 18px;
+      padding: 18px;
+      border-right: 4px solid var(--cyan);
+      transition: all 0.3s ease;
+    }
+    .trick-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 15px 30px rgba(6, 182, 212, 0.2);
+    }
+    .trick-card .trick-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--cyan), var(--accent));
+      color: white;
+      font-weight: 900;
+      margin-bottom: 10px;
+    }
+    .trick-card h5 {
+      font-size: 0.95rem;
+      color: var(--cyan);
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .trick-card p {
+      font-size: 0.82rem;
+      color: rgba(255, 255, 255, 0.85);
+      line-height: 1.75;
+    }
+
+    /* جمع‌بندی */
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; width: 100%; }
+    .content-card {
+      background: linear-gradient(145deg, rgba(10, 14, 39, 0.85), rgba(30, 40, 70, 0.6));
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.4s ease;
+    }
+    .content-card:hover { transform: translateY(-10px); border-color: rgba(255, 183, 0, 0.4); }
+    .content-card .card-icon {
+      width: 55px; height: 55px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 16px;
+      color: white;
+    }
+    .content-card h3 { font-size: 1.1rem; margin-bottom: 10px; color: #fff; display: flex; align-items: center; gap: 10px; }
+    .content-card p { font-size: 0.88rem; color: rgba(255, 255, 255, 0.8); line-height: 1.85; }
+
+    /* کوییز */
+    .quiz-container {
+      background: linear-gradient(145deg, rgba(10, 14, 39, 0.9), rgba(30, 40, 70, 0.7));
+      border-radius: 24px;
+      padding: 24px;
+      border: 2px solid rgba(168, 85, 247, 0.4);
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .quiz-question {
+      font-size: 1rem;
+      color: rgba(255, 255, 255, 0.95);
+      margin-bottom: 16px;
+      font-weight: 700;
+      line-height: 1.9;
+    }
+    .quiz-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 700px) { .quiz-options { grid-template-columns: 1fr; } }
+    .quiz-option {
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      border-radius: 14px;
+      padding: 14px 18px;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: right;
+      font-family: 'Vazirmatn', sans-serif;
+      font-size: 0.88rem;
+      line-height: 1.6;
+    }
+    .quiz-option:hover {
+      background: rgba(168, 85, 247, 0.15);
+      border-color: var(--purple);
+    }
+    .quiz-option.correct {
+      background: rgba(0, 212, 170, 0.2);
+      border-color: var(--success);
+      color: var(--success);
+    }
+    .quiz-option.incorrect {
+      background: rgba(255, 71, 87, 0.2);
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+    .quiz-option.disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    .quiz-feedback {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 14px;
+      padding: 14px;
+      font-size: 0.85rem;
+      line-height: 1.8;
+      margin-top: 10px;
+      display: none;
+    }
+    .quiz-feedback.show { display: block; }
+    .quiz-feedback.success {
+      background: rgba(0, 212, 170, 0.1);
+      border-right: 4px solid var(--success);
+      color: rgba(255, 255, 255, 0.9);
+    }
+    .quiz-feedback.error {
+      background: rgba(255, 71, 87, 0.1);
+      border-right: 4px solid var(--danger);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    /* تمرین‌ها */
+    .exercises-float-wrapper { position: relative; width: 100%; height: 60vh; max-height: 550px; }
+    .exercises-float-scroll {
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 6px 20px 40px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .exercises-float-scroll::-webkit-scrollbar { width: 10px; }
+    .exercises-float-scroll::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); border-radius: 10px; }
+    .exercises-float-scroll::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, var(--accent), var(--accent2));
+      border-radius: 10px;
+      border: 2px solid rgba(10, 14, 39, 0.9);
+    }
+    .scroll-hint {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 183, 0, 0.9);
+      color: #050818;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      animation: bounceHint 2s infinite;
+      pointer-events: none;
+      z-index: 5;
+    }
+    @keyframes bounceHint {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-6px); }
+    }
+
+    .exercise-group {
+      background: linear-gradient(145deg, rgba(10, 14, 39, 0.9), rgba(30, 40, 70, 0.7));
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 24px 28px;
+      border-right: 6px solid var(--accent);
+      transition: all 0.4s ease;
+      flex-shrink: 0;
+    }
+    .exercise-group:hover { transform: translateX(-6px) scale(1.01); }
+    .exercise-group.group-conceptual { border-right-color: #ffb700; }
+    .exercise-group.group-practical { border-right-color: #00d4aa; }
+    .exercise-group.group-written { border-right-color: #a855f7; }
+    .exercise-group.group-challenge {
+      border-right-color: #ff4757;
+      background: linear-gradient(145deg, rgba(30, 10, 20, 0.9), rgba(60, 20, 40, 0.7));
+    }
+    .exercise-group-header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+    .exercise-group-icon {
+      width: 50px; height: 50px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      color: white;
+      flex-shrink: 0;
+    }
+    .exercise-group.group-conceptual .exercise-group-icon { background: linear-gradient(135deg, #ffb700, #ff6b35); }
+    .exercise-group.group-practical .exercise-group-icon { background: linear-gradient(135deg, #00d4aa, #06b6d4); }
+    .exercise-group.group-written .exercise-group-icon { background: linear-gradient(135deg, #a855f7, #ec4899); }
+    .exercise-group.group-challenge .exercise-group-icon { background: linear-gradient(135deg, #ff4757, #ff6b35); }
+    .exercise-group-header h4 { font-size: 1.15rem; color: white; font-weight: 800; margin: 0; }
+    .exercise-group-header .group-subtitle { font-size: 0.8rem; color: rgba(255, 255, 255, 0.6); margin-top: 4px; }
+
+    .exercise-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+    .exercise-list li {
+      display: flex;
+      gap: 12px;
+      padding: 12px 16px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 14px;
+      color: rgba(255, 255, 255, 0.92);
+      line-height: 1.85;
+      font-size: 0.9rem;
+      border-right: 3px solid transparent;
+    }
+    .exercise-list li:hover { background: rgba(255, 183, 0, 0.08); border-right-color: var(--accent); }
+    .exercise-list li .q-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: white;
+      font-weight: 800;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+    .exercise-group.group-practical .exercise-list li .q-num { background: linear-gradient(135deg, #00d4aa, #06b6d4); }
+    .exercise-group.group-written .exercise-list li .q-num { background: linear-gradient(135deg, #a855f7, #ec4899); }
+    .exercise-list li .q-text { flex: 1; }
+    .exercise-list li .q-text strong { color: var(--accent); }
+    .exercise-list li .q-text em {
+      color: #06b6d4;
+      font-style: normal;
+      font-weight: 700;
+      background: rgba(6, 182, 212, 0.1);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+    }
+
+    .challenge-box {
+      background: linear-gradient(135deg, rgba(255, 71, 87, 0.15), rgba(255, 183, 0, 0.08));
+      border: 2px dashed rgba(255, 71, 87, 0.5);
+      border-radius: 20px;
+      padding: 20px 22px;
+    }
+    .challenge-box .challenge-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #ff6b35;
+      font-weight: 800;
+      font-size: 1.05rem;
+      margin-bottom: 12px;
+    }
+    .challenge-box p { color: rgba(255, 255, 255, 0.92); line-height: 1.9; font-size: 0.92rem; margin-bottom: 8px; }
+    .challenge-box p strong { color: #ff6b35; }
+    .challenge-box .challenge-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 0.8rem;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .challenge-box .challenge-footer .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 71, 87, 0.15);
+      color: #ff6b35;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-weight: 700;
+      border: 1px solid rgba(255, 71, 87, 0.3);
+    }
+
+    /* ناوبری */
+    .slide-nav {
+      position: fixed;
+      bottom: 30px; left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      background: rgba(10, 14, 39, 0.75);
+      backdrop-filter: blur(25px);
+      padding: 14px 28px;
+      border-radius: 60px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      z-index: 100;
+    }
+    .nav-btn {
+      width: 54px; height: 54px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      font-size: 1.3rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      transform: scale(1.15);
+    }
+    .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .slide-counter {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: white;
+      min-width: 100px;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 10px 20px;
+      border-radius: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .slide-counter .current { color: var(--accent); font-size: 1.4rem; font-weight: 900; }
+
+    .dots-nav {
+      position: fixed;
+      left: 30px; top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 100;
+    }
+    .dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); cursor: pointer; transition: all 0.3s ease; }
+    .dot:hover { background: rgba(255, 183, 0, 0.5); transform: scale(1.3); }
+    .dot.active { background: var(--accent); box-shadow: 0 0 20px var(--accent); transform: scale(1.5); }
+
+    .end-slide { text-align: center; }
+    .end-slide .end-icon {
+      font-size: 7rem;
+      margin-bottom: 25px;
+      display: inline-block;
+      animation: endBounce 2s infinite ease-in-out;
+    }
+    @keyframes endBounce {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-25px) scale(1.08); }
+    }
+    .end-slide h2 {
+      font-size: 3.2rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #fff, #ffb700, #ff6b35, #ec4899);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 20px;
+      animation: titleGradient 5s ease infinite;
+    }
+    .end-slide p { font-size: 1.2rem; color: rgba(255,255,255,0.85); margin-bottom: 40px; }
+    .end-slide .next-session {
+      display: inline-flex;
+      align-items: center;
+      gap: 20px;
+      padding: 20px 44px;
+      background: linear-gradient(135deg, rgba(255, 183, 0, 0.15), rgba(255, 107, 53, 0.1));
+      border: 2px solid var(--accent);
+      border-radius: 70px;
+      font-size: 1.1rem;
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .end-slide .next-session .arrow-icon {
+      width: 46px; height: 46px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #050818;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      animation: arrowMove2 2s infinite ease-in-out;
+    }
+    @keyframes arrowMove2 {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(-8px); }
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 120px; left: 50%;
+      transform: translateX(-50%) translateY(100px) scale(0.8);
+      background: linear-gradient(135deg, rgba(10, 14, 39, 0.95), rgba(30, 40, 70, 0.95));
+      backdrop-filter: blur(20px);
+      color: white;
+      padding: 16px 32px;
+      border-radius: 60px;
+      font-weight: 600;
+      opacity: 0;
+      transition: all 0.5s ease;
+      z-index: 2000;
+      border: 1px solid rgba(255, 183, 0, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+    .toast i { color: var(--accent); font-size: 1.2rem; }
+
+    @media (max-width: 900px) {
+      .slide { padding: 110px 20px 130px; }
+      .title-slide h1 { font-size: 2.2rem; }
+      .content-slide .slide-title h2 { font-size: 1.7rem; }
+      .question-slide h2 { font-size: 1.7rem; }
+      .end-slide h2 { font-size: 1.9rem; }
+      .dots-nav { display: none; }
+    }
+
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+  </style>
+</head>
+<body>
+
+  <div class="starfield" id="starfield"></div>
+  <div class="neon-bubble"></div>
+  <div class="neon-bubble"></div>
+  <div class="neon-bubble"></div>
+  <div class="neon-bubble"></div>
+
+  <div class="progress-bar" id="progressBar"></div>
+
+  <header class="slide-header">
+    <div class="logo">
+      <div class="logo-icon"><i class="fas fa-wave-square"></i></div>
+      <span>سیستم‌های اندازه‌گیری و کنترل</span>
+    </div>
+    <div class="slide-info">
+      <span><i class="fas fa-user-tie"></i> دکتر مسعود گوهری‌منش</span>
+      <span><i class="fas fa-university"></i> دانشگاه تربت حیدریه</span>
+    </div>
+  </header>
+
+  <div class="controls">
+    <button class="ctrl-btn active" id="soundToggle" title="افکت صوتی">
+      <i class="fas fa-volume-up"></i>
+    </button>
+    <button class="ctrl-btn" id="musicToggle" title="موسیقی پس‌زمینه">
+      <i class="fas fa-music"></i>
+    </button>
+    <button class="ctrl-btn" id="fullscreenBtn" title="تمام صفحه">
+      <i class="fas fa-expand"></i>
+    </button>
+  </div>
+
+  <div class="dots-nav" id="dotsNav"></div>
+
+  <div class="slides-container" id="slidesContainer">
+
+    <!-- ===== 1: عنوان ===== -->
+    <section class="slide active title-slide" data-slide="0">
+      <div class="hero-bg" style="background-image: url('images/hero-adc.jpg');"></div>
+      <div class="hero-overlay"></div>
+      <div class="floating-icons">
+        <i class="fas fa-wave-square float-icon"></i>
+        <i class="fas fa-stairs float-icon"></i>
+        <i class="fas fa-hand-pointer float-icon"></i>
+        <i class="fas fa-microchip float-icon"></i>
+        <i class="fas fa-lightbulb float-icon"></i>
+        <i class="fas fa-chart-line float-icon"></i>
+      </div>
+      <i class="fas fa-wave-square main-icon animate-in"></i>
+      <div class="badge animate-in">
+        <span class="pulse-dot"></span>
+        جلسه ششم — فاز ۲: مهارت‌های پایه Arduino
+      </div>
+      <h1 class="animate-in">ورودی/خروجی آنالوگ و دیجیتال</h1>
+      <p class="subtitle animate-in">ADC، PWM، تاریخچه و کنترل دستی LED با MediaPipe</p>
+      <div class="instructor-card animate-in">
+        <div class="instructor-avatar"><i class="fas fa-user-tie"></i></div>
+        <div class="instructor-info">
+          <div class="name">دکتر مسعود گوهری‌منش</div>
+          <div class="title">دانشیار گروه مهندسی مکانیک دانشگاه تربت حیدریه</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 2: سوال انگیزشی ===== -->
+    <section class="slide question-slide" data-slide="1">
+      <img src="images/question-adc.jpg" alt="سوال" class="question-img animate-in">
+      <h2 class="animate-in">چگونه یک سیگنال پیوسته را به عدد تبدیل کنیم؟</h2>
+      <p class="animate-in">
+        یک پتانسیومتر را می‌چرخانید. ولتاژ خروجی از <strong style="color: var(--cyan);">۰ ولت</strong> تا 
+        <strong style="color: var(--cyan);">۵ ولت</strong> تغییر می‌کند.
+        <br><br>
+        اما Arduino فقط <strong style="color: var(--accent);">اعداد</strong> را می‌فهمد!<br>
+        چگونه می‌توان این ولتاژ پیوسته را به عدد تبدیل کرد؟
+      </p>
+      <div class="hint animate-in">
+        <i class="fas fa-lightbulb"></i>
+        پاسخ در <strong>مبدل آنالوگ به دیجیتال (ADC)</strong> نهفته است
+      </div>
+    </section>
+
+    <!-- ===== 3: analogRead vs digitalRead ===== -->
+    <section class="slide content-slide" data-slide="2">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-exchange-alt"></i></div>
+        <h2>📊 analogRead در برابر digitalRead</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="duo-grid">
+          <div class="duo-card analog animate-in">
+            <div style="font-size: 3.5rem; margin-bottom: 12px;">🌊</div>
+            <h3>analogRead()</h3>
+            <p>
+              <strong>هر مقداری</strong> بین ۰ تا ۱۰۲۳ را برمی‌گرداند.
+              <br><br>
+              <span style="color: var(--success); font-weight: 700;">✓ برای سنسورهای آنالوگ</span><br>
+              <span style="color: var(--success); font-weight: 700;">✓ خروجی: عدد ۰ تا ۱۰۲۳</span><br>
+              <span style="color: var(--success); font-weight: 700;">✓ فقط روی پین‌های A0-A5</span>
+            </p>
+          </div>
+          <div class="duo-card digital animate-in">
+            <div style="font-size: 3.5rem; margin-bottom: 12px;">💡</div>
+            <h3>digitalRead()</h3>
+            <p>
+              فقط <strong>HIGH (۱) یا LOW (۰)</strong> را برمی‌گرداند.
+              <br><br>
+              <span style="color: var(--success); font-weight: 700;">✓ برای دکمه‌ها و سوئیچ‌ها</span><br>
+              <span style="color: var(--success); font-weight: 700;">✓ خروجی: ۰ یا ۱</span><br>
+              <span style="color: var(--success); font-weight: 700;">✓ روی همه پین‌های دیجیتال</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 4: ADC کامل با تاریخچه ===== -->
+    <section class="slide content-slide" data-slide="3">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-history"></i></div>
+        <h2>📜 تاریخچه و اصول ADC</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 30px; width: 100%;">
+          <img src="images/adc-history.jpg" alt="تاریخچه ADC" style="width: 100%; border-radius: 24px; border: 2px solid rgba(255, 183, 0, 0.3); box-shadow: 0 30px 60px rgba(0,0,0,0.5);" class="animate-in">
+          <div class="animate-in">
+            <p style="font-size: 1rem; color: rgba(255,255,255,0.95); line-height: 2; margin-bottom: 16px;">
+              <strong style="color: var(--accent);">ADC</strong> (Analog-to-Digital Converter) یک قطعه‌ی الکترونیکی است که 
+              سیگنال پیوسته (ولتاژ) را به عدد دیجیتال تبدیل می‌کند.
+            </p>
+            <div class="timeline">
+              <div class="timeline-item">
+                <div class="timeline-year">۱۹۲۰</div>
+                <div class="timeline-content">
+                  <h5>اولین ADC</h5>
+                  <p>پل رینی، مهندس آمریکایی، اولین ADC مکانیکی را برای انتقال تصویر تلگراف ساخت.</p>
+                </div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-year">۱۹۴۰</div>
+                <div class="timeline-content">
+                  <h5>ADC لامپی</h5>
+                  <p>در جنگ جهانی دوم، ADCهای لامپی برای رمزگشایی سیگنال‌های رادار استفاده شدند.</p>
+                </div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-year">۱۹۶۰</div>
+                <div class="timeline-content">
+                  <h5>ADC مجتمع</h5>
+                  <p>با اختراع مدار مجتمع (IC)، ADCها کوچک و ارزان شدند.</p>
+                </div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-year">۲۰۰۰</div>
+                <div class="timeline-content">
+                  <h5>ADC CMOS</h5>
+                  <p>ADCهای CMOS با سرعت بالا و مصرف کم، در همه‌ی دستگاه‌ها حاضر شدند.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 5: ADC 10 بیتی (اصلاح‌شده) ===== -->
+    <section class="slide content-slide" data-slide="4">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-stairs"></i></div>
+        <h2>📶 ADC ۱۰ بیتی — چگونه کار می‌کند؟</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div style="background: linear-gradient(145deg, rgba(10, 14, 39, 0.9), rgba(30, 40, 70, 0.7)); backdrop-filter: blur(20px); border: 2px solid rgba(255, 183, 0, 0.4); border-radius: 40px; padding: 30px; max-width: 1100px; margin: 0 auto;" class="animate-in">
+          <p style="font-size: 1.05rem; line-height: 2; margin-bottom: 20px; color: rgba(255,255,255,0.95);">
+            <strong style="color: var(--accent);">ADC ۱۰ بیتی</strong> یعنی ولتاژ ۰ تا ۵ ولت 
+            به <strong>۲<sup>۱۰</sup> = ۱۰۲۴ پله</strong> تقسیم می‌شود.
+          </p>
+          <div style="background: rgba(0, 0, 0, 0.5); border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 20px; border-right: 4px solid var(--accent);">
+            <p style="font-family: 'Fira Code', monospace; font-size: 1.2rem; color: var(--accent); margin: 0; font-weight: 900;">
+              مقدار ADC = (ولتاژ / ۵) × ۱۰۲۳
+            </p>
+          </div>
+          <table style="width: 100%; border-collapse: separate; border-spacing: 0; background: rgba(0, 0, 0, 0.3); border-radius: 16px; overflow: hidden;">
+            <thead>
+              <tr style="background: linear-gradient(135deg, rgba(255, 183, 0, 0.25), rgba(255, 107, 53, 0.15));">
+                <th style="padding: 14px; color: var(--accent); font-weight: 800; text-align: right;">ولتاژ</th>
+                <th style="padding: 14px; color: var(--accent); font-weight: 800; text-align: right;">مقدار ADC</th>
+                <th style="padding: 14px; color: var(--accent); font-weight: 800; text-align: right;">درصد</th>
+              </tr>
+            </thead>
+            <tbody style="color: rgba(255,255,255,0.9); font-size: 0.9rem;">
+              <tr><td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">۰ ولت</td><td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); font-family: 'Fira Code', monospace;">۰</td><td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">۰٪</td></tr>
+              <tr><td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">۱.۲۵ ولت</td><td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); font-family: 'Fira Code', monospace;">۲۵۶</td><td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">۲۵٪</td></tr>
+              <tr><td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">۲.۵ ولت</td><td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); font-family: 'Fira Code', monospace; color: var(--success);">۵۱۲</td><td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); color: var(--success);">۵۰٪</td></tr>
+              <tr><td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">۳.۷۵ ولت</td><td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); font-family: 'Fira Code', monospace;">۷۶۸</td><td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">۷۵٪</td></tr>
+              <tr><td style="padding: 12px;">۵ ولت</td><td style="padding: 12px; font-family: 'Fira Code', monospace; color: var(--accent);">۱۰۲۳</td><td style="padding: 12px; color: var(--accent);">۱۰۰٪</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 6: کاربردهای مکانیکی ADC ===== -->
+    <section class="slide content-slide" data-slide="5">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-cogs"></i></div>
+        <h2>⚙️ کاربردهای مکانیکی ADC</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <img src="images/adc-mechanical.jpg" alt="کاربردهای مکانیکی" style="width: 100%; max-width: 800px; margin: 0 auto 20px; border-radius: 24px; border: 2px solid rgba(255, 183, 0, 0.3);" class="animate-in">
+        <div class="info-grid animate-in">
+          <div class="info-card">
+            <div class="info-icon"><i class="fas fa-gauge-high"></i></div>
+            <h5>لوله بوردون</h5>
+            <p>فشارسنج‌های مکانیکی که با ADC به دیجیتال تبدیل می‌شوند.</p>
+          </div>
+          <div class="info-card" style="border-right-color: var(--cyan);">
+            <div class="info-icon" style="color: var(--cyan);"><i class="fas fa-sliders-h"></i></div>
+            <h5>پتانسیومتر</h5>
+            <p>سنسور موقعیت زاویه‌ای — ساده‌ترین ADC مکانیکی.</p>
+          </div>
+          <div class="info-card" style="border-right-color: var(--success);">
+            <div class="info-icon" style="color: var(--success);"><i class="fas fa-weight-hanging"></i></div>
+            <h5>لودسل</h5>
+            <p>سنسور وزن با کرنش‌سنج + ADC برای باسکول دیجیتال.</p>
+          </div>
+          <div class="info-card" style="border-right-color: var(--purple);">
+            <div class="info-icon" style="color: var(--purple);"><i class="fas fa-sync-alt"></i></div>
+            <h5>انکودر چرخشی</h5>
+            <p>سنسور موقعیت موتور در رباتیک و CNC.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 7: ترفندهای کامیونیتی ===== -->
+    <section class="slide content-slide" data-slide="6">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-lightbulb"></i></div>
+        <h2>💡 ترفندهای کامیونیتی برای ADC</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="tricks-grid animate-in">
+          <div class="trick-card">
+            <div class="trick-num">۱</div>
+            <h5>میانگین‌گیری (Averaging)</h5>
+            <p>۱۰ بار بخوانید و میانگین بگیرید. نویز تصادفی کاهش می‌یابد.</p>
+            <div class="code-block" style="font-size: 0.7rem; margin-top: 8px;">
+<span class="kw">int</span> sum = <span class="num">0</span>;
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="num">0</span>; i&lt;<span class="num">10</span>; i++) {
+  sum += <span class="fn">analogRead</span>(A0);
+  <span class="fn">delay</span>(<span class="num">10</span>);
+}
+<span class="kw">int</span> avg = sum / <span class="num">10</span>;</div>
+          </div>
+          <div class="trick-card">
+            <div class="trick-num">۲</div>
+            <h5>فیلتر میانه (Median)</h5>
+            <p>۵ بار بخوانید، میانه را انتخاب کنید. نویزهای تکی حذف می‌شوند.</p>
+          </div>
+          <div class="trick-card">
+            <div class="trick-num">۳</div>
+            <h5>میانگین متحرک</h5>
+            <p>برای سیگنال‌های متغیر، از میانگین متحرک استفاده کنید.</p>
+          </div>
+          <div class="trick-card">
+            <div class="trick-num">۴</div>
+            <h5>Oversampling</h5>
+            <p>۱۰۲۴ بار بخوانید و جمع بزنید. دقت ۱۰ بیت به ۱۳ بیت می‌رسد!</p>
+          </div>
+          <div class="trick-card">
+            <div class="trick-num">۵</div>
+            <h5>ولتاژ مرجع خارجی</h5>
+            <p>برای دقت بالاتر، از ولتاژ مرجع دقیق (مثل TL431) استفاده کنید.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 8: شبیه‌ساز پایه با نمودار ===== -->
+    <section class="slide content-slide" data-slide="7">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-flask"></i></div>
+        <h2>🧪 شبیه‌ساز پایه: پتانسیومتر + LED + نمودار</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="simulator-base animate-in">
+          <div class="sim-controls">
+            <h4><i class="fas fa-sliders-h"></i> پتانسیومتر را بچرخانید</h4>
+            <div class="sim-slider-wrap">
+              <label>مقدار ADC <span id="adcValue">۵۱۲</span></label>
+              <input type="range" id="adcSlider" min="0" max="1023" value="512">
+            </div>
+            <div class="sim-values">
+              <div class="sim-value-box alt">
+                <div class="label">ولتاژ واقعی</div>
+                <div class="value" id="voltageValue">2.50V</div>
+              </div>
+              <div class="sim-value-box">
+                <div class="label">PWM معادل</div>
+                <div class="value" id="pwmValue">128</div>
+              </div>
+              <div class="sim-value-box alt2">
+                <div class="label">درصد</div>
+                <div class="value" id="percentValue">50%</div>
+              </div>
+            </div>
+            <div class="sim-led-container">
+              <div class="sim-led" id="simLed"></div>
+            </div>
+          </div>
+          <div class="chart-container">
+            <h4><i class="fas fa-chart-line"></i> نمودار ADC در زمان</h4>
+            <canvas id="adcChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 9: معرفی MediaPipe ===== -->
+    <section class="slide content-slide" data-slide="8">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-hands"></i></div>
+        <h2>🤚 پروژه ویژه: کنترل LED با دست (MediaPipe)</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: center; width: 100%;">
+          <img src="images/hands-distance-led.jpg" alt="دست + LED" style="width: 100%; border-radius: 24px; border: 2px solid rgba(255, 183, 0, 0.4);" class="animate-in">
+          <div class="animate-in">
+            <h3 style="color: var(--accent); font-size: 1.4rem; margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
+              <i class="fas fa-lightbulb"></i> ایده چیست؟
+            </h3>
+            <p style="font-size: 0.95rem; color: rgba(255,255,255,0.9); line-height: 1.9; margin-bottom: 14px;">
+              به جای چرخاندن <strong>پتانسیومتر</strong> با دست، از <strong>فاصله‌ی دو انگشت اشاره</strong> استفاده می‌کنیم:
+            </p>
+            <div style="background: rgba(0, 212, 170, 0.1); border-radius: 16px; padding: 16px 20px; border-right: 4px solid var(--success); margin-bottom: 14px;">
+              <p style="font-size: 0.9rem; color: rgba(255,255,255,0.9); margin: 0; line-height: 1.9;">
+                <strong style="color: var(--success);">نزدیک‌تر</strong> = LED روشن‌تر<br>
+                <strong style="color: var(--success);">دورتر</strong> = LED کم‌نورتر
+              </p>
+            </div>
+            <p style="font-size: 0.9rem; color: rgba(255,255,255,0.85); line-height: 1.9;">
+              کتابخانه <strong style="color: var(--cyan);">MediaPipe</strong> از گوگل، دست را در تصویر دوربین تشخیص می‌دهد و ۲۱ نقطه‌ی آن را پیدا می‌کند.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 10: شبیه‌ساز MediaPipe (تصویر + AR LED) ===== -->
+    <section class="slide content-slide" data-slide="9">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-camera"></i></div>
+        <h2>🎥 شبیه‌ساز تعاملی: کنترل LED با دو دست</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="mediapipe-layout animate-in">
+          <!-- دوربین -->
+          <div class="camera-wrapper">
+            <video id="cameraVideo" playsinline autoplay muted></video>
+            <canvas id="handCanvas"></canvas>
+            <div class="camera-status" id="cameraStatus">
+              <span class="status-dot"></span>
+              <span id="statusText">دوربین غیرفعال</span>
+            </div>
+            <div class="ar-led-overlay" id="arLed">
+              <i class="fas fa-lightbulb"></i>
+            </div>
+          </div>
+
+          <!-- کنترل‌ها -->
+          <div class="mp-controls">
+            <h4><i class="fas fa-hand-pointer"></i> نحوه استفاده</h4>
+            <div class="mp-hint">
+              <strong>✋ دو دست خود را مقابل دوربین بگیرید</strong> و 
+              <strong>انگشتان اشاره</strong> را به هم نزدیک یا دور کنید.
+              <br><br>
+              • انگشتان نزدیک → LED روشن‌تر
+              <br>
+              • انگشتان دور → LED کم‌نورتر
+            </div>
+
+            <div class="mp-values">
+              <div class="sim-value-box">
+                <div class="label">فاصله (نرمال)</div>
+                <div class="value" id="distanceValue">—</div>
+              </div>
+              <div class="sim-value-box alt">
+                <div class="label">PWM خروجی</div>
+                <div class="value" id="pwmOutValue">—</div>
+              </div>
+            </div>
+
+            <button class="mp-btn" id="startCameraBtn">
+              <i class="fas fa-video"></i> فعال‌سازی دوربین
+            </button>
+
+            <button class="mp-btn secondary" id="stopCameraBtn" style="display: none;">
+              <i class="fas fa-stop"></i> توقف دوربین
+            </button>
+
+            <div class="chart-container" style="margin-top: 8px;">
+              <h4><i class="fas fa-chart-line"></i> نمودار PWM</h4>
+              <canvas id="mpChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 11: معماری سیستم ===== -->
+    <section class="slide content-slide" data-slide="10">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-project-diagram"></i></div>
+        <h2>🔧 پروژه واقعی: از دوربین تا LED</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <img src="images/mediapipe-architecture.jpg" alt="معماری" style="width: 100%; max-width: 1100px; margin: 0 auto 20px; border-radius: 24px; border: 2px solid rgba(255, 183, 0, 0.3);" class="animate-in">
+        
+        <div class="info-grid animate-in">
+          <div class="info-card">
+            <div class="info-icon"><i class="fas fa-camera"></i></div>
+            <h5>۱. دوربین</h5>
+            <p>تصویر دست را می‌گیرد</p>
+          </div>
+          <div class="info-card" style="border-right-color: var(--cyan);">
+            <div class="info-icon" style="color: var(--cyan);"><i class="fas fa-hands"></i></div>
+            <h5>۲. MediaPipe</h5>
+            <p>دست را تشخیص می‌دهد (۲۱ نقطه)</p>
+          </div>
+          <div class="info-card" style="border-right-color: var(--success);">
+            <div class="info-icon" style="color: var(--success);"><i class="fab fa-python"></i></div>
+            <h5>۳. Python</h5>
+            <p>فاصله را به PWM تبدیل می‌کند</p>
+          </div>
+          <div class="info-card" style="border-right-color: var(--purple);">
+            <div class="info-icon" style="color: var(--purple);"><i class="fas fa-plug"></i></div>
+            <h5>۴. Serial</h5>
+            <p>از USB ارسال می‌کند</p>
+          </div>
+          <div class="info-card" style="border-right-color: var(--pink);">
+            <div class="info-icon" style="color: var(--pink);"><i class="fas fa-microchip"></i></div>
+            <h5>۵. Arduino</h5>
+            <p>PWM را دریافت می‌کند</p>
+          </div>
+          <div class="info-card" style="border-right-color: var(--accent);">
+            <div class="info-icon"><i class="fas fa-lightbulb"></i></div>
+            <h5>۶. LED</h5>
+            <p>روشن می‌شود</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 12: کد Arduino ===== -->
+    <section class="slide content-slide" data-slide="11">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-microchip"></i></div>
+        <h2>📟 کد Arduino (دریافت PWM از Serial)</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="code-block animate-in" style="font-size: 0.9rem; max-height: none;">
+<span class="cmt">// ============================================
+// پروژه: کنترل LED با MediaPipe (Arduino)
+// مدرس: دکتر مسعود گوهری‌منش
+// ============================================</span>
+
+<span class="kw">const int</span> LED_PIN = <span class="num">9</span>;  <span class="cmt">// پین PWM</span>
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">Serial.begin</span>(<span class="num">9600</span>);          <span class="cmt">// ارتباط سریال</span>
+  <span class="fn">pinMode</span>(LED_PIN, OUTPUT);     <span class="cmt">// تنظیم پین خروجی</span>
+  <span class="fn">Serial.println</span>(<span class="str">"Arduino Ready"</span>);
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="kw">if</span> (<span class="fn">Serial.available</span>() > <span class="num">0</span>) {
+    <span class="kw">int</span> pwm = <span class="fn">Serial.parseInt</span>();   <span class="cmt">// خواندن عدد</span>
+    pwm = <span class="fn">constrain</span>(pwm, <span class="num">0</span>, <span class="num">255</span>);   <span class="cmt">// محدود کردن</span>
+    <span class="fn">analogWrite</span>(LED_PIN, pwm);       <span class="cmt">// تنظیم روشنایی</span>
+  }
+}</div>
+      </div>
+    </section>
+
+    <!-- ===== 13: کد Python ===== -->
+    <section class="slide content-slide" data-slide="12">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fab fa-python"></i></div>
+        <h2>🐍 کد Python (MediaPipe → Serial)</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="code-block animate-in" style="font-size: 0.78rem; max-height: none; line-height: 1.6;">
+<span class="cmt"># ============================================
+# پروژه: کنترل LED با MediaPipe (Python)
+# نیازمندی‌ها:
+#   pip install opencv-python mediapipe pyserial numpy
+# ============================================</span>
+
+<span class="kw">import</span> cv2
+<span class="kw">import</span> mediapipe <span class="kw">as</span> mp
+<span class="kw">import</span> serial
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">import</span> time
+
+<span class="cmt"># ==== تنظیمات سریال ====</span>
+SERIAL_PORT = <span class="str">"COM3"</span>   <span class="cmt"># ویندوز: COM3 | لینوکس: /dev/ttyUSB0</span>
+BAUD_RATE = <span class="num">9600</span>
+
+<span class="kw">try</span>:
+    arduino = serial.<span class="fn">Serial</span>(SERIAL_PORT, BAUD_RATE, timeout=<span class="num">1</span>)
+    time.<span class="fn">sleep</span>(<span class="num">2</span>)
+    <span class="fn">print</span>(<span class="str">f"✅ متصل به {SERIAL_PORT}"</span>)
+<span class="kw">except</span>:
+    <span class="fn">print</span>(<span class="str">"⚠️ Arduino پیدا نشد"</span>)
+    arduino = <span class="kw">None</span>
+
+<span class="cmt"># ==== MediaPipe ====</span>
+mpHands = mp.solutions.hands
+hands = mpHands.<span class="fn">Hands</span>(
+    max_num_hands=<span class="num">2</span>,
+    min_detection_confidence=<span class="num">0.7</span>,
+    min_tracking_confidence=<span class="num">0.7</span>
+)
+mpDraw = mp.solutions.drawing_utils
+
+<span class="cmt"># ==== دوربین ====</span>
+cap = cv2.<span class="fn">VideoCapture</span>(<span class="num">0</span>)
+prev_pwm = -<span class="num">1</span>
+
+<span class="kw">while</span> <span class="kw">True</span>:
+    success, img = cap.<span class="fn">read</span>()
+    <span class="kw">if not</span> success:
+        <span class="kw">break</span>
+    
+    img = cv2.<span class="fn">flip</span>(img, <span class="num">1</span>)
+    imgRGB = cv2.<span class="fn">cvtColor</span>(img, cv2.COLOR_BGR2RGB)
+    results = hands.<span class="fn">process</span>(imgRGB)
+    
+    <span class="kw">if</span> results.multi_hand_landmarks <span class="kw">and</span> <span class="fn">len</span>(results.multi_hand_landmarks) == <span class="num">2</span>:
+        hand1 = results.multi_hand_landmarks[<span class="num">0</span>]
+        hand2 = results.multi_hand_landmarks[<span class="num">1</span>]
+        
+        <span class="cmt"># نقطه ۸ = نوک انگشت اشاره</span>
+        h1 = hand1.landmark[<span class="num">8</span>]
+        h2 = hand2.landmark[<span class="num">8</span>]
+        
+        <span class="cmt"># محاسبه فاصله</span>
+        dist = np.<span class="fn">sqrt</span>(
+            (h1.x - h2.x)**<span class="num">2</span> + 
+            (h1.y - h2.y)**<span class="num">2</span>
+        )
+        
+        <span class="cmt"># نرمال کردن (۰-۱)</span>
+        distance_norm = <span class="fn">min</span>(dist / <span class="num">0.5</span>, <span class="num">1.0</span>)
+        
+        <span class="cmt"># نزدیک‌تر = PWM بیشتر</span>
+        pwm = <span class="fn">int</span>((<span class="num">1</span> - distance_norm) * <span class="num">255</span>)
+        pwm = <span class="fn">max</span>(<span class="num">0</span>, <span class="fn">min</span>(<span class="num">255</span>, pwm))
+        
+        <span class="cmt"># ارسال به Arduino</span>
+        <span class="kw">if</span> arduino <span class="kw">and</span> <span class="fn">abs</span>(pwm - prev_pwm) > <span class="num">5</span>:
+            arduino.<span class="fn">write</span>(<span class="str">f"{pwm}\n"</span>.<span class="fn">encode</span>())
+            prev_pwm = pwm
+        
+        <span class="cmt"># رسم دست‌ها</span>
+        <span class="kw">for</span> handLms <span class="kw">in</span> results.multi_hand_landmarks:
+            mpDraw.<span class="fn">draw_landmarks</span>(img, handLms, mpHands.HAND_CONNECTIONS)
+        
+        <span class="cmt"># خط بین انگشتان</span>
+        h, w, c = img.shape
+        x1, y1 = <span class="fn">int</span>(h1.x * w), <span class="fn">int</span>(h1.y * h)
+        x2, y2 = <span class="fn">int</span>(h2.x * w), <span class="fn">int</span>(h2.y * h)
+        cv2.<span class="fn">line</span>(img, (x1, y1), (x2, y2), (<span class="num">0</span>, <span class="num">255</span>, <span class="num">255</span>), <span class="num">3</span>)
+        
+        cv2.<span class="fn">putText</span>(img, <span class="str">f"PWM: {pwm}"</span>, (<span class="num">20</span>, <span class="num">50</span>),
+                   cv2.FONT_HERSHEY_SIMPLEX, <span class="num">1.2</span>, (<span class="num">0</span>, <span class="num">255</span>, <span class="num">255</span>), <span class="num">3</span>)
+    
+    cv2.<span class="fn">imshow</span>(<span class="str">"MediaPipe LED"</span>, img)
+    <span class="kw">if</span> cv2.<span class="fn">waitKey</span>(<span class="num">1</span>) & <span class="num">0xFF</span> == <span class="fn">ord</span>(<span class="str">'q'</span>):
+        <span class="kw">break</span>
+
+cap.<span class="fn">release</span>()
+cv2.<span class="fn">destroyAllWindows</span>()
+<span class="kw">if</span> arduino:
+    arduino.<span class="fn">close</span>()</div>
+      </div>
+    </section>
+
+    <!-- ===== 14: کوییز تعاملی ===== -->
+    <section class="slide content-slide" data-slide="13">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-question-circle"></i></div>
+        <h2>🧠 کوییز تعاملی</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="quiz-container animate-in">
+          <div class="quiz-question" id="quizQuestion">سوال در حال بارگذاری...</div>
+          <div class="quiz-options" id="quizOptions"></div>
+          <div class="quiz-feedback" id="quizFeedback"></div>
+          <div style="display: flex; gap: 10px; margin-top: 16px;">
+            <button class="mp-btn" id="nextQuizBtn" style="flex: 1;">
+              <i class="fas fa-arrow-left"></i> سوال بعدی
+            </button>
+            <button class="mp-btn secondary" id="resetQuizBtn" style="flex: 1;">
+              <i class="fas fa-redo"></i> شروع مجدد
+            </button>
+          </div>
+          <div style="text-align: center; margin-top: 12px; font-size: 0.85rem; color: rgba(255,255,255,0.7);">
+            امتیاز: <span id="quizScore" style="color: var(--accent); font-weight: 900;">۰</span> از <span id="quizTotal" style="font-weight: 700;">۵</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 15: تمرین‌ها ===== -->
+    <section class="slide content-slide" data-slide="14">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-pen-fancy"></i></div>
+        <h2>تمرین‌های کلاسی</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="exercises-float-wrapper animate-in">
+          <div class="exercises-float-scroll">
+
+            <div class="exercise-group group-conceptual">
+              <div class="exercise-group-header">
+                <div class="exercise-group-icon"><i class="fas fa-question-circle"></i></div>
+                <div>
+                  <h4>الف) سؤالات مفهومی</h4>
+                  <div class="group-subtitle">مباحث نظری — تفکر و تحلیل</div>
+                </div>
+              </div>
+              <ul class="exercise-list">
+                <li><span class="q-num">۱</span><span class="q-text">تفاوت <strong>analogRead</strong> و <strong>digitalRead</strong> را با ذکر مثال توضیح دهید.</span></li>
+                <li><span class="q-num">۲</span><span class="q-text">ADC در Arduino UNO چند بیت است و این چه تأثیری بر دقت دارد؟</span></li>
+                <li><span class="q-num">۳</span><span class="q-text"><strong>PWM</strong> چیست و چگونه می‌تواند برای کنترل آنالوگ استفاده شود؟</span></li>
+                <li><span class="q-num">۴</span><span class="q-text">چرا PWM فقط روی پین‌های خاصی از Arduino کار می‌کند؟</span></li>
+                <li><span class="q-num">۵</span><span class="q-text">مزیت <strong>MediaPipe</strong> نسبت به پتانسیومتر در این پروژه چیست؟</span></li>
+              </ul>
+            </div>
+
+            <div class="exercise-group group-practical">
+              <div class="exercise-group-header">
+                <div class="exercise-group-icon"><i class="fas fa-flask"></i></div>
+                <div>
+                  <h4>ب) تمرین‌های عملی</h4>
+                  <div class="group-subtitle">کار با Arduino IDE و شبیه‌ساز MediaPipe</div>
+                </div>
+              </div>
+              <ul class="exercise-list">
+                <li><span class="q-num">۱</span><span class="q-text"><strong>خواندن پتانسیومتر:</strong> یک پتانسیومتر به پین A0 وصل کنید و مقدار آن را در Serial Monitor نمایش دهید.</span></li>
+                <li><span class="q-num">۲</span><span class="q-text"><strong>کنترل LED با پتانسیومتر:</strong> با PWM، روشنایی LED را بر اساس مقدار پتانسیومتر کنترل کنید.</span></li>
+                <li><span class="q-num">۳</span><span class="q-text"><strong>شبیه‌ساز MediaPipe:</strong> دوربین را فعال کنید و با فاصله‌ی انگشتان، روشنایی LED را تغییر دهید.</span></li>
+                <li><span class="q-num">۴</span><span class="q-text"><strong>کار با دوربین گوشی:</strong> از Serial Monitor و شبیه‌ساز در حین اجرا عکس بگیرید و مقادیر را تحلیل کنید.</span></li>
+                <li><span class="q-num">۵</span><span class="q-text"><strong>جستجوی مقاله:</strong> عبارت «<em>PWM control techniques Arduino</em>» را در IEEE Xplore جستجو کنید.</span></li>
+              </ul>
+            </div>
+
+            <div class="exercise-group group-written">
+              <div class="exercise-group-header">
+                <div class="exercise-group-icon"><i class="fas fa-pen-nib"></i></div>
+                <div>
+                  <h4>ج) تمرین نوشتاری</h4>
+                  <div class="group-subtitle">تحلیل و مستندسازی</div>
+                </div>
+              </div>
+              <ul class="exercise-list">
+                <li><span class="q-num">۱</span><span class="q-text">فرمول تبدیل مقدار ADC (۰ تا ۱۰۲۳) به ولتاژ (۰ تا ۵ ولت) را بنویسید و برای سه مقدار مختلف محاسبه کنید.</span></li>
+                <li><span class="q-num">۲</span><span class="q-text">جدولی از مقادیر ADC، ولتاژ و PWM معادل تهیه کنید.</span></li>
+              </ul>
+            </div>
+
+            <div class="exercise-group group-challenge">
+              <div class="exercise-group-header">
+                <div class="exercise-group-icon"><i class="fas fa-star"></i></div>
+                <div>
+                  <h4>د) چالش خلاقانهٔ کلاسی ★</h4>
+                  <div class="group-subtitle">مسابقهٔ گروهی — امتیاز ویژه</div>
+                </div>
+              </div>
+              <div class="challenge-box">
+                <div class="challenge-title">
+                  <i class="fas fa-trophy"></i>
+                  «پیانوی نوری» — Light Piano Challenge
+                </div>
+                <p>
+                  با استفاده از <strong>پتانسیومتر و LED</strong>، یک وسیله‌ی نور-موسیقایی بسازید که با چرخاندن دستگیره، 
+                  الگوی نوری متفاوتی (آرام، پرانرژی، هشدار) تولید کند.
+                </p>
+                <p>
+                  🧪 <strong>توسعه:</strong> با MediaPipe، این کار را با <strong>فاصله‌ی دو دست</strong> انجام دهید.
+                </p>
+                <p>
+                  🏆 بهترین ایده با رأی‌گیری کلاسی انتخاب می‌شود.
+                </p>
+                <div class="challenge-footer">
+                  <span class="tag"><i class="fas fa-clock"></i> ۱۵ دقیقه</span>
+                  <span class="tag"><i class="fas fa-users"></i> گروه‌های سه‌نفره</span>
+                  <span class="tag"><i class="fas fa-code"></i> خلاقیت + فنی</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <div class="scroll-hint">
+            <i class="fas fa-mouse"></i> اسکرول کنید
+            <i class="fas fa-arrow-down"></i>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 16: پرسش‌های پایانی ===== -->
+    <section class="slide content-slide" data-slide="15">
+      <div class="slide-title animate-in">
+        <div class="title-icon-wrap"><i class="fas fa-comments"></i></div>
+        <h2>🗣️ پرسش‌های پایانی کلاس</h2>
+        <span class="subtitle-bar"></span>
+      </div>
+      <div class="content-body">
+        <div class="quiz-container animate-in">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <i class="fas fa-lightbulb" style="font-size: 3rem; color: var(--accent);"></i>
+            <p style="font-size: 1rem; color: rgba(255,255,255,0.9); margin-top: 12px; line-height: 1.9;">
+              لطفاً به این پرسش‌ها فکر کنید و پاسخ دهید:
+            </p>
+          </div>
+
+          <div class="info-grid">
+            <div class="info-card" style="border-right-color: var(--accent);">
+              <div class="info-icon"><i class="fas fa-question"></i></div>
+              <h5>۱. چرا از ADC ۱۰ بیتی استفاده می‌کنیم؟</h5>
+              <p>مزیت و محدودیت آن نسبت به ۸ بیتی یا ۱۲ بیتی چیست؟</p>
+            </div>
+            <div class="info-card" style="border-right-color: var(--cyan);">
+              <div class="info-icon" style="color: var(--cyan);"><i class="fas fa-question"></i></div>
+              <h5>۲. اگر نویز داشته باشیم چه کنیم؟</h5>
+              <p>سه ترفند از کامیونیتی برای کاهش نویز ADC نام ببرید.</p>
+            </div>
+            <div class="info-card" style="border-right-color: var(--success);">
+              <div class="info-icon" style="color: var(--success);"><i class="fas fa-question"></i></div>
+              <h5>۳. PWM چگونه ولتاژ آنالوگ تولید می‌کند؟</h5>
+              <p>با رسم شکل توضیح دهید.</p>
+            </div>
+            <div class="info-card" style="border-right-color: var(--purple);">
+              <div class="info-icon" style="color: var(--purple);"><i class="fas fa-question"></i></div>
+              <h5>۴. MediaPipe چه محدودیتی دارد؟</h5>
+              <p>چه زمانی نمی‌توان از این روش استفاده کرد؟</p>
+            </div>
+            <div class="info-card" style="border-right-color: var(--pink);">
+              <div class="info-icon" style="color: var(--pink);"><i class="fas fa-question"></i></div>
+              <h5>۵. کاربرد صنعتی ADC در مکانیک؟</h5>
+              <p>یک مثال واقعی از صنعت بیاورید.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 17: پایان ===== -->
+    <section class="slide end-slide" data-slide="16">
+      <span class="end-icon">🎓</span>
+      <h2 class="animate-in">پایان جلسه ششم</h2>
+      <p class="animate-in">از آنالوگ تا دیجیتال — و از دست تا نور!</p>
+      <div class="next-session animate-in">
+        <div class="arrow-icon"><i class="fas fa-arrow-left"></i></div>
+        <div>
+          <div style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 4px;">جلسه بعدی:</div>
+          <div>نمایشگر OLED و LCD</div>
+        </div>
+      </div>
+      <p class="animate-in" style="margin-top: 40px; font-size: 0.95rem; color: rgba(255,255,255,0.6);">
+        <i class="fas fa-book" style="color: var(--accent);"></i> منابع پیشنهادی: Arduino.cc — Analog I/O
+      </p>
+    </section>
+
+  </div>
+
+  <nav class="slide-nav">
+    <button class="nav-btn" id="prevBtn" title="اسلاید قبلی"><i class="fas fa-chevron-right"></i></button>
+    <div class="slide-counter">
+      <span class="current" id="currentSlide">۱</span> / <span id="totalSlides">۱۷</span>
+    </div>
+    <button class="nav-btn" id="nextBtn" title="اسلاید بعدی"><i class="fas fa-chevron-left"></i></button>
+  </nav>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- MediaPipe CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+  <script>
+    (function() {
+      const slides = document.querySelectorAll('.slide');
+      const totalSlides = slides.length;
+      let currentIndex = 0;
+      let soundEnabled = true;
+      let musicEnabled = false;
+      let audioCtx = null;
+      let musicOscillators = [];
+
+      const progressBar = document.getElementById('progressBar');
+      const currentSlideSpan = document.getElementById('currentSlide');
+      const totalSlidesSpan = document.getElementById('totalSlides');
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const dotsNav = document.getElementById('dotsNav');
+      const toast = document.getElementById('toast');
+
+      totalSlidesSpan.textContent = toPersianNumber(totalSlides);
+
+      // ستاره‌ها
+      const starfield = document.getElementById('starfield');
+      for (let i = 0; i < 120; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        const size = Math.random() * 2.5 + 0.5;
+        star.style.width = size + 'px';
+        star.style.height = size + 'px';
+        star.style.left = Math.random() * 100 + '%';
+        star.style.top = Math.random() * 100 + '%';
+        star.style.animationDelay = Math.random() * 3 + 's';
+        star.style.animationDuration = (2 + Math.random() * 3) + 's';
+        const colors = ['#ffffff', '#ffb700', '#06b6d4', '#a855f7', '#00d4aa'];
+        star.style.color = colors[Math.floor(Math.random() * colors.length)];
+        star.style.background = 'currentColor';
+        starfield.appendChild(star);
+      }
+
+      // نقاط ناوبری
+      slides.forEach((_, i) => {
+        const dot = document.createElement('div');
+        dot.className = 'dot' + (i === 0 ? ' active' : '');
+        dot.title = `اسلاید ${toPersianNumber(i + 1)}`;
+        dot.addEventListener('click', () => goToSlide(i));
+        dotsNav.appendChild(dot);
+      });
+
+      function toPersianNumber(num) {
+        const p = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+        return String(num).replace(/\d/g, d => p[d]);
+      }
+
+      function initAudio() {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+      }
+
+      function playClickSound() {
+        if (!soundEnabled) return;
+        try {
+          initAudio();
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.connect(gain); gain.connect(audioCtx.destination);
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.12);
+          gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
+          osc.start(); osc.stop(audioCtx.currentTime + 0.12);
+        } catch(e){}
+      }
+
+      function playTransitionSound() {
+        if (!soundEnabled) return;
+        try {
+          initAudio();
+          [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.type = 'sine';
+            osc.frequency.value = f;
+            const t = audioCtx.currentTime + i * 0.06;
+            gain.gain.setValueAtTime(0.05, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+            osc.start(t); osc.stop(t + 0.25);
+          });
+        } catch(e){}
+      }
+
+      function playSuccessSound() {
+        if (!soundEnabled) return;
+        try {
+          initAudio();
+          [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((f, i) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.type = 'triangle';
+            osc.frequency.value = f;
+            const t = audioCtx.currentTime + i * 0.08;
+            gain.gain.setValueAtTime(0.06, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+            osc.start(t); osc.stop(t + 0.3);
+          });
+        } catch(e){}
+      }
+
+      function startMusic() {
+        if (!audioCtx) initAudio();
+        if (musicOscillators.length > 0) return;
+        const notes = [130.81, 164.81, 196.00, 261.63];
+        notes.forEach((freq, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          const lfo = audioCtx.createOscillator();
+          const lfoGain = audioCtx.createGain();
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          lfo.connect(lfoGain);
+          lfoGain.connect(gain.gain);
+          lfo.frequency.value = 0.1 + idx * 0.05;
+          lfoGain.gain.value = 0.015;
+          gain.gain.value = 0.02 + idx * 0.005;
+          osc.start(); lfo.start();
+          musicOscillators.push({ osc, lfo, gain });
+        });
+      }
+
+      function stopMusic() {
+        musicOscillators.forEach(({ osc, lfo, gain }) => {
+          try {
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+            setTimeout(() => { try { osc.stop(); lfo.stop(); } catch(e){} }, 600);
+          } catch(e){}
+        });
+        musicOscillators = [];
+      }
+
+      function goToSlide(index) {
+        if (index < 0 || index >= totalSlides) return;
+        
+        if (currentIndex === 9 && index !== 9) {
+          stopMediaPipeCamera();
+        }
+        
+        if (index === totalSlides - 1) playSuccessSound();
+        else playTransitionSound();
+
+        slides[currentIndex].classList.remove('active');
+        slides[index].classList.add('active');
+
+        document.querySelectorAll('.dot')[currentIndex].classList.remove('active');
+        document.querySelectorAll('.dot')[index].classList.add('active');
+
+        currentIndex = index;
+        currentSlideSpan.textContent = toPersianNumber(currentIndex + 1);
+
+        const progress = ((currentIndex + 1) / totalSlides) * 100;
+        progressBar.style.width = progress + '%';
+
+        prevBtn.disabled = currentIndex === 0;
+        nextBtn.disabled = currentIndex === totalSlides - 1;
+
+        if (index === 7) initAdcSimulator();
+        if (index === 13) initQuiz();
+      }
+
+      function nextSlide() { goToSlide(currentIndex + 1); }
+      function prevSlide() { goToSlide(currentIndex - 1); }
+
+      nextBtn.addEventListener('click', nextSlide);
+      prevBtn.addEventListener('click', prevSlide);
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') nextSlide();
+        else if (e.key === 'ArrowRight') prevSlide();
+        else if (e.key === ' ') { e.preventDefault(); nextSlide(); }
+        else if (e.key === 'Home') goToSlide(0);
+        else if (e.key === 'End') goToSlide(totalSlides - 1);
+      });
+
+      let touchStartX = 0;
+      document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
+      document.addEventListener('touchend', (e) => {
+        const diff = touchStartX - e.changedTouches[0].screenX;
+        if (Math.abs(diff) > 50) { if (diff > 0) nextSlide(); else prevSlide(); }
+      }, { passive: true });
+
+      const soundToggle = document.getElementById('soundToggle');
+      soundToggle.addEventListener('click', () => {
+        soundEnabled = !soundEnabled;
+        soundToggle.classList.toggle('active', soundEnabled);
+        soundToggle.querySelector('i').className = soundEnabled ? 'fas fa-volume-up' : 'fas fa-volume-mute';
+        if (soundEnabled) playClickSound();
+      });
+
+      const musicToggle = document.getElementById('musicToggle');
+      musicToggle.addEventListener('click', () => {
+        musicEnabled = !musicEnabled;
+        musicToggle.classList.toggle('active', musicEnabled);
+        if (musicEnabled) { initAudio(); startMusic(); showToast('<i class="fas fa-music"></i> موسیقی فعال شد'); }
+        else { stopMusic(); showToast('<i class="fas fa-volume-mute"></i> موسیقی خاموش شد'); }
+      });
+
+      document.getElementById('fullscreenBtn').addEventListener('click', () => {
+        playClickSound();
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen();
+          document.getElementById('fullscreenBtn').querySelector('i').className = 'fas fa-compress';
+        } else {
+          document.exitFullscreen();
+          document.getElementById('fullscreenBtn').querySelector('i').className = 'fas fa-expand';
+        }
+      });
+
+      let toastTimeout;
+      function showToast(msg, duration = 2500) {
+        clearTimeout(toastTimeout);
+        toast.innerHTML = msg;
+        toast.classList.add('show');
+        toastTimeout = setTimeout(() => toast.classList.remove('show'), duration);
+      }
+
+      // ===== شبیه‌ساز پایه ADC با Chart.js =====
+      let adcChart = null;
+      let adcData = [];
+
+      function initAdcSimulator() {
+        const slider = document.getElementById('adcSlider');
+        const adcValue = document.getElementById('adcValue');
+        const voltageValue = document.getElementById('voltageValue');
+        const pwmValue = document.getElementById('pwmValue');
+        const percentValue = document.getElementById('percentValue');
+        const simLed = document.getElementById('simLed');
+
+        if (!slider) return;
+
+        // ساخت Chart.js
+        const chartCanvas = document.getElementById('adcChart');
+        if (chartCanvas && !adcChart) {
+          const ctx = chartCanvas.getContext('2d');
+          adcChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: Array(20).fill(''),
+              datasets: [{
+                label: 'مقدار ADC',
+                data: Array(20).fill(512),
+                borderColor: '#ffb700',
+                backgroundColor: 'rgba(255, 183, 0, 0.1)',
+                tension: 0.4,
+                fill: true,
+                pointRadius: 0,
+                borderWidth: 3
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+                title: { display: false }
+              },
+              scales: {
+                y: {
+                  min: 0,
+                  max: 1023,
+                  grid: { color: 'rgba(255,255,255,0.05)' },
+                  ticks: { color: 'rgba(255,255,255,0.6)', font: { family: 'Fira Code', size: 10 } }
+                },
+                x: {
+                  grid: { display: false },
+                  ticks: { display: false }
+                }
+              },
+              animation: { duration: 200 }
+            }
+          });
+        }
+
+        function update() {
+          const adc = parseInt(slider.value);
+          const voltage = (adc / 1023 * 5).toFixed(2);
+          const pwm = Math.round(adc / 1023 * 255);
+          const percent = Math.round(adc / 1023 * 100);
+
+          adcValue.textContent = toPersianNumber(adc);
+          voltageValue.textContent = voltage + 'V';
+          pwmValue.textContent = toPersianNumber(pwm);
+          percentValue.textContent = toPersianNumber(percent) + '٪';
+
+          const brightness = adc / 1023;
+          simLed.style.background = `radial-gradient(circle at 30% 30%, rgba(255,255,255,${0.3 + brightness*0.7}), rgba(255,183,0,${0.2 + brightness*0.8}))`;
+          simLed.style.boxShadow = `0 0 ${20 + brightness * 60}px ${5 + brightness * 20}px rgba(255, 183, 0, ${0.1 + brightness * 0.7})`;
+
+          // به‌روزرسانی نمودار
+          if (adcChart) {
+            adcData.push(adc);
+            if (adcData.length > 20) adcData.shift();
+            adcChart.data.datasets[0].data = adcData.concat(Array(20 - adcData.length).fill(adc));
+            adcChart.update('none');
+          }
+        }
+
+        slider.addEventListener('input', update);
+        adcData = [];
+        update();
+      }
+
+      // ===== MediaPipe =====
+      let mediaPipeInitialized = false;
+      let mediaCamera = null;
+      let mediaHands = null;
+      let mediaStream = null;
+      let mpChartInstance = null;
+      let mpChartData = [];
+
+      window.stopMediaPipeCamera = function() {
+        if (mediaStream) {
+          mediaStream.getTracks().forEach(t => t.stop());
+          mediaStream = null;
+        }
+        if (mediaCamera) {
+          try { mediaCamera.stop(); } catch(e){}
+          mediaCamera = null;
+        }
+        const video = document.getElementById('cameraVideo');
+        if (video) video.srcObject = null;
+        const statusText = document.getElementById('statusText');
+        const cameraStatus = document.getElementById('cameraStatus');
+        if (statusText) statusText.textContent = 'دوربین غیرفعال';
+        if (cameraStatus) cameraStatus.classList.remove('active');
+        const startBtn = document.getElementById('startCameraBtn');
+        const stopBtn = document.getElementById('stopCameraBtn');
+        if (startBtn) startBtn.style.display = 'flex';
+        if (stopBtn) stopBtn.style.display = 'none';
+        mediaPipeInitialized = false;
+      };
+
+      function initMediaPipe() {
+        if (mediaPipeInitialized) return;
+        mediaPipeInitialized = true;
+
+        const video = document.getElementById('cameraVideo');
+        const canvas = document.getElementById('handCanvas');
+        const statusText = document.getElementById('statusText');
+        const cameraStatus = document.getElementById('cameraStatus');
+        const arLed = document.getElementById('arLed');
+        const distanceValue = document.getElementById('distanceValue');
+        const pwmOutValue = document.getElementById('pwmOutValue');
+        const startBtn = document.getElementById('startCameraBtn');
+        const stopBtn = document.getElementById('stopCameraBtn');
+
+        if (!video || !canvas) return;
+
+        if (typeof Hands === 'undefined' || typeof Camera === 'undefined') {
+          showToast('<i class="fas fa-info-circle"></i> MediaPipe بارگذاری نشد.');
+          statusText.textContent = 'MediaPipe در دسترس نیست';
+          cameraStatus.classList.remove('active');
+          return;
+        }
+
+        const ctx = canvas.getContext('2d');
+
+        mediaHands = new Hands({
+          locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+        });
+
+        mediaHands.setOptions({
+          maxNumHands: 2,
+          modelComplexity: 0,
+          minDetectionConfidence: 0.7,
+          minTrackingConfidence: 0.7
+        });
+
+        mediaHands.onResults((results) => {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.save();
+
+          if (results.multiHandLandmarks && results.multiHandLandmarks.length === 2) {
+            const hand1 = results.multiHandLandmarks[0];
+            const hand2 = results.multiHandLandmarks[1];
+
+            const h1 = hand1[8];
+            const h2 = hand2[8];
+
+            const dist = Math.sqrt(
+              Math.pow(h1.x - h2.x, 2) + 
+              Math.pow(h1.y - h2.y, 2)
+            );
+
+            const distanceNorm = Math.min(dist / 0.5, 1.0);
+            const pwm = Math.round((1 - distanceNorm) * 255);
+
+            // LED AR
+            arLed.classList.add('on');
+            arLed.style.background = `radial-gradient(circle at 30% 30%, rgba(255,255,255,${0.3 + (1-distanceNorm)*0.7}), rgba(255,183,0,${0.2 + (1-distanceNorm)*0.8}))`;
+            arLed.style.boxShadow = `0 0 ${20 + (1-distanceNorm) * 60}px ${5 + (1-distanceNorm) * 20}px rgba(255, 183, 0, ${0.1 + (1-distanceNorm) * 0.7})`;
+
+            distanceValue.textContent = toPersianNumber(distanceNorm.toFixed(2));
+            pwmOutValue.textContent = toPersianNumber(pwm);
+
+            // رسم دست‌ها
+            results.multiHandLandmarks.forEach(landmarks => {
+              drawConnectors(ctx, landmarks, HAND_CONNECTIONS, { color: '#ffb700', lineWidth: 3 });
+              drawLandmarks(ctx, landmarks, { color: '#00d4aa', lineWidth: 1, radius: 4 });
+            });
+
+            // خط بین انگشتان
+            const x1 = h1.x * canvas.width;
+            const y1 = h1.y * canvas.height;
+            const x2 = h2.x * canvas.width;
+            const y2 = h2.y * canvas.height;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.strokeStyle = '#ff6b35';
+            ctx.lineWidth = 4;
+            ctx.setLineDash([10, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // به‌روزرسانی نمودار PWM
+            updateMpChart(pwm);
+          } else {
+            arLed.classList.remove('on');
+            arLed.style.background = 'radial-gradient(circle at 30% 30%, #333, #111)';
+            arLed.style.boxShadow = '0 0 20px rgba(255, 183, 0, 0.2)';
+            distanceValue.textContent = '—';
+            pwmOutValue.textContent = '—';
+          }
+
+          ctx.restore();
+        });
+
+        navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } })
+          .then(stream => {
+            mediaStream = stream;
+            video.srcObject = stream;
+            video.play();
+            video.onloadedmetadata = () => {
+              canvas.width = video.videoWidth;
+              canvas.height = video.videoHeight;
+            };
+            statusText.textContent = 'دوربین فعال — دست‌ها را نشان دهید';
+            cameraStatus.classList.add('active');
+            startBtn.style.display = 'none';
+            stopBtn.style.display = 'flex';
+
+            mediaCamera = new Camera(video, {
+              onFrame: async () => {
+                if (mediaHands) {
+                  try { await mediaHands.send({ image: video }); } catch(e){}
+                }
+              },
+              width: 640,
+              height: 480
+            });
+            mediaCamera.start();
+          })
+          .catch(err => {
+            console.error('Camera error:', err);
+            statusText.textContent = 'دوربین در دسترس نیست';
+            cameraStatus.classList.remove('active');
+            showToast('<i class="fas fa-exclamation-triangle"></i> دسترسی به دوربین ممکن نشد');
+          });
+      }
+
+      function updateMpChart(pwm) {
+        const canvas = document.getElementById('mpChart');
+        if (!canvas) return;
+        
+        if (!mpChartInstance) {
+          const ctx = canvas.getContext('2d');
+          mpChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: Array(30).fill(''),
+              datasets: [{
+                label: 'PWM',
+                data: Array(30).fill(0),
+                borderColor: '#00d4aa',
+                backgroundColor: 'rgba(0, 212, 170, 0.1)',
+                tension: 0.4,
+                fill: true,
+                pointRadius: 0,
+                borderWidth: 2
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                y: { min: 0, max: 255, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.6)', font: { family: 'Fira Code', size: 9 } } },
+                x: { grid: { display: false }, ticks: { display: false } }
+              },
+              animation: { duration: 100 }
+            }
+          });
+        }
+        
+        mpChartData.push(pwm);
+        if (mpChartData.length > 30) mpChartData.shift();
+        mpChartInstance.data.datasets[0].data = mpChartData.concat(Array(30 - mpChartData.length).fill(0));
+        mpChartInstance.update('none');
+      }
+
+      // ===== شروع =====
+      document.getElementById('startCameraBtn')?.addEventListener('click', () => {
+        playClickSound();
+        initMediaPipe();
+      });
+
+      document.getElementById('stopCameraBtn')?.addEventListener('click', () => {
+        playClickSound();
+        stopMediaPipeCamera();
+      });
+
+      // ===== کوییز =====
+      const quizData = [
+        {
+          q: 'ADC در Arduino UNO چند بیت است؟',
+          options: ['۸ بیت', '۱۰ بیت', '۱۲ بیت', '۱۶ بیت'],
+          correct: 1,
+          explanation: 'Arduino UNO از ADC ۱۰ بیتی استفاده می‌کند که ۲^۱۰ = ۱۰۲۴ پله دارد.'
+        },
+        {
+          q: 'مقدار ADC در ولتاژ ۲.۵ ولت چقدر است؟',
+          options: ['۲۵۶', '۵۱۲', '۷۶۸', '۱۰۲۳'],
+          correct: 1,
+          explanation: '(۲.۵ / ۵) × ۱۰۲۳ = ۵۱۱.۵ ≈ ۵۱۲'
+        },
+        {
+          q: 'کدام پین PWM است؟',
+          options: ['A0', 'A1', 'D9', 'D2'],
+          correct: 2,
+          explanation: 'پین‌های PWM در Arduino UNO: ۳، ۵، ۶، ۹، ۱۰، ۱۱ (با علامت ~)'
+        },
+        {
+          q: 'حاصل analogWrite(9, 128) چیست؟',
+          options: ['۰٪ روشنایی', '۵۰٪ روشنایی', '۱۰۰٪ روشنایی', 'هیچ‌کدام'],
+          correct: 1,
+          explanation: '128 از ۲۵۵ = ۵۰٪ روشنایی'
+        },
+        {
+          q: 'برای کاهش نویز ADC از چه ترفندی استفاده می‌شود؟',
+          options: ['افزایش ولتاژ', 'میانگین‌گیری', 'کاهش فرکانس', 'استفاده از LED'],
+          correct: 1,
+          explanation: 'میانگین‌گیری چند بار خواندن، نویز تصادفی را کاهش می‌دهد.'
+        }
+      ];
+
+      let currentQuizIndex = 0;
+      let quizScore = 0;
+      let answeredQuestions = new Set();
+
+      function initQuiz() {
+        currentQuizIndex = 0;
+        quizScore = 0;
+        answeredQuestions.clear();
+        document.getElementById('quizScore').textContent = '۰';
+        document.getElementById('quizTotal').textContent = toPersianNumber(quizData.length);
+        renderQuiz();
+      }
+
+      function renderQuiz() {
+        const question = quizData[currentQuizIndex];
+        document.getElementById('quizQuestion').textContent = `سوال ${toPersianNumber(currentQuizIndex + 1)}: ${question.q}`;
+        
+        const optionsContainer = document.getElementById('quizOptions');
+        optionsContainer.innerHTML = '';
+        
+        question.options.forEach((opt, idx) => {
+          const btn = document.createElement('button');
+          btn.className = 'quiz-option';
+          btn.textContent = opt;
+          btn.addEventListener('click', () => handleAnswer(idx));
+          optionsContainer.appendChild(btn);
+        });
+        
+        const feedback = document.getElementById('quizFeedback');
+        feedback.classList.remove('show', 'success', 'error');
+        feedback.textContent = '';
+      }
+
+      function handleAnswer(selectedIdx) {
+        const question = quizData[currentQuizIndex];
+        const options = document.querySelectorAll('#quizOptions .quiz-option');
+        
+        options.forEach((opt, idx) => {
+          opt.classList.add('disabled');
+          if (idx === question.correct) {
+            opt.classList.add('correct');
+          } else if (idx === selectedIdx) {
+            opt.classList.add('incorrect');
+          }
+        });
+        
+        const feedback = document.getElementById('quizFeedback');
+        feedback.classList.add('show');
+        
+        if (selectedIdx === question.correct) {
+          feedback.classList.add('success');
+          feedback.innerHTML = `<i class="fas fa-check-circle"></i> <strong>پاسخ صحیح!</strong><br>${question.explanation}`;
+          if (!answeredQuestions.has(currentQuizIndex)) {
+            quizScore++;
+            answeredQuestions.add(currentQuizIndex);
+            document.getElementById('quizScore').textContent = toPersianNumber(quizScore);
+          }
+          playSuccessSound();
+        } else {
+          feedback.classList.add('error');
+          feedback.innerHTML = `<i class="fas fa-times-circle"></i> <strong>پاسخ نادرست</strong><br>${question.explanation}`;
+          playClickSound();
+        }
+      }
+
+      document.getElementById('nextQuizBtn')?.addEventListener('click', () => {
+        currentQuizIndex = (currentQuizIndex + 1) % quizData.length;
+        renderQuiz();
+      });
+
+      document.getElementById('resetQuizBtn')?.addEventListener('click', () => {
+        initQuiz();
+      });
+
+      goToSlide(0);
+      setTimeout(() => {
+        showToast('<i class="fas fa-hand-sparkles"></i> خوش آمدید به جلسه ششم — ورودی/خروجی آنالوگ و دیجیتال', 4000);
+      }, 800);
+    })();
+  </script>
+</body>
+</html>
