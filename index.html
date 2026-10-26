@@ -8,6 +8,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- کتابخانه PapaParse برای خواندن فایل CSV -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -21,6 +23,7 @@
       --purple: #a855f7;
       --pink: #ec4899;
       --cyan: #06b6d4;
+      --aparat: #e63946;
       --phase1: #1e3c72;
       --phase2: #2a5298;
       --phase3: #1e6f5c;
@@ -191,6 +194,10 @@
       background: linear-gradient(135deg, #ffb700, #ff6b35);
       box-shadow: 0 8px 20px rgba(255, 183, 0, 0.35);
     }
+    .header-badge.aparat-badge {
+      background: linear-gradient(135deg, #e63946, #ff6b35);
+      box-shadow: 0 8px 20px rgba(230, 57, 70, 0.35);
+    }
 
     /* ===== نوار آمار ===== */
     .stats-strip {
@@ -234,7 +241,7 @@
     }
     .stat-mini .lbl { font-size: 0.78rem; color: #4a5b7a; font-weight: 600; margin-top: 4px; }
 
-    /* ===== بخش عنوان جلسات ===== */
+    /* ===== عنوان جلسات ===== */
     .section-header {
       display: flex;
       align-items: center;
@@ -337,8 +344,8 @@
     /* ===== کارت جلسه ===== */
     .sessions-row {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-      gap: 18px;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 20px;
     }
 
     .session-card {
@@ -370,7 +377,6 @@
       box-shadow: 0 15px 35px rgba(30, 60, 114, 0.1);
     }
 
-    /* نوار بالای کارت - رنگ فاز */
     .card-phase-bar {
       height: 5px;
       width: 100%;
@@ -474,6 +480,103 @@
       border-top: 1px dashed rgba(0,0,0,0.07);
       margin-top: auto;
       margin-bottom: 16px;
+    }
+
+    /* ===== پادکست آپارات ===== */
+    .podcast-section {
+      background: linear-gradient(135deg, rgba(230, 57, 70, 0.05), rgba(255, 107, 53, 0.03));
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 16px;
+      border: 1px solid rgba(230, 57, 70, 0.15);
+    }
+
+    .podcast-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .podcast-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: #e63946;
+    }
+
+    .podcast-title i {
+      font-size: 1rem;
+      animation: podcastPulse 2s infinite;
+    }
+
+    @keyframes podcastPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+    }
+
+    .podcast-duration {
+      background: rgba(230, 57, 70, 0.1);
+      color: #e63946;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .podcast-frame-wrap {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #000;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .podcast-frame-wrap iframe {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border: none;
+      display: block;
+    }
+
+    .podcast-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .podcast-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border: none;
+      font-family: 'Vazirmatn', sans-serif;
+    }
+
+    .podcast-btn.aparat-btn {
+      background: linear-gradient(135deg, #e63946, #ff6b35);
+      color: white;
+      box-shadow: 0 4px 10px rgba(230, 57, 70, 0.3);
+    }
+
+    .podcast-btn.aparat-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(230, 57, 70, 0.5);
+      color: white;
     }
 
     .card-action {
@@ -684,6 +787,18 @@
     .session-card {
       animation: cardFadeIn 0.5s ease backwards;
     }
+
+    /* ===== اسکلتون لودینگ ===== */
+    .skeleton {
+      background: linear-gradient(90deg, rgba(200, 200, 200, 0.2) 25%, rgba(200, 200, 200, 0.4) 50%, rgba(200, 200, 200, 0.2) 75%);
+      background-size: 200% 100%;
+      animation: skeletonLoading 1.5s infinite;
+      border-radius: 20px;
+    }
+    @keyframes skeletonLoading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
   </style>
 </head>
 <body>
@@ -722,8 +837,12 @@
             ۲۴ جلسه | ۶ فاز
           </div>
           <div class="header-badge secondary">
-            <i class="fas fa-rocket"></i>
-            ۲ جلسه آماده | ۲۲ به‌زودی
+            <i class="fas fa-check-circle"></i>
+            تمام جلسات آماده
+          </div>
+          <div class="header-badge aparat-badge">
+            <i class="fas fa-podcast"></i>
+            پادکست در آپارات
           </div>
         </div>
       </div>
@@ -733,18 +852,18 @@
     <div class="stats-strip">
       <div class="stat-mini">
         <i class="fas fa-book-open"></i>
-        <div class="num">۲</div>
+        <div class="num">۲۴</div>
         <div class="lbl">جلسه آماده</div>
-      </div>
-      <div class="stat-mini">
-        <i class="fas fa-hourglass-half"></i>
-        <div class="num">۲۲</div>
-        <div class="lbl">به‌زودی</div>
       </div>
       <div class="stat-mini">
         <i class="fas fa-layer-group"></i>
         <div class="num">۶</div>
         <div class="lbl">فاز آموزشی</div>
+      </div>
+      <div class="stat-mini">
+        <i class="fas fa-podcast"></i>
+        <div class="num" id="podcastCount">—</div>
+        <div class="lbl">پادکست</div>
       </div>
       <div class="stat-mini">
         <i class="fas fa-project-diagram"></i>
@@ -770,14 +889,17 @@
           آماده
         </div>
         <div class="legend-item">
-          <span class="legend-dot" style="background: #ffb700; color: #ffb700;"></span>
-          به‌زودی
+          <span class="legend-dot" style="background: #e63946; color: #e63946;"></span>
+          پادکست آپارات
         </div>
       </div>
     </div>
 
     <!-- ===== فازها ===== -->
-    <div class="phases-container" id="phasesContainer"></div>
+    <div class="phases-container" id="phasesContainer">
+      <!-- اسکلتون لودینگ -->
+      <div class="phase-section skeleton" style="height: 200px;"></div>
+    </div>
 
     <!-- ===== اطلاعات دوره ===== -->
     <div class="info-section">
@@ -797,9 +919,9 @@
           <p>۲۴ جلسه ۹۰ دقیقه‌ای — ۶ فاز آموزشی — ۲۰ پروژه زنجیره‌ای</p>
         </div>
         <div class="info-card">
-          <i class="fas fa-microchip"></i>
-          <h4>رویکرد عملیاتی</h4>
-          <p>یادگیری پروژه‌محور بر پایه Arduino UNO، ESP32 و ESP32-CAM</p>
+          <i class="fas fa-podcast"></i>
+          <h4>پادکست‌ها</h4>
+          <p>همه جلسات به‌صورت پادکست صوتی در آپارات در دسترس هستند</p>
         </div>
         <div class="info-card">
           <i class="fas fa-flask"></i>
@@ -834,7 +956,9 @@
   <div class="toast" id="toast"></div>
 
   <script>
+    // ============================================
     // ===== داده‌های فازها و جلسات =====
+    // ============================================
     const phases = [
       {
         number: 1,
@@ -842,7 +966,7 @@
         subtitle: 'مفاهیم پایه، سیگنال‌ها، SI، عدم‌قطعیت',
         color: '#1e3c72',
         sessions: [
-          { id: 1, title: 'مفاهیم پایه اندازه‌گیری', type: 'نظری', objective: 'تفاوت سنسور، ترانسدیوسر و ترانسمیتر با مثال', ready: true, link: 'Sessions/session-01/index.html' },
+          { id: 1, title: 'مفاهیم پایه اندازه‌گیری', type: 'نظری', objective: 'تفاوت سنسور، ترانسدیوسر و ترانسمیتر', ready: true, link: 'Sessions/session-01/index.html' },
           { id: 2, title: 'سیگنال‌ها و استانداردهای صنعتی', type: 'نظری', objective: 'آنالوگ، دیجیتال، ۴-۲۰mA و PWM', ready: true, link: 'Sessions/session-02/index.html' },
           { id: 3, title: 'دستگاه بین‌المللی یکاها (SI)', type: 'نظری', objective: 'کمیت‌های SI و تحلیل دیمانسپون', ready: true, link: 'Sessions/session-03/index.html' },
           { id: 4, title: 'مشخصات سنسور و عدم قطعیت', type: 'نظری', objective: 'دقت، صحت و بودجه عدم قطعیت', ready: true, link: 'Sessions/session-04/index.html' }
@@ -910,106 +1034,194 @@
       }
     ];
 
+    // ===== متغیر برای نگهداری داده‌های پادکست =====
+    let podcastsData = {};
+
+    // ============================================
+    // ===== خواندن فایل CSV و رندر کردن صفحه =====
+    // ============================================
+    function loadPodcastsAndRender() {
+      // بررسی وجود PapaParse
+      if (typeof Papa === 'undefined') {
+        console.warn('⚠️ PapaParse بارگذاری نشد. بدون پادکست ادامه می‌دهیم.');
+        document.getElementById('podcastCount').textContent = '۰';
+        renderPhases();
+        return;
+      }
+
+      Papa.parse("./podcasts.csv", {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+          // تبدیل آرایه به آبجکت با کلید session_id
+          results.data.forEach(row => {
+            if (row.session_id && row.embed_code) {
+              const id = parseInt(row.session_id);
+              if (!isNaN(id)) {
+                podcastsData[id] = {
+                  embedCode: row.embed_code || '',
+                  link: row.aparat_link || '',
+                  duration: row.duration || ''
+                };
+              }
+            }
+          });
+          
+          // به‌روزرسانی تعداد پادکست‌ها
+          const count = Object.keys(podcastsData).length;
+          document.getElementById('podcastCount').textContent = toPersian(count);
+          
+          // حالا صفحه را رندر کن
+          renderPhases();
+          
+          console.log('✅ پادکست‌ها با موفقیت بارگذاری شدند:', count);
+          if (count > 0) {
+            setTimeout(() => showToast(`<i class="fas fa-podcast"></i> ${toPersian(count)} پادکست بارگذاری شد`), 1500);
+          }
+        },
+        error: function(err) {
+          console.warn('⚠️ فایل podcasts.csv پیدا نشد. بدون پادکست ادامه می‌دهیم.', err);
+          document.getElementById('podcastCount').textContent = '۰';
+          setTimeout(() => showToast('<i class="fas fa-info-circle"></i> فایل podcasts.csv پیدا نشد — بدون پادکست'), 1500);
+          // حتی اگر CSV نبود، صفحه را رندر کن
+          renderPhases();
+        }
+      });
+    }
+
+    // ============================================
     // ===== رندر فازها و کارت‌های جلسه =====
-    const phasesContainer = document.getElementById('phasesContainer');
+    // ============================================
+    function renderPhases() {
+      const phasesContainer = document.getElementById('phasesContainer');
+      phasesContainer.innerHTML = ''; // پاک کردن اسکلتون
 
-    phases.forEach((phase, phaseIdx) => {
-      const phaseDiv = document.createElement('div');
-      phaseDiv.className = 'phase-section';
+      phases.forEach((phase, phaseIdx) => {
+        const phaseDiv = document.createElement('div');
+        phaseDiv.className = 'phase-section';
 
-      const readyCount = phase.sessions.filter(s => s.ready).length;
+        const readyCount = phase.sessions.filter(s => s.ready).length;
 
-      phaseDiv.innerHTML = `
-        <div class="phase-header">
-          <div class="phase-number" style="background: linear-gradient(135deg, ${phase.color}, ${shadeColor(phase.color, 20)});">
-            ${toPersian(phase.number)}
+        phaseDiv.innerHTML = `
+          <div class="phase-header">
+            <div class="phase-number" style="background: linear-gradient(135deg, ${phase.color}, ${shadeColor(phase.color, 20)});">
+              ${toPersian(phase.number)}
+            </div>
+            <div class="phase-info">
+              <h3>${phase.title}</h3>
+              <p>${phase.subtitle}</p>
+            </div>
+            <div class="phase-sessions-count">
+              <i class="fas fa-video"></i>
+              ${toPersian(readyCount)} از ${toPersian(phase.sessions.length)} آماده
+            </div>
           </div>
-          <div class="phase-info">
-            <h3>${phase.title}</h3>
-            <p>${phase.subtitle}</p>
-          </div>
-          <div class="phase-sessions-count">
-            <i class="fas fa-video"></i>
-            ${toPersian(readyCount)} از ${toPersian(phase.sessions.length)} آماده
-          </div>
-        </div>
-        <div class="sessions-row" id="phase-${phase.number}-row"></div>
-      `;
-      phasesContainer.appendChild(phaseDiv);
+          <div class="sessions-row" id="phase-${phase.number}-row"></div>
+        `;
+        phasesContainer.appendChild(phaseDiv);
 
-      const row = phaseDiv.querySelector(`#phase-${phase.number}-row`);
+        const row = phaseDiv.querySelector(`#phase-${phase.number}-row`);
 
-      phase.sessions.forEach((session, idx) => {
-        const card = document.createElement('div');
-        card.className = `session-card ${session.ready ? 'available' : 'coming-soon'}`;
-        card.style.animationDelay = `${(phaseIdx * 0.05) + (idx * 0.08)}s`;
+        phase.sessions.forEach((session, idx) => {
+          const card = document.createElement('div');
+          card.className = `session-card ${session.ready ? 'available' : 'coming-soon'}`;
+          card.style.animationDelay = `${(phaseIdx * 0.05) + (idx * 0.08)}s`;
 
-        const phaseClass = `card-phase-${phase.number}`;
+          const phaseClass = `card-phase-${phase.number}`;
+          const podcast = podcastsData[session.id];
 
-        card.innerHTML = `
-          <div class="card-phase-bar ${phaseClass}"></div>
-          <div class="card-body ${phaseClass}">
-            <div class="card-top">
-              <div class="card-number">${toPersian(session.id)}</div>
+          // بخش پادکست — فقط اگر وجود داشته باشد
+          let podcastHTML = '';
+          if (podcast && podcast.embedCode) {
+            podcastHTML = `
+              <div class="podcast-section">
+                <div class="podcast-header">
+                  <div class="podcast-title">
+                    <i class="fas fa-podcast"></i>
+                    پادکست جلسه ${toPersian(session.id)}
+                  </div>
+                  ${podcast.duration ? `<span class="podcast-duration"><i class="fas fa-clock"></i> ${podcast.duration}</span>` : ''}
+                </div>
+                <div class="podcast-frame-wrap">
+                  ${podcast.embedCode}
+                </div>
+                <div class="podcast-actions">
+                  <a href="${podcast.link}" target="_blank" class="podcast-btn aparat-btn">
+                    <i class="fas fa-external-link-alt"></i>
+                    باز کردن در آپارات
+                  </a>
+                </div>
+              </div>
+            `;
+          }
+
+          card.innerHTML = `
+            <div class="card-phase-bar ${phaseClass}"></div>
+            <div class="card-body ${phaseClass}">
+              <div class="card-top">
+                <div class="card-number">${toPersian(session.id)}</div>
+                ${session.ready
+                  ? `<span class="card-status ready"><i class="fas fa-circle"></i> آماده</span>`
+                  : `<span class="card-status coming"><i class="fas fa-hourglass-half"></i> به‌زودی</span>`
+                }
+              </div>
+              <h3>${session.title}</h3>
+              <div class="card-meta">
+                <span><i class="fas fa-clock"></i> ۹۰ دقیقه</span>
+                <span><i class="fas fa-tag"></i> ${session.type}</span>
+                ${podcast ? `<span style="color: #e63946;"><i class="fas fa-podcast" style="color: #e63946;"></i> پادکست</span>` : ''}
+              </div>
+              <div class="card-objective">
+                <i class="fas fa-bullseye" style="color: ${phase.color}; margin-left: 4px;"></i>
+                ${session.objective}
+              </div>
+              ${podcastHTML}
               ${session.ready
-                ? `<span class="card-status ready"><i class="fas fa-circle"></i> آماده</span>`
-                : `<span class="card-status coming"><i class="fas fa-hourglass-half"></i> به‌زودی</span>`
+                ? `<a href="${session.link}" class="card-action enter-btn">
+                     <i class="fas fa-arrow-left"></i>
+                     ورود به لکچر تعاملی
+                   </a>`
+                : `<button class="card-action soon-btn" disabled>
+                     <i class="fas fa-hourglass-half"></i>
+                     در حال آماده‌سازی
+                   </button>`
               }
             </div>
-            <h3>${session.title}</h3>
-            <div class="card-meta">
-              <span><i class="fas fa-clock"></i> ۹۰ دقیقه</span>
-              <span><i class="fas fa-tag"></i> ${session.type}</span>
-            </div>
-            <div class="card-objective">
-              <i class="fas fa-bullseye" style="color: ${phase.color}; margin-left: 4px;"></i>
-              ${session.objective}
-            </div>
-            ${session.ready
-              ? `<a href="${session.link}" class="card-action enter-btn">
-                   <i class="fas fa-arrow-left"></i>
-                   ورود به جلسه
-                 </a>`
-              : `<button class="card-action soon-btn" disabled>
-                   <i class="fas fa-hourglass-half"></i>
-                   در حال آماده‌سازی
-                 </button>`
-            }
-          </div>
-        `;
+          `;
 
-        // کلیک روی کارت‌های آماده
-        if (session.ready) {
-          card.addEventListener('click', (e) => {
-            // اگر روی لینک کلیک نشده
-            if (!e.target.closest('.card-action')) {
+          // کلیک روی کارت‌های آماده (به‌جز روی لینک‌ها و iframe)
+          if (session.ready) {
+            card.addEventListener('click', (e) => {
+              if (!e.target.closest('.card-action') && 
+                  !e.target.closest('.podcast-btn') && 
+                  !e.target.closest('iframe') &&
+                  !e.target.closest('.podcast-section')) {
+                playClickSound();
+                showToast(`<i class="fas fa-rocket"></i> در حال ورود به جلسه ${toPersian(session.id)}...`);
+                setTimeout(() => {
+                  window.location.href = session.link;
+                }, 600);
+              }
+            });
+          }
+
+          // افکت صوتی روی دکمه ورود
+          const enterBtn = card.querySelector('.enter-btn');
+          if (enterBtn) {
+            enterBtn.addEventListener('click', () => {
               playClickSound();
-              showToast(`<i class="fas fa-rocket"></i> در حال ورود به جلسه ${toPersian(session.id)}...`);
-              setTimeout(() => {
-                window.location.href = session.link;
-              }, 600);
-            }
-          });
-        } else {
-          card.addEventListener('click', () => {
-            playClickSound();
-            showToast(`<i class="fas fa-hourglass-half"></i> جلسه ${toPersian(session.id)} به‌زودی آماده می‌شود`);
-          });
-        }
+            });
+          }
 
-        // افکت صوتی روی دکمه ورود
-        const enterBtn = card.querySelector('.enter-btn');
-        if (enterBtn) {
-          enterBtn.addEventListener('click', () => {
-            playClickSound();
-          });
-        }
-
-        row.appendChild(card);
+          row.appendChild(card);
+        });
       });
-    });
+    }
 
+    // ============================================
     // ===== توابع کمکی =====
+    // ============================================
     function toPersian(num) {
       const persian = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
       return String(num).replace(/\d/g, d => persian[d]);
@@ -1024,7 +1236,9 @@
       return '#' + (0x1000000 + R*0x10000 + G*0x100 + B).toString(16).slice(1);
     }
 
+    // ============================================
     // ===== صدا =====
+    // ============================================
     let soundEnabled = true;
     let audioCtx = null;
 
@@ -1050,7 +1264,9 @@
       } catch(e){}
     }
 
+    // ============================================
     // ===== توست =====
+    // ============================================
     const toastEl = document.getElementById('toast');
     let toastTimeout;
 
@@ -1063,7 +1279,9 @@
       }, 2800);
     }
 
+    // ============================================
     // ===== دکمه بازگشت به بالا =====
+    // ============================================
     const backToTop = document.getElementById('backToTop');
 
     window.addEventListener('scroll', () => {
@@ -1079,7 +1297,9 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
+    // ============================================
     // ===== ذرات نورانی =====
+    // ============================================
     function createParticles() {
       for (let i = 0; i < 15; i++) {
         const p = document.createElement('div');
@@ -1094,14 +1314,17 @@
       }
     }
 
-    // ===== مقداردهی اولیه =====
+    // ============================================
+    // ===== شروع =====
+    // ============================================
     createParticles();
+    loadPodcastsAndRender();
 
     setTimeout(() => {
       showToast('<i class="fas fa-hand-sparkles"></i> به دوره سیستم‌های اندازه‌گیری و کنترل خوش آمدید');
-    }, 800);
+    }, 1200);
 
-    console.log('✅ صفحه اصلی آماده است');
+    console.log('✅ هاب اصلی آماده است');
   </script>
 </body>
 </html>
