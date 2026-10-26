@@ -8,7 +8,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- کتابخانه PapaParse برای خواندن فایل CSV -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -44,7 +43,6 @@
       overflow-x: hidden;
     }
 
-    /* ===== حباب‌های شناور ===== */
     .bubble {
       position: fixed;
       border-radius: 50%;
@@ -65,7 +63,6 @@
     .bubble:nth-child(4) { width: 70px; height: 70px; top: 80%; left: 12%; animation-duration: 18s; animation-delay: 1s; }
     .bubble:nth-child(5) { width: 170px; height: 170px; top: 12%; left: 55%; animation-duration: 28s; animation-delay: 8s; background: radial-gradient(circle, rgba(168,85,247,0.12), rgba(255,255,255,0.05)); }
 
-    /* ===== ذرات نورانی ===== */
     .particle {
       position: fixed;
       width: 4px;
@@ -93,7 +90,6 @@
       gap: 24px;
     }
 
-    /* ===== هدر ===== */
     .header {
       background: rgba(255, 255, 255, 0.75);
       backdrop-filter: blur(20px);
@@ -199,7 +195,6 @@
       box-shadow: 0 8px 20px rgba(230, 57, 70, 0.35);
     }
 
-    /* ===== نوار آمار ===== */
     .stats-strip {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -241,7 +236,6 @@
     }
     .stat-mini .lbl { font-size: 0.78rem; color: #4a5b7a; font-weight: 600; margin-top: 4px; }
 
-    /* ===== عنوان جلسات ===== */
     .section-header {
       display: flex;
       align-items: center;
@@ -287,7 +281,6 @@
       box-shadow: 0 0 8px currentColor;
     }
 
-    /* ===== فازها ===== */
     .phases-container {
       display: flex;
       flex-direction: column;
@@ -341,7 +334,6 @@
       font-weight: 700;
     }
 
-    /* ===== کارت جلسه ===== */
     .sessions-row {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -360,27 +352,15 @@
       display: flex;
       flex-direction: column;
     }
-    .session-card.available {
-      cursor: pointer;
-    }
+    .session-card.available { cursor: pointer; }
     .session-card.available:hover {
       transform: translateY(-8px);
       box-shadow: 0 25px 50px rgba(30, 60, 114, 0.18);
       border-color: rgba(42, 82, 152, 0.35);
     }
-    .session-card.coming-soon {
-      opacity: 0.75;
-      cursor: not-allowed;
-    }
-    .session-card.coming-soon:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 15px 35px rgba(30, 60, 114, 0.1);
-    }
+    .session-card.coming-soon { opacity: 0.75; cursor: not-allowed; }
 
-    .card-phase-bar {
-      height: 5px;
-      width: 100%;
-    }
+    .card-phase-bar { height: 5px; width: 100%; }
     .card-phase-1 { background: linear-gradient(90deg, #1e3c72, #2a5298); }
     .card-phase-2 { background: linear-gradient(90deg, #2a5298, #4a72c8); }
     .card-phase-3 { background: linear-gradient(90deg, #1e6f5c, #00d4aa); }
@@ -431,7 +411,6 @@
       border-radius: 20px;
       font-size: 0.72rem;
       font-weight: 800;
-      letter-spacing: 0.3px;
     }
     .card-status.ready {
       background: rgba(0, 212, 170, 0.15);
@@ -442,11 +421,6 @@
       background: rgba(255, 183, 0, 0.15);
       color: #b86b1e;
       border: 1px solid rgba(255, 183, 0, 0.4);
-    }
-    .card-status.ready i { animation: pulseReady 2s infinite; }
-    @keyframes pulseReady {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.2); }
     }
 
     .session-card h3 {
@@ -465,11 +439,7 @@
       margin-bottom: 12px;
       flex-wrap: wrap;
     }
-    .card-meta span {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
+    .card-meta span { display: flex; align-items: center; gap: 4px; }
     .card-meta i { color: #2a5298; font-size: 0.85rem; }
 
     .card-objective {
@@ -482,7 +452,7 @@
       margin-bottom: 16px;
     }
 
-    /* ===== پادکست آپارات ===== */
+    /* پادکست */
     .podcast-section {
       background: linear-gradient(135deg, rgba(230, 57, 70, 0.05), rgba(255, 107, 53, 0.03));
       border-radius: 16px;
@@ -490,7 +460,6 @@
       margin-bottom: 16px;
       border: 1px solid rgba(230, 57, 70, 0.15);
     }
-
     .podcast-header {
       display: flex;
       align-items: center;
@@ -499,7 +468,6 @@
       gap: 8px;
       flex-wrap: wrap;
     }
-
     .podcast-title {
       display: flex;
       align-items: center;
@@ -508,17 +476,6 @@
       font-weight: 800;
       color: #e63946;
     }
-
-    .podcast-title i {
-      font-size: 1rem;
-      animation: podcastPulse 2s infinite;
-    }
-
-    @keyframes podcastPulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.15); }
-    }
-
     .podcast-duration {
       background: rgba(230, 57, 70, 0.1);
       color: #e63946;
@@ -530,28 +487,25 @@
       align-items: center;
       gap: 4px;
     }
-
     .podcast-frame-wrap {
       position: relative;
       border-radius: 12px;
       overflow: hidden;
       background: #000;
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      width: 100%;
     }
-
     .podcast-frame-wrap iframe {
       width: 100%;
       aspect-ratio: 16 / 9;
       border: none;
       display: block;
     }
-
     .podcast-actions {
       display: flex;
       gap: 8px;
       margin-top: 10px;
     }
-
     .podcast-btn {
       display: inline-flex;
       align-items: center;
@@ -566,13 +520,11 @@
       border: none;
       font-family: 'Vazirmatn', sans-serif;
     }
-
     .podcast-btn.aparat-btn {
       background: linear-gradient(135deg, #e63946, #ff6b35);
       color: white;
       box-shadow: 0 4px 10px rgba(230, 57, 70, 0.3);
     }
-
     .podcast-btn.aparat-btn:hover {
       transform: translateY(-2px);
       box-shadow: 0 8px 20px rgba(230, 57, 70, 0.5);
@@ -595,7 +547,6 @@
       font-family: 'Vazirmatn', sans-serif;
       text-decoration: none;
     }
-
     .card-action.enter-btn {
       background: linear-gradient(135deg, #1e3c72, #2a5298);
       color: white;
@@ -604,24 +555,8 @@
     .card-action.enter-btn:hover {
       transform: translateY(-2px);
       box-shadow: 0 12px 25px rgba(30, 60, 114, 0.45);
-      background: linear-gradient(135deg, #2a5298, #4a72c8);
-    }
-    .card-action.enter-btn i { transition: transform 0.3s ease; }
-    .card-action.enter-btn:hover i { transform: translateX(-5px); }
-
-    .card-action.soon-btn {
-      background: rgba(255, 183, 0, 0.12);
-      color: #b86b1e;
-      border: 2px dashed rgba(255, 183, 0, 0.5);
-      cursor: not-allowed;
-    }
-    .card-action.soon-btn i { animation: hourglass 3s infinite ease-in-out; }
-    @keyframes hourglass {
-      0%, 100% { transform: rotate(0deg); }
-      50% { transform: rotate(180deg); }
     }
 
-    /* ===== بخش اطلاعات دوره ===== */
     .info-section {
       background: rgba(255, 255, 255, 0.7);
       backdrop-filter: blur(15px);
@@ -642,10 +577,6 @@
       border-right: 5px solid #2a5298;
       transition: all 0.3s ease;
     }
-    .info-card:hover {
-      transform: translateX(-6px);
-      box-shadow: 0 12px 25px rgba(30, 60, 114, 0.1);
-    }
     .info-card i {
       font-size: 1.8rem;
       color: #2a5298;
@@ -664,7 +595,6 @@
       line-height: 1.7;
     }
 
-    /* ===== فوتر ===== */
     .footer {
       text-align: center;
       padding: 26px 20px;
@@ -676,10 +606,7 @@
       margin-top: 12px;
       border: 1px solid rgba(255, 255, 255, 0.8);
     }
-    .footer strong {
-      color: #1e3c72;
-      font-weight: 800;
-    }
+    .footer strong { color: #1e3c72; font-weight: 800; }
     .footer .powered {
       margin-top: 10px;
       font-size: 0.8rem;
@@ -687,7 +614,6 @@
       letter-spacing: 0.5px;
     }
 
-    /* ===== دکمه بازگشت به بالا ===== */
     .back-to-top {
       position: fixed;
       bottom: 30px;
@@ -715,12 +641,7 @@
       visibility: visible;
       transform: translateY(0);
     }
-    .back-to-top:hover {
-      transform: translateY(-5px) scale(1.08);
-      box-shadow: 0 15px 35px rgba(30, 60, 114, 0.5);
-    }
 
-    /* ===== توست ===== */
     .toast {
       position: fixed;
       bottom: 30px;
@@ -743,67 +664,26 @@
       border: 1px solid rgba(255, 255, 255, 0.2);
       max-width: 80vw;
     }
-    .toast.show {
-      transform: translateX(0);
-      opacity: 1;
-    }
+    .toast.show { transform: translateX(0); opacity: 1; }
     .toast i { color: #ffb700; font-size: 1.1rem; }
 
-    /* ===== ریسپانسیو ===== */
     @media (max-width: 768px) {
       body { padding: 12px; }
       .header { padding: 22px 20px; }
       .header-left h1 { font-size: 1.5rem; }
-      .header-left h1 i { font-size: 1.6rem; }
-      .instructor-info { padding: 12px 16px; }
-      .instructor-info .name { font-size: 0.95rem; }
-      .instructor-info .title { font-size: 0.8rem; }
-      .header-badges { align-items: flex-start; }
-      .header-badge { font-size: 0.8rem; padding: 10px 18px; }
-      .section-title { font-size: 1.2rem; }
-      .phase-section { padding: 20px 16px; }
       .sessions-row { grid-template-columns: 1fr; }
-      .phase-number { width: 42px; height: 42px; font-size: 1.1rem; }
-      .phase-info h3 { font-size: 1.05rem; }
-      .back-to-top { bottom: 20px; left: 20px; width: 46px; height: 46px; }
-      .toast { right: 12px; left: 12px; bottom: 20px; transform: translateY(100px); }
-      .toast.show { transform: translateY(0); }
     }
 
-    /* ===== اسکرول‌بار ===== */
     ::-webkit-scrollbar { width: 10px; }
     ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.05); }
     ::-webkit-scrollbar-thumb {
       background: linear-gradient(180deg, #2a5298, #1e3c72);
       border-radius: 10px;
     }
-    ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #ffb700, #ff6b35); }
-
-    /* ===== انیمیشن ورود کارت‌ها ===== */
-    @keyframes cardFadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .session-card {
-      animation: cardFadeIn 0.5s ease backwards;
-    }
-
-    /* ===== اسکلتون لودینگ ===== */
-    .skeleton {
-      background: linear-gradient(90deg, rgba(200, 200, 200, 0.2) 25%, rgba(200, 200, 200, 0.4) 50%, rgba(200, 200, 200, 0.2) 75%);
-      background-size: 200% 100%;
-      animation: skeletonLoading 1.5s infinite;
-      border-radius: 20px;
-    }
-    @keyframes skeletonLoading {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
   </style>
 </head>
 <body>
 
-  <!-- حباب‌های شناور -->
   <div class="bubble"></div>
   <div class="bubble"></div>
   <div class="bubble"></div>
@@ -812,7 +692,6 @@
 
   <div class="dashboard">
 
-    <!-- ===== هدر ===== -->
     <header class="header">
       <div class="header-content">
         <div class="header-left">
@@ -848,7 +727,6 @@
       </div>
     </header>
 
-    <!-- ===== نوار آمار ===== -->
     <div class="stats-strip">
       <div class="stat-mini">
         <i class="fas fa-book-open"></i>
@@ -877,7 +755,6 @@
       </div>
     </div>
 
-    <!-- ===== عنوان جلسات ===== -->
     <div class="section-header">
       <div class="section-title">
         <i class="fas fa-list-ul"></i>
@@ -895,13 +772,8 @@
       </div>
     </div>
 
-    <!-- ===== فازها ===== -->
-    <div class="phases-container" id="phasesContainer">
-      <!-- اسکلتون لودینگ -->
-      <div class="phase-section skeleton" style="height: 200px;"></div>
-    </div>
+    <div class="phases-container" id="phasesContainer"></div>
 
-    <!-- ===== اطلاعات دوره ===== -->
     <div class="info-section">
       <div class="section-title" style="margin-bottom: 22px;">
         <i class="fas fa-info-circle"></i>
@@ -931,7 +803,6 @@
       </div>
     </div>
 
-    <!-- ===== فوتر ===== -->
     <footer class="footer">
       <div>
         <i class="fas fa-graduation-cap" style="color: #2a5298; font-size: 1.3rem;"></i>
@@ -940,19 +811,15 @@
       <div style="margin-top: 8px; font-size: 0.82rem;">
         دکتر مسعود گوهری‌منش — دانشگاه تربیت حیدریه
       </div>
-      <div class="powered">
-        Powered by M. Goharimanesh
-      </div>
+      <div class="powered">Powered by M. Goharimanesh</div>
     </footer>
 
   </div>
 
-  <!-- دکمه بازگشت به بالا -->
   <button class="back-to-top" id="backToTop" title="بازگشت به بالا">
     <i class="fas fa-arrow-up"></i>
   </button>
 
-  <!-- توست -->
   <div class="toast" id="toast"></div>
 
   <script>
@@ -1034,190 +901,10 @@
       }
     ];
 
-    // ===== متغیر برای نگهداری داده‌های پادکست =====
+    // ============================================
+    // ===== داده‌های پادکست =====
+    // ============================================
     let podcastsData = {};
-
-    // ============================================
-    // ===== خواندن فایل CSV و رندر کردن صفحه =====
-    // ============================================
-    function loadPodcastsAndRender() {
-      // بررسی وجود PapaParse
-      if (typeof Papa === 'undefined') {
-        console.warn('⚠️ PapaParse بارگذاری نشد. بدون پادکست ادامه می‌دهیم.');
-        document.getElementById('podcastCount').textContent = '۰';
-        renderPhases();
-        return;
-      }
-
-      Papa.parse("./podcasts.csv", {
-        download: true,
-        header: true,
-        skipEmptyLines: true,
-        complete: function(results) {
-          // تبدیل آرایه به آبجکت با کلید session_id
-          results.data.forEach(row => {
-            if (row.session_id && row.embed_code) {
-              const id = parseInt(row.session_id);
-              if (!isNaN(id)) {
-                podcastsData[id] = {
-                  embedCode: row.embed_code || '',
-                  link: row.aparat_link || '',
-                  duration: row.duration || ''
-                };
-              }
-            }
-          });
-          
-          // به‌روزرسانی تعداد پادکست‌ها
-          const count = Object.keys(podcastsData).length;
-          document.getElementById('podcastCount').textContent = toPersian(count);
-          
-          // حالا صفحه را رندر کن
-          renderPhases();
-          
-          console.log('✅ پادکست‌ها با موفقیت بارگذاری شدند:', count);
-          if (count > 0) {
-            setTimeout(() => showToast(`<i class="fas fa-podcast"></i> ${toPersian(count)} پادکست بارگذاری شد`), 1500);
-          }
-        },
-        error: function(err) {
-          console.warn('⚠️ فایل podcasts.csv پیدا نشد. بدون پادکست ادامه می‌دهیم.', err);
-          document.getElementById('podcastCount').textContent = '۰';
-          setTimeout(() => showToast('<i class="fas fa-info-circle"></i> فایل podcasts.csv پیدا نشد — بدون پادکست'), 1500);
-          // حتی اگر CSV نبود، صفحه را رندر کن
-          renderPhases();
-        }
-      });
-    }
-
-    // ============================================
-    // ===== رندر فازها و کارت‌های جلسه =====
-    // ============================================
-    function renderPhases() {
-      const phasesContainer = document.getElementById('phasesContainer');
-      phasesContainer.innerHTML = ''; // پاک کردن اسکلتون
-
-      phases.forEach((phase, phaseIdx) => {
-        const phaseDiv = document.createElement('div');
-        phaseDiv.className = 'phase-section';
-
-        const readyCount = phase.sessions.filter(s => s.ready).length;
-
-        phaseDiv.innerHTML = `
-          <div class="phase-header">
-            <div class="phase-number" style="background: linear-gradient(135deg, ${phase.color}, ${shadeColor(phase.color, 20)});">
-              ${toPersian(phase.number)}
-            </div>
-            <div class="phase-info">
-              <h3>${phase.title}</h3>
-              <p>${phase.subtitle}</p>
-            </div>
-            <div class="phase-sessions-count">
-              <i class="fas fa-video"></i>
-              ${toPersian(readyCount)} از ${toPersian(phase.sessions.length)} آماده
-            </div>
-          </div>
-          <div class="sessions-row" id="phase-${phase.number}-row"></div>
-        `;
-        phasesContainer.appendChild(phaseDiv);
-
-        const row = phaseDiv.querySelector(`#phase-${phase.number}-row`);
-
-        phase.sessions.forEach((session, idx) => {
-          const card = document.createElement('div');
-          card.className = `session-card ${session.ready ? 'available' : 'coming-soon'}`;
-          card.style.animationDelay = `${(phaseIdx * 0.05) + (idx * 0.08)}s`;
-
-          const phaseClass = `card-phase-${phase.number}`;
-          const podcast = podcastsData[session.id];
-
-          // بخش پادکست — فقط اگر وجود داشته باشد
-          let podcastHTML = '';
-          if (podcast && podcast.embedCode) {
-            podcastHTML = `
-              <div class="podcast-section">
-                <div class="podcast-header">
-                  <div class="podcast-title">
-                    <i class="fas fa-podcast"></i>
-                    پادکست جلسه ${toPersian(session.id)}
-                  </div>
-                  ${podcast.duration ? `<span class="podcast-duration"><i class="fas fa-clock"></i> ${podcast.duration}</span>` : ''}
-                </div>
-                <div class="podcast-frame-wrap">
-                  ${podcast.embedCode}
-                </div>
-                <div class="podcast-actions">
-                  <a href="${podcast.link}" target="_blank" class="podcast-btn aparat-btn">
-                    <i class="fas fa-external-link-alt"></i>
-                    باز کردن در آپارات
-                  </a>
-                </div>
-              </div>
-            `;
-          }
-
-          card.innerHTML = `
-            <div class="card-phase-bar ${phaseClass}"></div>
-            <div class="card-body ${phaseClass}">
-              <div class="card-top">
-                <div class="card-number">${toPersian(session.id)}</div>
-                ${session.ready
-                  ? `<span class="card-status ready"><i class="fas fa-circle"></i> آماده</span>`
-                  : `<span class="card-status coming"><i class="fas fa-hourglass-half"></i> به‌زودی</span>`
-                }
-              </div>
-              <h3>${session.title}</h3>
-              <div class="card-meta">
-                <span><i class="fas fa-clock"></i> ۹۰ دقیقه</span>
-                <span><i class="fas fa-tag"></i> ${session.type}</span>
-                ${podcast ? `<span style="color: #e63946;"><i class="fas fa-podcast" style="color: #e63946;"></i> پادکست</span>` : ''}
-              </div>
-              <div class="card-objective">
-                <i class="fas fa-bullseye" style="color: ${phase.color}; margin-left: 4px;"></i>
-                ${session.objective}
-              </div>
-              ${podcastHTML}
-              ${session.ready
-                ? `<a href="${session.link}" class="card-action enter-btn">
-                     <i class="fas fa-arrow-left"></i>
-                     ورود به لکچر تعاملی
-                   </a>`
-                : `<button class="card-action soon-btn" disabled>
-                     <i class="fas fa-hourglass-half"></i>
-                     در حال آماده‌سازی
-                   </button>`
-              }
-            </div>
-          `;
-
-          // کلیک روی کارت‌های آماده (به‌جز روی لینک‌ها و iframe)
-          if (session.ready) {
-            card.addEventListener('click', (e) => {
-              if (!e.target.closest('.card-action') && 
-                  !e.target.closest('.podcast-btn') && 
-                  !e.target.closest('iframe') &&
-                  !e.target.closest('.podcast-section')) {
-                playClickSound();
-                showToast(`<i class="fas fa-rocket"></i> در حال ورود به جلسه ${toPersian(session.id)}...`);
-                setTimeout(() => {
-                  window.location.href = session.link;
-                }, 600);
-              }
-            });
-          }
-
-          // افکت صوتی روی دکمه ورود
-          const enterBtn = card.querySelector('.enter-btn');
-          if (enterBtn) {
-            enterBtn.addEventListener('click', () => {
-              playClickSound();
-            });
-          }
-
-          row.appendChild(card);
-        });
-      });
-    }
 
     // ============================================
     // ===== توابع کمکی =====
@@ -1280,25 +967,282 @@
     }
 
     // ============================================
-    // ===== دکمه بازگشت به بالا =====
+    // ===== ساخت کارت جلسه با createElement =====
     // ============================================
-    const backToTop = document.getElementById('backToTop');
+    function createSessionCard(session, phase, idx, phaseIdx) {
+      const card = document.createElement('div');
+      card.className = `session-card ${session.ready ? 'available' : 'coming-soon'}`;
+      card.style.animationDelay = `${(phaseIdx * 0.05) + (idx * 0.08)}s`;
 
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 300) {
-        backToTop.classList.add('visible');
+      // نوار بالای کارت
+      const phaseBar = document.createElement('div');
+      phaseBar.className = `card-phase-bar card-phase-${phase.number}`;
+      card.appendChild(phaseBar);
+
+      // بدنه کارت
+      const body = document.createElement('div');
+      body.className = `card-body card-phase-${phase.number}`;
+
+      // بالای کارت (شماره + وضعیت)
+      const top = document.createElement('div');
+      top.className = 'card-top';
+
+      const cardNum = document.createElement('div');
+      cardNum.className = 'card-number';
+      cardNum.textContent = toPersian(session.id);
+      top.appendChild(cardNum);
+
+      const status = document.createElement('span');
+      status.className = session.ready ? 'card-status ready' : 'card-status coming';
+      if (session.ready) {
+        status.innerHTML = '<i class="fas fa-circle"></i> آماده';
       } else {
-        backToTop.classList.remove('visible');
+        status.innerHTML = '<i class="fas fa-hourglass-half"></i> به‌زودی';
       }
-    });
+      top.appendChild(status);
 
-    backToTop.addEventListener('click', () => {
-      playClickSound();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+      body.appendChild(top);
+
+      // عنوان
+      const title = document.createElement('h3');
+      title.textContent = session.title;
+      body.appendChild(title);
+
+      // متادیتا
+      const meta = document.createElement('div');
+      meta.className = 'card-meta';
+      meta.innerHTML = `
+        <span><i class="fas fa-clock"></i> ۹۰ دقیقه</span>
+        <span><i class="fas fa-tag"></i> ${session.type}</span>
+      `;
+      if (podcastsData[session.id]) {
+        const podMeta = document.createElement('span');
+        podMeta.style.color = '#e63946';
+        podMeta.innerHTML = '<i class="fas fa-podcast" style="color: #e63946;"></i> پادکست';
+        meta.appendChild(podMeta);
+      }
+      body.appendChild(meta);
+
+      // هدف
+      const obj = document.createElement('div');
+      obj.className = 'card-objective';
+      obj.innerHTML = `<i class="fas fa-bullseye" style="color: ${phase.color}; margin-left: 4px;"></i> ${session.objective}`;
+      body.appendChild(obj);
+
+      // بخش پادکست
+      const podcast = podcastsData[session.id];
+      if (podcast && podcast.embedCode) {
+        const podcastSection = document.createElement('div');
+        podcastSection.className = 'podcast-section';
+
+        const podHeader = document.createElement('div');
+        podHeader.className = 'podcast-header';
+
+        const podTitle = document.createElement('div');
+        podTitle.className = 'podcast-title';
+        podTitle.innerHTML = `<i class="fas fa-podcast"></i> پادکست جلسه ${toPersian(session.id)}`;
+        podHeader.appendChild(podTitle);
+
+        if (podcast.duration) {
+          const duration = document.createElement('span');
+          duration.className = 'podcast-duration';
+          duration.innerHTML = `<i class="fas fa-clock"></i> ${podcast.duration}`;
+          podHeader.appendChild(duration);
+        }
+        podcastSection.appendChild(podHeader);
+
+        const frameWrap = document.createElement('div');
+        frameWrap.className = 'podcast-frame-wrap';
+
+        // تزریق کد آپارات — با استفاده از insertAdjacentHTML برای اجرای اسکریپت‌ها
+        if (podcast.embedCode.includes('<iframe')) {
+          // روش iframe
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = podcast.embedCode;
+          const iframe = tempDiv.querySelector('iframe');
+          if (iframe) {
+            iframe.style.width = '100%';
+            iframe.style.aspectRatio = '16/9';
+            iframe.style.border = 'none';
+            frameWrap.appendChild(iframe);
+          }
+        } else if (podcast.embedCode.includes('<script')) {
+          // روش script — با استفاده از Range برای اجرای اسکریپت
+          frameWrap.innerHTML = podcast.embedCode;
+          // اجرای مجدد اسکریپت‌ها
+          const scripts = frameWrap.querySelectorAll('script');
+          scripts.forEach(oldScript => {
+            const newScript = document.createElement('script');
+            newScript.src = oldScript.src;
+            newScript.type = oldScript.type;
+            newScript.textContent = oldScript.textContent;
+            oldScript.parentNode.replaceChild(newScript, oldScript);
+          });
+        } else {
+          frameWrap.innerHTML = podcast.embedCode;
+        }
+
+        podcastSection.appendChild(frameWrap);
+
+        const actions = document.createElement('div');
+        actions.className = 'podcast-actions';
+        if (podcast.link) {
+          const aparatBtn = document.createElement('a');
+          aparatBtn.className = 'podcast-btn aparat-btn';
+          aparatBtn.href = podcast.link;
+          aparatBtn.target = '_blank';
+          aparatBtn.innerHTML = '<i class="fas fa-external-link-alt"></i> باز کردن در آپارات';
+          actions.appendChild(aparatBtn);
+        }
+        podcastSection.appendChild(actions);
+
+        body.appendChild(podcastSection);
+      }
+
+      // دکمه ورود
+      if (session.ready) {
+        const enterBtn = document.createElement('a');
+        enterBtn.className = 'card-action enter-btn';
+        enterBtn.href = session.link;
+        enterBtn.innerHTML = '<i class="fas fa-arrow-left"></i> ورود به لکچر تعاملی';
+        body.appendChild(enterBtn);
+
+        // کلیک روی کارت
+        card.addEventListener('click', (e) => {
+          if (!e.target.closest('.card-action') &&
+              !e.target.closest('.podcast-btn') &&
+              !e.target.closest('iframe') &&
+              !e.target.closest('.podcast-section')) {
+            playClickSound();
+            showToast(`<i class="fas fa-rocket"></i> در حال ورود به جلسه ${toPersian(session.id)}...`);
+            setTimeout(() => {
+              window.location.href = session.link;
+            }, 600);
+          }
+        });
+
+        enterBtn.addEventListener('click', () => playClickSound());
+      } else {
+        const soonBtn = document.createElement('button');
+        soonBtn.className = 'card-action soon-btn';
+        soonBtn.disabled = true;
+        soonBtn.innerHTML = '<i class="fas fa-hourglass-half"></i> در حال آماده‌سازی';
+        body.appendChild(soonBtn);
+      }
+
+      card.appendChild(body);
+      return card;
+    }
 
     // ============================================
-    // ===== ذرات نورانی =====
+    // ===== رندر فازها =====
+    // ============================================
+    function renderPhases() {
+      const container = document.getElementById('phasesContainer');
+      container.innerHTML = '';
+
+      phases.forEach((phase, phaseIdx) => {
+        const phaseDiv = document.createElement('div');
+        phaseDiv.className = 'phase-section';
+
+        const readyCount = phase.sessions.filter(s => s.ready).length;
+
+        // هدر فاز
+        const phaseHeader = document.createElement('div');
+        phaseHeader.className = 'phase-header';
+
+        const phaseNum = document.createElement('div');
+        phaseNum.className = 'phase-number';
+        phaseNum.style.background = `linear-gradient(135deg, ${phase.color}, ${shadeColor(phase.color, 20)})`;
+        phaseNum.textContent = toPersian(phase.number);
+        phaseHeader.appendChild(phaseNum);
+
+        const phaseInfo = document.createElement('div');
+        phaseInfo.className = 'phase-info';
+        phaseInfo.innerHTML = `<h3>${phase.title}</h3><p>${phase.subtitle}</p>`;
+        phaseHeader.appendChild(phaseInfo);
+
+        const phaseCount = document.createElement('div');
+        phaseCount.className = 'phase-sessions-count';
+        phaseCount.innerHTML = `<i class="fas fa-video"></i> ${toPersian(readyCount)} از ${toPersian(phase.sessions.length)} آماده`;
+        phaseHeader.appendChild(phaseCount);
+
+        phaseDiv.appendChild(phaseHeader);
+
+        // ردیف جلسات
+        const row = document.createElement('div');
+        row.className = 'sessions-row';
+
+        phase.sessions.forEach((session, idx) => {
+          const card = createSessionCard(session, phase, idx, phaseIdx);
+          row.appendChild(card);
+        });
+
+        phaseDiv.appendChild(row);
+        container.appendChild(phaseDiv);
+      });
+    }
+
+    // ============================================
+    // ===== خواندن CSV و رندر =====
+    // ============================================
+    function loadPodcastsAndRender() {
+      if (typeof Papa === 'undefined') {
+        console.warn('⚠️ PapaParse بارگذاری نشد.');
+        document.getElementById('podcastCount').textContent = '۰';
+        renderPhases();
+        return;
+      }
+
+      Papa.parse("./podcasts.csv", {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+          results.data.forEach(row => {
+            if (row.session_id && row.embed_code) {
+              const id = parseInt(row.session_id);
+              if (!isNaN(id)) {
+                // پاکسازی embed_code از گیومه‌های اضافی
+                let embedCode = row.embed_code || '';
+                // اگر سه گیومه داشت، به یک گیومه تبدیل کن
+                if (embedCode.startsWith('"""') && embedCode.endsWith('"""')) {
+                  embedCode = embedCode.slice(3, -3);
+                } else if (embedCode.startsWith('"') && embedCode.endsWith('"')) {
+                  embedCode = embedCode.slice(1, -1);
+                }
+                // جایگزینی "" با "
+                embedCode = embedCode.replace(/""/g, '"');
+
+                podcastsData[id] = {
+                  embedCode: embedCode,
+                  link: row.aparat_link || '',
+                  duration: row.duration || ''
+                };
+              }
+            }
+          });
+
+          const count = Object.keys(podcastsData).length;
+          document.getElementById('podcastCount').textContent = toPersian(count);
+
+          renderPhases();
+
+          console.log('✅ پادکست‌ها بارگذاری شدند:', count);
+          if (count > 0) {
+            setTimeout(() => showToast(`<i class="fas fa-podcast"></i> ${toPersian(count)} پادکست بارگذاری شد`), 1500);
+          }
+        },
+        error: function(err) {
+          console.warn('⚠️ فایل CSV پیدا نشد.', err);
+          document.getElementById('podcastCount').textContent = '۰';
+          renderPhases();
+        }
+      });
+    }
+
+    // ============================================
+    // ===== شروع =====
     // ============================================
     function createParticles() {
       for (let i = 0; i < 15; i++) {
@@ -1314,17 +1258,21 @@
       }
     }
 
-    // ============================================
-    // ===== شروع =====
-    // ============================================
+    const backToTop = document.getElementById('backToTop');
+    window.addEventListener('scroll', () => {
+      backToTop.classList.toggle('visible', window.scrollY > 300);
+    });
+    backToTop.addEventListener('click', () => {
+      playClickSound();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
     createParticles();
     loadPodcastsAndRender();
 
     setTimeout(() => {
       showToast('<i class="fas fa-hand-sparkles"></i> به دوره سیستم‌های اندازه‌گیری و کنترل خوش آمدید');
     }, 1200);
-
-    console.log('✅ هاب اصلی آماده است');
   </script>
 </body>
 </html>
