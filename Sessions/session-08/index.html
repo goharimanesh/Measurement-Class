@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>جلسه ۸: اندازه‌گیری دما — سیستم‌های اندازه‌گیری و کنترل</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;300;400;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --accent: #ffb700; --accent2: #ff6b35; --success: #00d4aa;
+      --danger: #ff4757; --purple: #a855f7; --pink: #ec4899;
+      --cyan: #06b6d4; --dark: #050818; --wokwi: #00979c;
+    }
+    html, body {
+      font-family: 'Vazirmatn', sans-serif; background: #050818;
+      color: white; height: 100vh; overflow: hidden; position: relative;
+    }
+    .starfield {
+      position: fixed; inset: 0; z-index: 1;
+      background:
+        radial-gradient(ellipse at 20% 30%, rgba(255, 107, 53, 0.35) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 70%, rgba(168, 85, 247, 0.25) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(0, 212, 170, 0.15) 0%, transparent 60%),
+        linear-gradient(135deg, #050818 0%, #1a0f0a 50%, #0f1c3f 100%);
+    }
+    .star {
+      position: absolute; background: white; border-radius: 50%;
+      animation: twinkle 3s infinite ease-in-out; pointer-events: none;
+      box-shadow: 0 0 6px currentColor;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.5); }
+    }
+    .neon-bubble {
+      position: fixed; border-radius: 50%; filter: blur(60px);
+      opacity: 0.5; animation: floatBubble 25s infinite ease-in-out;
+      pointer-events: none; z-index: 2;
+    }
+    @keyframes floatBubble {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(60px, -80px) scale(1.2); }
+      66% { transform: translate(-40px, 60px) scale(0.9); }
+    }
+    .neon-bubble:nth-child(1) { width: 400px; height: 400px; top: -10%; left: -5%; background: #ff6b35; animation-duration: 22s; }
+    .neon-bubble:nth-child(2) { width: 350px; height: 350px; top: 60%; right: -8%; background: #a855f7; animation-duration: 28s; animation-delay: 3s; }
+    .neon-bubble:nth-child(3) { width: 300px; height: 300px; bottom: -10%; left: 30%; background: #06b6d4; animation-duration: 25s; animation-delay: 5s; }
+    .neon-bubble:nth-child(4) { width: 250px; height: 250px; top: 30%; right: 30%; background: #ec4899; animation-duration: 30s; animation-delay: 8s; }
+    .progress-bar {
+      position: fixed; top: 0; right: 0; height: 5px;
+      background: linear-gradient(90deg, #06b6d4, #a855f7, #ff6b35, #ffb700, #06b6d4);
+      background-size: 400% 100%; width: 0%;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 1000; box-shadow: 0 0 20px rgba(255, 183, 0, 0.8);
+      animation: gradientFlow 3s linear infinite;
+    }
+    @keyframes gradientFlow {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 400% 50%; }
+    }
+    .slide-header {
+      position: fixed; top: 20px; right: 20px; left: 20px;
+      display: flex; justify-content: space-between; align-items: center;
+      z-index: 100; padding: 14px 28px;
+      background: rgba(10, 14, 39, 0.65); backdrop-filter: blur(25px) saturate(180%);
+      border-radius: 60px; border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .slide-header .logo { display: flex; align-items: center; gap: 14px; font-weight: 800; font-size: 1rem; }
+    .slide-header .logo-icon {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 12px; display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; color: white; box-shadow: 0 8px 20px rgba(255, 183, 0, 0.4);
+      animation: chipPulse 3s infinite ease-in-out;
+    }
+    @keyframes chipPulse {
+      0%, 100% { box-shadow: 0 8px 20px rgba(255, 183, 0, 0.4); }
+      50% { box-shadow: 0 8px 40px rgba(255, 183, 0, 0.8); }
+    }
+    .slide-header .slide-info { display: flex; align-items: center; gap: 20px; font-size: 0.9rem; color: rgba(255, 255, 255, 0.85); }
+    .slide-header .slide-info i { color: var(--accent); margin-left: 6px; }
+    .controls {
+      position: fixed; top: 100px; left: 20px;
+      display: flex; flex-direction: column; gap: 10px; z-index: 100;
+    }
+    .ctrl-btn {
+      width: 50px; height: 50px; border-radius: 16px;
+      background: rgba(10, 14, 39, 0.7); backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.15); color: white;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.3s ease; font-size: 1.1rem;
+    }
+    .ctrl-btn:hover { transform: translateY(-4px) scale(1.05); border-color: var(--accent); box-shadow: 0 10px 30px rgba(255, 183, 0, 0.4); }
+    .ctrl-btn.active { background: linear-gradient(135deg, var(--accent), var(--accent2)); }
+    .slides-container { width: 100%; height: 100vh; position: relative; z-index: 10; }
+    .slide {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      padding: 110px 40px 130px; opacity: 0; visibility: hidden;
+      transform: scale(0.9) rotateY(15deg);
+      transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1); overflow-y: auto;
+    }
+    .slide.active { opacity: 1; visibility: visible; transform: scale(1) rotateY(0deg); }
+    .animate-in { opacity: 0; transform: translateY(40px); transition: all 1s cubic-bezier(0.4, 0, 0.2, 1); }
+    .slide.active .animate-in { opacity: 1; transform: translateY(0); }
+    .slide.active .animate-in:nth-child(1) { transition-delay: 0.15s; }
+    .slide.active .animate-in:nth-child(2) { transition-delay: 0.3s; }
+    .slide.active .animate-in:nth-child(3) { transition-delay: 0.45s; }
+    .slide.active .animate-in:nth-child(4) { transition-delay: 0.6s; }
+    .slide.active .animate-in:nth-child(5) { transition-delay: 0.75s; }
+    .slide.active .animate-in:nth-child(6) { transition-delay: 0.9s; }
+    .title-slide { text-align: center; position: relative; }
+    .title-slide .hero-bg { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0.35; z-index: -1; }
+    .title-slide .hero-overlay { position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(5,8,24,0.3) 0%, rgba(5,8,24,0.85) 70%); z-index: -1; }
+    .title-slide .main-icon {
+      font-size: 7rem; margin-bottom: 30px; display: inline-block;
+      background: linear-gradient(135deg, #ffb700, #ff6b35, #ec4899);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; filter: drop-shadow(0 0 40px rgba(255, 183, 0, 0.6));
+      animation: iconFloat 3s infinite ease-in-out;
+    }
+    @keyframes iconFloat { 0%, 100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-20px) rotate(5deg); } }
+    .title-slide .badge {
+      display: inline-flex; align-items: center; gap: 12px;
+      background: linear-gradient(135deg, rgba(255, 183, 0, 0.15), rgba(255, 107, 53, 0.1));
+      border: 2px solid rgba(255, 183, 0, 0.5); padding: 12px 28px;
+      border-radius: 60px; color: var(--accent); font-weight: 700;
+      margin-bottom: 25px; font-size: 1rem; backdrop-filter: blur(10px);
+    }
+    .badge .pulse-dot { width: 10px; height: 10px; background: var(--accent); border-radius: 50%; animation: pulseDot 1.5s infinite; }
+    @keyframes pulseDot { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 183, 0, 0.7); } 50% { transform: scale(1.2); box-shadow: 0 0 0 12px rgba(255, 183, 0, 0); } }
+    .title-slide h1 {
+      font-size: 4rem; font-weight: 900;
+      background: linear-gradient(135deg, #ffffff 0%, #ffb700 40%, #ff6b35 70%, #ec4899 100%);
+      background-size: 200% 200%; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; margin-bottom: 25px; line-height: 1.2; animation: titleGradient 5s ease infinite;
+    }
+    @keyframes titleGradient { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+    .title-slide .subtitle { font-size: 1.5rem; color: rgba(255, 255, 255, 0.85); margin-bottom: 45px; font-weight: 300; }
+    .title-slide .instructor-card {
+      display: inline-flex; align-items: center; gap: 18px;
+      background: rgba(10, 14, 39, 0.6); backdrop-filter: blur(20px);
+      padding: 20px 36px; border-radius: 24px; border: 1px solid rgba(255, 183, 0, 0.3); text-align: right;
+    }
+    .title-slide .instructor-avatar { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: white; }
+    .title-slide .instructor-info .name { font-weight: 800; font-size: 1.15rem; color: white; margin-bottom: 4px; }
+    .title-slide .instructor-info .title { font-size: 0.85rem; color: rgba(255, 183, 0, 0.9); }
+    .floating-icons { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: -1; }
+    .float-icon {
+      position: absolute; font-size: 3rem;
+      background: linear-gradient(135deg, rgba(255,183,0,0.4), rgba(255,107,53,0.2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; animation: floatIcon 10s infinite ease-in-out;
+    }
+    @keyframes floatIcon { 0%, 100% { transform: translateY(0) rotate(0deg) scale(1); } 33% { transform: translateY(-40px) rotate(15deg) scale(1.15); } 66% { transform: translateY(20px) rotate(-10deg) scale(0.9); } }
+    .float-icon:nth-child(1) { top: 12%; left: 8%; animation-delay: 0s; font-size: 4rem; }
+    .float-icon:nth-child(2) { top: 20%; right: 10%; animation-delay: 1.5s; font-size: 3rem; }
+    .float-icon:nth-child(3) { bottom: 22%; left: 12%; animation-delay: 3s; font-size: 3.5rem; }
+    .float-icon:nth-child(4) { bottom: 28%; right: 8%; animation-delay: 4.5s; font-size: 4.5rem; }
+    .float-icon:nth-child(5) { top: 45%; left: 4%; animation-delay: 2s; font-size: 3rem; }
+    .float-icon:nth-child(6) { top: 55%; right: 4%; animation-delay: 5s; font-size: 3.5rem; }
+    .content-slide { align-items: stretch; }
+    .content-slide .slide-title { text-align: center; margin-bottom: 26px; }
+    .content-slide .slide-title .title-icon-wrap {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 75px; height: 75px; border-radius: 22px;
+      background: linear-gradient(135deg, rgba(255, 183, 0, 0.2), rgba(255, 107, 53, 0.1));
+      border: 2px solid rgba(255, 183, 0, 0.4); font-size: 2rem; color: var(--accent);
+      margin-bottom: 14px; backdrop-filter: blur(20px); animation: iconRotate 6s infinite ease-in-out;
+    }
+    @keyframes iconRotate { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+    .content-slide .slide-title h2 {
+      font-size: 2.3rem; font-weight: 900;
+      background: linear-gradient(135deg, #fff, #ffb700);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; margin-bottom: 12px;
+    }
+    .content-slide .slide-title .subtitle-bar { display: inline-block; width: 120px; height: 5px; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 5px; }
+    .content-body { flex: 1; display: flex; flex-direction: column; justify-content: center; max-width: 1300px; margin: 0 auto; width: 100%; }
+    .question-slide { text-align: center; padding: 100px 60px; }
+    .question-slide .question-img { width: 400px; max-width: 80%; height: auto; border-radius: 24px; margin-bottom: 30px; animation: questionBounce 3s infinite ease-in-out; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5); border: 2px solid rgba(255, 183, 0, 0.3); }
+    @keyframes questionBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+    .question-slide h2 {
+      font-size: 2.4rem; font-weight: 900;
+      background: linear-gradient(135deg, #fff, #ffb700, #ff6b35);
+      background-size: 200% 200%; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; margin-bottom: 30px; line-height: 1.4; animation: titleGradient 4s ease infinite;
+    }
+    .question-slide p { font-size: 1.15rem; color: rgba(255,255,255,0.92); line-height: 2; max-width: 1000px; margin: 0 auto; }
+    .question-slide .hint { margin-top: 30px; display: inline-flex; align-items: center; gap: 14px; padding: 16px 32px; background: linear-gradient(135deg, rgba(255, 183, 0, 0.15), rgba(255, 107, 53, 0.1)); border-radius: 60px; font-size: 1rem; color: rgba(255,255,255,0.9); border: 1px solid rgba(255, 183, 0, 0.4); backdrop-filter: blur(10px); }
+    .question-slide .hint i { color: var(--accent); font-size: 1.4rem; animation: pulseDot 1.5s infinite; }
+    .question-slide .hint strong { color: var(--accent); font-weight: 800; }
+    .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; width: 100%; }
+    .info-card { background: linear-gradient(145deg, rgba(10, 14, 39, 0.85), rgba(30, 40, 70, 0.6)); backdrop-filter: blur(20px); border-radius: 20px; padding: 20px; border-right: 4px solid var(--accent); transition: all 0.3s ease; }
+    .info-card:hover { transform: translateX(-6px); box-shadow: 0 15px 30px rgba(255, 183, 0, 0.15); }
+    .info-card .info-icon { font-size: 1.8rem; margin-bottom: 10px; color: var(--accent); }
+    .info-card h5 { font-size: 0.95rem; color: white; margin-bottom: 8px; font-weight: 800; }
+    .info-card p { font-size: 0.82rem; color: rgba(255, 255, 255, 0.8); line-height: 1.75; }
+    .code-block {
+      background: rgba(0, 0, 0, 0.75); border-radius: 16px; padding: 20px; margin: 16px 0;
+      font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.82rem;
+      direction: ltr; text-align: left; color: #d4d4d4;
+      border-right: 4px solid var(--accent); line-height: 1.75; overflow-x: auto; max-height: 400px;
+    }
+    .code-block .kw { color: #ff6b35; font-weight: 700; }
+    .code-block .num { color: #ffb700; }
+    .code-block .cmt { color: #6a8aa8; font-style: italic; }
+    .code-block .fn { color: #a855f7; }
+    .code-block .str { color: #00d4aa; }
+    .code-block .var { color: #06b6d4; }
+    /* تبدیل دما */
+    .conv-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; width: 100%; max-width: 1100px; margin: 0 auto; }
+    @media (max-width: 900px) { .conv-grid { grid-template-columns: 1fr 1fr; } }
+    .conv-card { background: linear-gradient(145deg, rgba(10, 14, 39, 0.9), rgba(30, 40, 70, 0.7)); backdrop-filter: blur(20px); border-radius: 20px; padding: 20px; border: 2px solid rgba(255, 183, 0, 0.3); text-align: center; }
+    .conv-card label { display: block; font-weight: 800; color: var(--accent); margin-bottom: 12px; font-size: 1.1rem; }
+    .conv-card input { width: 100%; padding: 14px; border-radius: 12px; border: 2px solid rgba(255, 183, 0, 0.3); background: rgba(0, 0, 0, 0.5); color: white; font-family: 'Vazirmatn', sans-serif; font-size: 1.2rem; text-align: center; }
+    .conv-card input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 20px rgba(255, 183, 0, 0.3); }
+    .formula-list { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+    .formula-item { background: rgba(0, 0, 0, 0.3); padding: 12px 18px; border-radius: 12px; border-right: 4px solid var(--cyan); font-family: 'Fira Code', monospace; direction: ltr; text-align: left; font-size: 0.95rem; color: #d4d4d4; }
+    .formula-item strong { color: var(--accent); }
+    /* کارت‌های دما */
+    .temp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; width: 100%; }
+    .temp-card { background: linear-gradient(145deg, rgba(10, 14, 39, 0.9), rgba(30, 40, 70, 0.7)); backdrop-filter: blur(20px); border-radius: 20px; padding: 20px; text-align: center; border: 2px solid transparent; transition: all 0.3s ease; }
+    .temp-card:hover { transform: translateY(-6px); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4); }
+    .temp-card .temp-emoji { font-size: 3rem; margin-bottom: 10px; display: block; }
+    .temp-card .temp-name { font-size: 1rem; color: white; font-weight: 800; margin-bottom: 12px; }
+    .temp-card .temp-c { font-size: 1.8rem; font-weight: 900; color: var(--accent); margin-bottom: 6px; }
+    .temp-card .temp-k { font-size: 0.95rem; color: var(--cyan); font-weight: 700; }
+    .temp-card.cold { border-color: rgba(6, 182, 212, 0.5); }
+    .temp-card.cold .temp-c { color: var(--cyan); }
+    .temp-card.bio { border-color: rgba(0, 212, 170, 0.5); }
+    .temp-card.bio .temp-c { color: var(--success); }
+    .temp-card.hot { border-color: rgba(255, 107, 53, 0.5); }
+    .temp-card.hot .temp-c { color: var(--accent2); }
+    .temp-card.extreme { border-color: rgba(255, 71, 87, 0.5); }
+    .temp-card.extreme .temp-c { color: var(--danger); }
+    /* جدول سنسورها */
+    .sensor-table { width: 100%; border-collapse: separate; border-spacing: 0; background: rgba(0, 0, 0, 0.3); border-radius: 16px; overflow: hidden; font-size: 0.85rem; }
+    .sensor-table thead tr { background: linear-gradient(135deg, rgba(255, 183, 0, 0.25), rgba(255, 107, 53, 0.15)); }
+    .sensor-table th { padding: 14px 12px; color: var(--accent); font-weight: 800; text-align: right; font-size: 0.85rem; }
+    .sensor-table td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); color: rgba(255,255,255,0.9); }
+    .sensor-table tr:hover td { background: rgba(255, 183, 0, 0.05); }
+    .sensor-table .sensor-name { color: var(--cyan); font-weight: 800; }
+    /* شبیه‌ساز */
+    .sim-container { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; width: 100%; max-width: 1200px; margin: 0 auto; }
+    @media (max-width: 900px) { .sim-container { grid-template-columns: 1fr; } }
+    .sim-slider-wrap { background: linear-gradient(145deg, rgba(10, 14, 39, 0.9), rgba(30, 40, 70, 0.7)); backdrop-filter: blur(20px); border-radius: 24px; padding: 28px; border: 2px solid rgba(255, 183, 0, 0.3); }
+    .sim-slider-wrap h4 { color: var(--accent); margin-bottom: 18px; display: flex; align-items: center; gap: 10px; }
+    .sim-slider-wrap input[type=range] { width: 100%; height: 10px; border-radius: 5px; background: linear-gradient(90deg, #06b6d4, #00d4aa, #ffb700, #ff6b35, #ff4757); appearance: none; outline: none; }
+    .sim-slider-wrap input[type=range]::-webkit-slider-thumb { appearance: none; width: 28px; height: 28px; border-radius: 50%; background: white; border: 4px solid var(--accent); cursor: pointer; box-shadow: 0 0 20px rgba(255, 183, 0, 0.6); }
+    .sim-value { text-align: center; font-size: 3rem; font-weight: 900; color: var(--accent); margin: 20px 0; text-shadow: 0 0 30px rgba(255, 183, 0, 0.5); }
+    .sim-sensors { display: flex; flex-direction: column; gap: 14px; }
+    .sim-sensor-card { background: linear-gradient(145deg, rgba(10, 14, 39, 0.9), rgba(30, 40, 70, 0.7)); backdrop-filter: blur(20px); border-radius: 18px; padding: 18px; border-right: 5px solid; display: flex; justify-content: space-between; align-items: center; }
+    .sim-sensor-card.lm35 { border-right-color: var(--accent); }
+    .sim-sensor-card.dht22 { border-right-color: var(--success); }
+    .sim-sensor-card.ds18b20 { border-right-color: var(--cyan); }
+    .sim-sensor-card .sensor-label { font-weight: 800; color: white; font-size: 1rem; }
+    .sim-sensor-card .sensor-label small { display: block; color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 400; margin-top: 4px; }
+    .sim-sensor-card .sensor-output { font-family: 'Fira Code', monospace; font-size: 1.3rem; font-weight: 800; direction: ltr; }
+    .sim-sensor-card.lm35 .sensor-output { color: var(--accent); }
+    .sim-sensor-card.dht22 .sensor-output { color: var(--success); }
+    .sim-sensor-card.ds18b20 .sensor-output { color: var(--cyan); }
+    /* پروژه‌های Wokwi */
+    .wokwi-project { background: linear-gradient(145deg, rgba(0, 151, 156, 0.08), rgba(30, 40, 70, 0.7)); border-radius: 28px; padding: 24px; border: 2px solid rgba(0, 151, 156, 0.4); display: grid; grid-template-columns: 1fr 1.2fr; gap: 24px; align-items: start; }
+    @media (max-width: 900px) { .wokwi-project { grid-template-columns: 1fr; } }
+    .wokwi-info { display: flex; flex-direction: column; gap: 14px; }
+    .wokwi-badge { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, rgba(0, 151, 156, 0.2), rgba(0, 212, 170, 0.1)); border: 1px solid rgba(0, 151, 156, 0.5); padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; color: var(--wokwi); width: fit-content; }
+    .wokwi-info h3 { font-size: 1.35rem; font-weight: 900; color: var(--wokwi); display: flex; align-items: center; gap: 10px; margin: 0; }
+    .wokwi-info p { font-size: 0.88rem; color: rgba(255, 255, 255, 0.85); line-height: 1.85; margin: 0; }
+    .wokwi-goal { background: rgba(255, 183, 0, 0.08); border-radius: 14px; padding: 12px 16px; border-right: 4px solid var(--accent); font-size: 0.83rem; color: rgba(255, 255, 255, 0.9); line-height: 1.8; }
+    .wokwi-goal strong { color: var(--accent); }
+    .copy-btn { display: flex; align-items: center; justify-content: center; gap: 10px; background: linear-gradient(135deg, #00979c, #00d4aa); color: white; padding: 12px 20px; border-radius: 14px; text-decoration: none; font-weight: 800; font-size: 0.9rem; transition: all 0.3s ease; box-shadow: 0 8px 20px rgba(0, 151, 156, 0.4); cursor: pointer; border: none; font-family: 'Vazirmatn', sans-serif; width: fit-content; }
+    .copy-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0, 151, 156, 0.6); color: white; }
+    .wokwi-code-section { display: flex; flex-direction: column; gap: 12px; }
+    .code-panel .code-block { font-size: 0.72rem; max-height: 350px; margin: 0; border-right-color: var(--wokwi); }
+    /* کوییز */
+    .quiz-container { background: linear-gradient(145deg, rgba(10, 14, 39, 0.9), rgba(30, 40, 70, 0.7)); border-radius: 24px; padding: 24px; border: 2px solid rgba(168, 85, 247, 0.4); width: 100%; max-width: 900px; margin: 0 auto; }
+    .quiz-question { font-size: 1rem; color: rgba(255, 255, 255, 0.95); margin-bottom: 16px; font-weight: 700; line-height: 1.9; }
+    .quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    @media (max-width: 700px) { .quiz-options { grid-template-columns: 1fr; } }
+    .quiz-option { background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(255, 255, 255, 0.15); border-radius: 14px; padding: 14px 18px; color: white; cursor: pointer; transition: all 0.3s ease; text-align: right; font-family: 'Vazirmatn', sans-serif; font-size: 0.88rem; line-height: 1.6; }
+    .quiz-option:hover { background: rgba(168, 85, 247, 0.15); border-color: var(--purple); }
+    .quiz-option.correct { background: rgba(0, 212, 170, 0.2); border-color: var(--success); color: var(--success); }
+    .quiz-option.incorrect { background: rgba(255, 71, 87, 0.2); border-color: var(--danger); color: var(--danger); }
+    .quiz-option.disabled { cursor: not-allowed; opacity: 0.6; }
+    .quiz-feedback { background: rgba(255, 255, 255, 0.05); border-radius: 14px; padding: 14px; font-size: 0.85rem; line-height: 1.8; margin-top: 10px; display: none; }
+    .quiz-feedback.show { display: block; }
+    .quiz-feedback.success { background: rgba(0, 212, 170, 0.1); border-right: 4px solid var(--success); color: rgba(255, 255, 255, 0.9); }
+    .quiz-feedback.error { background: rgba(255, 71, 87, 0.1); border-right: 4px solid var(--danger); color: rgba(255, 255, 255, 0.9); }
+    /* تمرین‌ها */
+    .exercises-float-wrapper { position: relative; width: 100%; height: 60vh; max-height: 550px; }
+    .exercises-float-scroll { height: 100%; overflow-y: auto; overflow-x: hidden; padding: 6px 20px 40px 8px; display: flex; flex-direction: column; gap: 18px; }
+    .exercises-float-scroll::-webkit-scrollbar { width: 10px; }
+    .exercises-float-scroll::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); border-radius: 10px; }
+    .exercises-float-scroll::-webkit-scrollbar-thumb { background: linear-gradient(180deg, var(--accent), var(--accent2)); border-radius: 10px; border: 2px solid rgba(10, 14, 39, 0.9); }
+    .scroll-hint { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); background: rgba(255, 183, 0, 0.9); color: #050818; padding: 6px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; display: flex; align-items: center; gap: 6px; animation: bounceHint 2s infinite; pointer-events: none; z-index: 5; }
+    @keyframes bounceHint { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-6px); } }
+    .exercise-group { background: linear-gradient(145deg, rgba(10, 14, 39, 0.9), rgba(30, 40, 70, 0.7)); backdrop-filter: blur(20px); border-radius: 24px; padding: 24px 28px; border-right: 6px solid var(--accent); transition: all 0.4s ease; flex-shrink: 0; }
+    .exercise-group:hover { transform: translateX(-6px) scale(1.01); }
+    .exercise-group.group-conceptual { border-right-color: #ffb700; }
+    .exercise-group.group-practical { border-right-color: #00d4aa; }
+    .exercise-group.group-written { border-right-color: #a855f7; }
+    .exercise-group.group-challenge { border-right-color: #ff4757; background: linear-gradient(145deg, rgba(30, 10, 20, 0.9), rgba(60, 20, 40, 0.7)); }
+    .exercise-group-header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+    .exercise-group-icon { width: 50px; height: 50px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: white; flex-shrink: 0; }
+    .exercise-group.group-conceptual .exercise-group-icon { background: linear-gradient(135deg, #ffb700, #ff6b35); }
+    .exercise-group.group-practical .exercise-group-icon { background: linear-gradient(135deg, #00d4aa, #06b6d4); }
+    .exercise-group.group-written .exercise-group-icon { background: linear-gradient(135deg, #a855f7, #ec4899); }
+    .exercise-group.group-challenge .exercise-group-icon { background: linear-gradient(135deg, #ff4757, #ff6b35); }
+    .exercise-group-header h4 { font-size: 1.15rem; color: white; font-weight: 800; margin: 0; }
+    .exercise-group-header .group-subtitle { font-size: 0.8rem; color: rgba(255, 255, 255, 0.6); margin-top: 4px; }
+    .exercise-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+    .exercise-list li { display: flex; gap: 12px; padding: 12px 16px; background: rgba(0, 0, 0, 0.3); border-radius: 14px; color: rgba(255, 255, 255, 0.92); line-height: 1.85; font-size: 0.9rem; border-right: 3px solid transparent; }
+    .exercise-list li:hover { background: rgba(255, 183, 0, 0.08); border-right-color: var(--accent); }
+    .exercise-list li .q-num { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; font-weight: 800; font-size: 0.85rem; flex-shrink: 0; }
+    .exercise-group.group-practical .exercise-list li .q-num { background: linear-gradient(135deg, #00d4aa, #06b6d4); }
+    .exercise-group.group-written .exercise-list li .q-num { background: linear-gradient(135deg, #a855f7, #ec4899); }
+    .exercise-list li .q-text { flex: 1; }
+    .exercise-list li .q-text strong { color: var(--accent); }
+    .exercise-list li .q-text em { color: #06b6d4; font-style: normal; font-weight: 700; background: rgba(6, 182, 212, 0.1); padding: 2px 8px; border-radius: 6px; font-size: 0.82rem; }
+    .challenge-box { background: linear-gradient(135deg, rgba(255, 71, 87, 0.15), rgba(255, 183, 0, 0.08)); border: 2px dashed rgba(255, 71, 87, 0.5); border-radius: 20px; padding: 20px 22px; }
+    .challenge-box .challenge-title { display: flex; align-items: center; gap: 10px; color: #ff6b35; font-weight: 800; font-size: 1.05rem; margin-bottom: 12px; }
+    .challenge-box p { color: rgba(255, 255, 255, 0.92); line-height: 1.9; font-size: 0.92rem; margin-bottom: 8px; }
+    .challenge-box p strong { color: #ff6b35; }
+    .challenge-box .challenge-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.8rem; flex-wrap: wrap; gap: 10px; }
+    .challenge-box .challenge-footer .tag { display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 71, 87, 0.15); color: #ff6b35; padding: 6px 14px; border-radius: 20px; font-weight: 700; border: 1px solid rgba(255, 71, 87, 0.3); }
+    .slide-nav { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 24px; background: rgba(10, 14, 39, 0.75); backdrop-filter: blur(25px); padding: 14px 28px; border-radius: 60px; border: 1px solid rgba(255, 255, 255, 0.15); z-index: 100; }
+    .nav-btn { width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05)); border: 1px solid rgba(255, 255, 255, 0.2); color: white; font-size: 1.3rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; }
+    .nav-btn:hover:not(:disabled) { background: linear-gradient(135deg, var(--accent), var(--accent2)); transform: scale(1.15); }
+    .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .slide-counter { font-size: 1.05rem; font-weight: 700; color: white; min-width: 100px; text-align: center; background: rgba(0, 0, 0, 0.3); padding: 10px 20px; border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.1); }
+    .slide-counter .current { color: var(--accent); font-size: 1.4rem; font-weight: 900; }
+    .dots-nav { position: fixed; left: 30px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 100; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); cursor: pointer; transition: all 0.3s ease; }
+    .dot:hover { background: rgba(255, 183, 0, 0.5); transform: scale(1.3); }
+    .dot.active { background: var(--accent); box-shadow: 0 0 20px var(--accent); transform: scale(1.5); }
+    .end-slide { text-align: center; }
+    .end-slide .end-icon { font-size: 7rem; margin-bottom: 25px; display: inline-block; animation: endBounce 2s infinite ease-in-out; }
+    @keyframes endBounce { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-25px) scale(1.08); } }
+    .end-slide h2 { font-size: 3.2rem; font-weight: 900; background: linear-gradient(135deg, #fff, #ffb700, #ff6b35, #ec4899); background-size: 200% 200%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 20px; animation: titleGradient 5s ease infinite; }
+    .end-slide p { font-size: 1.2rem; color: rgba(255,255,255,0.85); margin-bottom: 40px; }
+    .end-slide .next-session { display: inline-flex; align-items: center; gap: 20px; padding: 20px 44px; background: linear-gradient(135deg, rgba(255, 183, 0, 0.15), rgba(255, 107, 53, 0.1)); border: 2px solid var(--accent); border-radius: 70px; font-size: 1.1rem; color: var(--accent); font-weight: 700; }
+    .end-slide .next-session .arrow-icon { width: 46px; height: 46px; border-radius: 50%; background: var(--accent); color: #050818; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; animation: arrowMove2 2s infinite ease-in-out; }
+    @keyframes arrowMove2 { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-8px); } }
+    .toast { position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%) translateY(100px) scale(0.8); background: linear-gradient(135deg, rgba(10, 14, 39, 0.95), rgba(30, 40, 70, 0.95)); backdrop-filter: blur(20px); color: white; padding: 16px 32px; border-radius: 60px; font-weight: 600; opacity: 0; transition: all 0.5s ease; z-index: 2000; border: 1px solid rgba(255, 183, 0, 0.3); display: flex; align-items: center; gap: 12px; pointer-events: none; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+    .toast i { color: var(--accent); font-size: 1.2rem; }
+    @media (max-width: 900px) { .slide { padding: 110px 20px 130px; } .title-slide h1 { font-size: 2.2rem; } .content-slide .slide-title h2 { font-size: 1.7rem; } .question-slide h2 { font-size: 1.7rem; } .end-slide h2 { font-size: 1.9rem; } .dots-nav { display: none; } }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+  </style>
+</head>
+<body>
+  <div class="starfield" id="starfield"></div>
+  <div class="neon-bubble"></div><div class="neon-bubble"></div><div class="neon-bubble"></div><div class="neon-bubble"></div>
+  <div class="progress-bar" id="progressBar"></div>
+  <header class="slide-header">
+    <div class="logo"><div class="logo-icon"><i class="fas fa-thermometer-half"></i></div><span>سیستم‌های اندازه‌گیری و کنترل</span></div>
+    <div class="slide-info"><span><i class="fas fa-user-tie"></i> دکتر مسعود گوهری‌منش</span><span><i class="fas fa-university"></i> دانشگاه تربت حیدریه</span></div>
+  </header>
+  <div class="controls">
+    <button class="ctrl-btn active" id="soundToggle" title="افکت صوتی"><i class="fas fa-volume-up"></i></button>
+    <button class="ctrl-btn" id="musicToggle" title="موسیقی پس‌زمینه"><i class="fas fa-music"></i></button>
+    <button class="ctrl-btn" id="fullscreenBtn" title="تمام صفحه"><i class="fas fa-expand"></i></button>
+  </div>
+  <div class="dots-nav" id="dotsNav"></div>
+
+  <div class="slides-container" id="slidesContainer">
+
+    <!-- ===== 1: عنوان ===== -->
+    <section class="slide active title-slide" data-slide="0">
+      <div class="hero-bg" style="background-image: url('images/hero-temperature.jpg');"></div>
+      <div class="hero-overlay"></div>
+      <div class="floating-icons">
+        <i class="fas fa-thermometer-half float-icon"></i><i class="fas fa-snowflake float-icon"></i><i class="fas fa-fire float-icon"></i>
+        <i class="fas fa-sun float-icon"></i><i class="fas fa-temperature-high float-icon"></i><i class="fas fa-microchip float-icon"></i>
+      </div>
+      <i class="fas fa-thermometer-half main-icon animate-in"></i>
+      <div class="badge animate-in"><span class="pulse-dot"></span> جلسه هشتم — فاز ۲: مهارت‌های پایه Arduino</div>
+      <h1 class="animate-in">اندازه‌گیری دما</h1>
+      <p class="subtitle animate-in">از صفر مطلق تا سطح خورشید</p>
+      <div class="instructor-card animate-in">
+        <div class="instructor-avatar"><i class="fas fa-user-tie"></i></div>
+        <div class="instructor-info"><div class="name">دکتر مسعود گوهری‌منش</div><div class="title">دانشیار گروه مهندسی مکانیک دانشگاه تربت حیدریه</div></div>
+      </div>
+    </section>
+
+    <!-- ===== 2: سوال انگیزشی ===== -->
+    <section class="slide question-slide" data-slide="1">
+      <img src="images/question-temperature.jpg" alt="سوال" class="question-img animate-in">
+      <h2 class="animate-in">بدن شما ۳۷ درجه است، سطح خورشید ۵,۵۰۰ درجه.</h2>
+      <p class="animate-in">چطور دما را در این طیف عظیم اندازه می‌گیریم؟<br><br><strong style="color: var(--accent);">آیا یک سنسور می‌تواند همه این بازه را پوشش دهد؟</strong></p>
+      <div class="hint animate-in"><i class="fas fa-lightbulb"></i> پاسخ در <strong>تنوع روش‌های اندازه‌گیری دما</strong> نهفته است</div>
+    </section>
+
+    <!-- ===== 3: تاریخچه ===== -->
+    <section class="slide content-slide" data-slide="2">
+      <div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-history"></i></div><h2>📜 تاریخچه مقیاس‌های دما</h2><span class="subtitle-bar"></span></div>
+      <div class="content-body">
+        <img src="images/temperature-history.jpg" alt="تاریخچه" style="width: 100%; max-width: 900px; margin: 0 auto 20px; border-radius: 24px; border: 2px solid rgba(255, 183, 0, 0.3);" class="animate-in">
+        <div class="info-grid animate-in">
+          <div class="info-card"><div class="info-icon"><i class="fas fa-tint"></i></div><h5>فارنهایت (۱۷۱۴)</h5><p>دانیل گابریل فارنهایت — مبنا: نقطه انجماد محلول نمک</p></div>
+          <div class="info-card" style="border-right-color: var(--cyan);"><div class="info-icon" style="color: var(--cyan);"><i class="fas fa-flask"></i></div><h5>رئومور (۱۷۳۰)</h5><p>رنه آنتوان رئومور — مبنا: انبساط الکل</p></div>
+          <div class="info-card" style="border-right-color: var(--success);"><div class="info-icon" style="color: var(--success);"><i class="fas fa-water"></i></div><h5>سلسیوس (۱۷۴۲)</h5><p>آندرس سلسیوس — مبنا: آب ۰°C و ۱۰۰°C</p></div>
+          <div class="info-card" style="border-right-color: var(--purple);"><div class="info-icon" style="color: var(--purple);"><i class="fas fa-atom"></i></div><h5>کلوین (۱۸۴۸)</h5><p>لرد کلوین — مبنا: صفر مطلق، مقیاس SI</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 4: تبدیل — مبدل زنده ===== -->
+    <section class="slide content-slide" data-slide="3">
+      <div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-exchange-alt"></i></div><h2>🔄 روابط تبدیل — مبدل زنده</h2><span class="subtitle-bar"></span></div>
+      <div class="content-body">
+        <div class="conv-grid animate-in">
+          <div class="conv-card"><label>سلسیوس °C</label><input type="number" id="convC" value="37" step="any"></div>
+          <div class="conv-card"><label>کلوین K</label><input type="number" id="convK" value="310.15" step="any"></div>
+          <div class="conv-card"><label>فارنهایت °F</label><input type="number" id="convF" value="98.6" step="any"></div>
+          <div class="conv-card"><label>رنکین °R</label><input type="number" id="convR" value="558.27" step="any"></div>
+        </div>
+        <div class="formula-list animate-in">
+          <div class="formula-item"><strong>K</strong> = C + 273.15</div>
+          <div class="formula-item"><strong>°F</strong> = C × 9/5 + 32</div>
+          <div class="formula-item"><strong>°R</strong> = (C + 273.15) × 9/5</div>
+          <div class="formula-item"><strong>°C</strong> = (F − 32) × 5/9 = K − 273.15</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 5: طیف دماهای مهم ۱ ===== -->
+    <section class="slide content-slide" data-slide="4">
+      <div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-snowflake"></i></div><h2>🥶 طیف دماهای مهم (۱): منفی تا صفر</h2><span class="subtitle-bar"></span></div>
+      <div class="content-body">
+        <div class="temp-grid animate-in">
+          <div class="temp-card cold"><span class="temp-emoji">❄️</span><div class="temp-name">صفر مطلق</div><div class="temp-c">−۲۷۳.۱۵°C</div><div class="temp-k">۰ K</div></div>
+          <div class="temp-card cold"><span class="temp-emoji">🌑</span><div class="temp-name">سطح ماه (شب)</div><div class="temp-c">−۱۷۳°C</div><div class="temp-k">۱۰۰ K</div></div>
+          <div class="temp-card cold"><span class="temp-emoji">🧊</span><div class="temp-name">نیتروژن مایع</div><div class="temp-c">−۱۹۶°C</div><div class="temp-k">۷۷ K</div></div>
+          <div class="temp-card cold"><span class="temp-emoji">🥶</span><div class="temp-name">انجماد آب</div><div class="temp-c">۰°C</div><div class="temp-k">۲۷۳.۱۵ K</div></div>
+        </div>
+        <p style="text-align: center; margin-top: 20px; font-size: 0.9rem; color: rgba(255,255,255,0.7);" class="animate-in"><i class="fas fa-info-circle" style="color: var(--cyan);"></i> صفر مطلق پایین‌ترین دمای ممکن در طبیعت است — هیچ حرکتی مولکولی وجود ندارد.</p>
+      </div>
+    </section>
+
+    <!-- ===== 6: طیف دماهای مهم ۲ (زیست‌شناسی) ===== -->
+    <section class="slide content-slide" data-slide="5">
+      <div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-heartbeat"></i></div><h2>🌡️ طیف دماهای مهم (۲): زیست‌شناسی</h2><span class="subtitle-bar"></span></div>
+      <div class="content-body">
+        <div class="temp-grid animate-in">
+          <div class="temp-card bio"><span class="temp-emoji">🌡️</span><div class="temp-name">بدن انسان (سلامت)</div><div class="temp-c">۳۶.۵–۳۷.۵°C</div><div class="temp-k">۳۰۹.۶۵–۳۱۰.۶۵ K</div></div>
+          <div class="temp-card bio"><span class="temp-emoji">🐕</span><div class="temp-name">بدن سگ</div><div class="temp-c">۳۷.۵–۳۹°C</div><div class="temp-k">۳۱۰.۶۵–۳۱۲.۱۵ K</div></div>
+          <div class="temp-card bio"><span class="temp-emoji">🐈</span><div class="temp-name">بدن گربه</div><div class="temp-c">۳۸–۳۹°C</div><div class="temp-k">۳۱۱.۱۵–۳۱۲.۱۵ K</div></div>
+          <div class="temp-card bio"><span class="temp-emoji">🐄</span><div class="temp-name">بدن گاو</div><div class="temp-c">۳۸.۲–۳۹.۵°C</div><div class="temp-k">۳۱۱.۳۵–۳۱۲.۶۵ K</div></div>
+          <div class="temp-card bio"><span class="temp-emoji">🐔</span><div class="temp-name">بدن مرغ</div><div class="temp-c">۴۰.۵–۴۲°C</div><div class="temp-k">۳۱۳.۶۵–۳۱۵.۱۵ K</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 7: طیف دماهای مهم ۳ (صنعتی و نجومی) ===== -->
+    <section class="slide content-slide" data-slide="6">
+      <div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-fire"></i></div><h2>🔥 طیف دماهای مهم (۳): صنعتی و نجومی</h2><span class="subtitle-bar"></span></div>
+      <div class="content-body">
+        <div class="temp-grid animate-in">
+          <div class="temp-card hot"><span class="temp-emoji">💧</span><div class="temp-name">جوش آب</div><div class="temp-c">۱۰۰°C</div><div class="temp-k">۳۷۳.۱۵ K</div></div>
+          <div class="temp-card hot"><span class="temp-emoji">⛽</span><div class="temp-name">خوداشتعالی بنزین</div><div class="temp-c">~۳۰۱–۴۰۰°C</div><div class="temp-k">~۵۷۴–۶۷۳ K</div></div>
+          <div class="temp-card hot"><span class="temp-emoji">🔥</span><div class="temp-name">ذوب آهن</div><div class="temp-c">۱۵۳۸°C</div><div class="temp-k">۱۸۱۱ K</div></div>
+          <div class="temp-card extreme"><span class="temp-emoji">🌋</span><div class="temp-name">گدازه</div><div class="temp-c">۷۰۰–۱۲۰۰°C</div><div class="temp-k">۹۷۳–۱۴۷۳ K</div></div>
+          <div class="temp-card extreme"><span class="temp-emoji">☀️</span><div class="temp-name">سطح خورشید</div><div class="temp-c">~۵,۵۰۰°C</div><div class="temp-k">~۵,۷۷۳ K</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 8: روش‌های غیرمستقیم ===== -->
+    <section class="slide content-slide" data-slide="7">
+      <div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-microscope"></i></div><h2>🔬 روش‌های غیرمستقیم اندازه‌گیری دما</h2><span class="subtitle-bar"></span></div>
+      <div class="content-body">
+        <div class="info-grid animate-in">
+          <div class="info-card"><div class="info-icon"><i class="fas fa-bolt"></i></div><h5>⚡ ترموکوپل (اثر سیبک)</h5><p>اختلاف ولتاژ بین دو فلز غیرهمجنس در محل اتصال. محدوده گسترده، دقت متوسط.</p></div>
+          <div class="info-card" style="border-right-color: var(--cyan);"><div class="info-icon" style="color: var(--cyan);"><i class="fas fa-thermometer-half"></i></div><h5>🌡️ ترمیستور</h5><p>تغییر مقاومت با دما (NTC/PTC). حساسیت بالا، محدوده محدود.</p></div>
+          <div class="info-card" style="border-right-color: var(--success);"><div class="info-icon" style="color: var(--success);"><i class="fas fa-plug"></i></div><h5>🔌 RTD (PT100)</h5><p>مقاومت پلاتینی ۱۰۰Ω در ۰°C. دقت بالا، پایدار، گران‌تر.</p></div>
+          <div class="info-card" style="border-right-color: var(--purple);"><div class="info-icon" style="color: var(--purple);"><i class="fas fa-satellite-dish"></i></div><h5>📡 پیرومتر (تابش)</h5><p>تابش مادون قرمز، بدون تماس. مناسب اجسام متحرک و داغ.</p></div>
+          <div class="info-card" style="border-right-color: var(--pink);"><div class="info-icon" style="color: var(--pink);"><i class="fas fa-lightbulb"></i></div><h5>💡 فیبر نوری</h5><p>پراکندگی رامان در فیبر. مناسب محیط‌های EMI و فاصله زیاد.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 9: تخمین بدون دماسنج ===== -->
+    <section class="slide content-slide" data-slide="8">
+      <div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-brain"></i></div><h2>🧠 تخمین دما بدون دماسنج</h2><span class="subtitle-bar"></span></div>
+      <div class="content-body">
+        <div class="info-grid animate-in">
+          <div class="info-card"><div class="info-icon"><i class="fas fa-hand-paper"></i></div><h5>✋ لمس</h5><p>تقریبی: خیلی سرد / سرد / گرم / داغ. دقت پایین، وابسته به حس فرد.</p></div>
+          <div class="info-card" style="border-right-color: var(--cyan);"><div class="info-icon" style="color: var(--cyan);"><i class="fas fa-eye"></i></div><h5>👁️ مشاهده فاز</h5><p>ذوب یخ (۰°C)، جوش آب (۱۰۰°C)، انجماد روغن. مرجع‌های طبیعی.</p></div>
+          <div class="info-card" style="border-right-color: var(--success);"><div class="info-icon" style="color: var(--success);"><i class="fas fa-volume-up"></i></div><h5>🔊 سرعت صوت</h5><p>v = 331 + 0.6×T (m/s). اندازه‌گیری زمان اکو در هوا.</p></div>
+          <div class="info-card" style="border-right-color: var(--purple);"><div class="info-icon" style="color: var(--purple);"><i class="fas fa-ruler-horizontal"></i></div><h5>📏 انبساط مواد</h5><p>ΔL = α × L × ΔT. اندازه‌گیری تغییر طول میله فلزی.</p></div>
+          <div class="info-card" style="border-right-color: var(--pink);"><div class="info-icon" style="color: var(--pink);"><i class="fas fa-palette"></i></div><h5>🎨 رنگ اجسام داغ</h5><p>قرمز (۵۰۰°C) → نارنجی (۸۰۰°C) → زرد (۱۰۰۰°C) → سفید (۱۵۰۰°C).</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 10: محاسبه دمای خورشید ===== -->
+    <section class="slide content-slide" data-slide="9">
+      <div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-sun"></i></div><h2>☀️ محاسبه دمای خورشید (روش غیرمستقیم)</h2><span class="subtitle-bar"></span></div>
+      <div class="content-body">
+        <div class="info-grid animate-in">
+          <div class="info-card" style="border-right-color: var(--accent);"><div class="info-icon"><i class="fas fa-wave-square"></i></div><h5>📐 قانون وین</h5><p>λ_max = b / T که b = 2.898 × 10⁻³ m·K. با یافتن λ_max طیف خورشید (~۵۰۰nm)، دما محاسبه می‌شود.</p></div>
+          <div class="info-card" style="border-right-color: var(--cyan);"><div class="info-icon" style="color: var(--cyan);"><i class="fas fa-fire-alt"></i></div><h5>🔥 قانون استفان-بولتزمن</h5><p>E = σT⁴ که σ = 5.67 × 10⁻⁸ W/m²K⁴. با اندازه‌گیری تابش کل، دما محاسبه می‌شود.</p></div>
+          <div class="info-card" style="border-right-color: var(--purple);"><div class="info-icon" style="color: var(--purple);"><i class="fas fa-chart-line"></i></div><h5>🌈 طیف‌سنجی</h5><p>بررسی خطوط جذبی طیف خورشید و مقایسه با طیف‌های آزمایشگاهی.</p></div>
+        </div>
+        <div class="formula-list animate-in">
+          <div class="formula-item"><strong>محاسبه:</strong> λ_max ≈ 500nm → T = b / λ_max = 2.898×10⁻³ / 500×10⁻⁹ ≈ 5796 K ≈ ۵۵۲۳°C</div>
+          <div class="formula-item"><strong>نتیجه:</strong> دمای سطح خورشید تقریباً ۵,۵۰۰ تا ۵,۸۰۰ کلوین است.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 11: مقایسه ۵ سنسور ===== -->
+    <section class="slide content-slide" data-slide="10">
+      <div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-balance-scale"></i></div><h2>⚖️ مقایسه ۵ سنسور دما</h2><span class="subtitle-bar"></span></div>
+      <div class="content-body">
+        <img src="images/sensor-comparison.jpg" alt="مقایسه سنسورها" style="width: 100%; max-width: 900px; margin: 0 auto 20px; border-radius: 24px; border: 2px solid rgba(255, 183, 0, 0.3);" class="animate-in">
+        <div style="overflow-x: auto;" class="animate-in">
+          <table class="sensor-table">
+            <thead><tr><th>سنسور</th><th>نوع</th><th>محدوده</th><th>دقت</th><th>پروتکل</th><th>کاربرد</th></tr></thead>
+            <tbody>
+              <tr><td class="sensor-name">LM35</td><td>آنالوگ</td><td>−۵۵ تا +۱۵۰°C</td><td>±۰.۵°C</td><td>ولتاژ ۱۰mV/°C</td><td>آموزش، پروژه‌های ساده</td></tr>
+              <tr><td class="sensor-name">DHT22</td><td>دیجیتال</td><td>−۴۰ تا +۸۰°C</td><td>±۰.۵°C</td><td>1-Wire اختصاصی</td><td>دما + رطوبت محیطی</td></tr>
+              <tr><td class="sensor-name">DS18B20</td><td>دیجیتال</td><td>−۵۵ تا +۱۲۵°C</td><td>±۰.۵°C</td><td>1-Wire</td><td>ضدآب، صنعتی، چندسنسوری</td></tr>
+              <tr><td class="sensor-name">PT100</td><td>RTD</td><td>−۲۰۰ تا +۶۰۰°C</td><td>±۰.۱°C</td><td>مقاومت (نیاز به ADC)</td><td>صنعتی، دقت بالا</td></tr>
+              <tr><td class="sensor-name">ترموکوپل K</td><td>ترموالکتریک</td><td>−۲۰۰ تا +۱۳۵۰°C</td><td>±۲.۲°C</td><td>ولتاژ میکروولت</td><td>کوره، صنایع سنگین</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 12: نکات اتصال ===== -->
+    <section class="slide content-slide" data-slide="11">
+      <div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-tools"></i></div><h2>🔧 نکات و تجربه‌های اتصال سنسور دما</h2><span class="subtitle-bar"></span></div>
+      <div class="content-body">
+        <img src="images/wiring-tips.jpg" alt="نکات اتصال" style="width: 100%; max-width: 700px; margin: 0 auto 20px; border-radius: 24px; border: 2px solid rgba(255, 183, 0, 0.3);" class="animate-in">
+        <div class="info-grid animate-in">
+          <div class="info-card"><div class="info-icon"><i class="fas fa-arrow-up"></i></div><h5>۱. مقاومت Pull-up</h5><p>برای DS18B20 حتماً ۴.۷kΩ بین VCC و DATA قرار دهید.</p></div>
+          <div class="info-card" style="border-right-color: var(--cyan);"><div class="info-icon" style="color: var(--cyan);"><i class="fas fa-ruler"></i></div><h5>۲. طول سیم</h5><p>I2C حداکثر ۱ متر، 1-Wire حداکثر ۱۰۰ متر. برای فواصل بیشتر از تقویت‌کننده.</p></div>
+          <div class="info-card" style="border-right-color: var(--success);"><div class="info-icon" style="color: var(--success);"><i class="fas fa-shield-alt"></i></div><h5>۳. نویز</h5><p>کابل شیلددار + خازن ۰.۱µF نزدیک سنسور. زمین مشترک.</p></div>
+          <div class="info-card" style="border-right-color: var(--purple);"><div class="info-icon" style="color: var(--purple);"><i class="fas fa-sliders-h"></i></div><h5>۴. کالیبراسیون</h5><p>مقایسه با دماسنج مرجع در ۰°C (یخ) و ۱۰۰°C (بخار).</p></div>
+          <div class="info-card" style="border-right-color: var(--pink);"><div class="info-icon" style="color: var(--pink);"><i class="fas fa-band-aid"></i></div><h5>۵. عایق‌بندی</h5><p>هیت‌شرینک برای محیط مرطوب. رزین اپوکسی برای صنعتی.</p></div>
+          <div class="info-card" style="border-right-color: var(--danger);"><div class="info-icon" style="color: var(--danger);"><i class="fas fa-bolt"></i></div><h5>۶. تغذیه</h5><p>منبع تغذیه تمیز، جدا از موتور/رله. خازن ۱۰۰µF روی تغذیه.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 13: شبیه‌ساز سه سنسور ===== -->
+    <section class="slide content-slide" data-slide="12">
+      <div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-flask"></i></div><h2>🧪 آزمایشگاه تعاملی: شبیه‌ساز سه سنسور</h2><span class="subtitle-bar"></span></div>
+      <div class="content-body">
+        <div class="sim-container animate-in">
+          <div class="sim-slider-wrap">
+            <h4><i class="fas fa-sliders-h"></i> دمای محیط را تنظیم کنید</h4>
+            <input type="range" id="simSlider" min="-50" max="150" value="25" step="1">
+            <div class="sim-value" id="simValue">۲۵°C</div>
+            <p style="text-align: center; font-size: 0.85rem; color: rgba(255,255,255,0.6);"><i class="fas fa-info-circle" style="color: var(--accent);"></i> محدوده: −۵۰°C تا ۱۵۰°C</p>
+          </div>
+          <div class="sim-sensors">
+            <div class="sim-sensor-card lm35"><div class="sensor-label">LM35<small>خروجی آنالوگ</small></div><div class="sensor-output" id="simLM35">250 mV</div></div>
+            <div class="sim-sensor-card dht22"><div class="sensor-label">DHT22<small>خروجی دیجیتال (۱ رقم اعشار)</small></div><div class="sensor-output" id="simDHT22">25.0 °C</div></div>
+            <div class="sim-sensor-card ds18b20"><div class="sensor-label">DS18B20<small>خروجی دیجیتال (۱۲ بیت، ۴ رقم اعشار)</small></div><div class="sensor-output" id="simDS18B20">25.0000 °C</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 14: مبدل زنده مفصل ===== -->
+    <section class="slide content-slide" data-slide="13">
+      <div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-thermometer-full"></i></div><h2>🌡️ آزمایشگاه تعاملی: مبدل زنده دما</h2><span class="subtitle-bar"></span></div>
+      <div class="content-body">
+        <div style="max-width: 800px; margin: 0 auto; width: 100%;" class="animate-in">
+          <div class="conv-grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="conv-card"><label>سلسیوس °C</label><input type="number" id="convC2" value="37" step="any"></div>
+            <div class="conv-card"><label>کلوین K</label><input type="number" id="convK2" value="310.15" step="any"></div>
+            <div class="conv-card"><label>فارنهایت °F</label><input type="number" id="convF2" value="98.6" step="any"></div>
+            <div class="conv-card"><label>رنکین °R</label><input type="number" id="convR2" value="558.27" step="any"></div>
+          </div>
+          <div id="convChart" style="margin-top: 24px; background: rgba(0,0,0,0.3); border-radius: 20px; padding: 20px;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 15: ۳ پروژه Wokwi ===== -->
+    <section class="slide content-slide" data-slide="14">
+      <div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-cogs"></i></div><h2>🧪 ۳ پروژه Wokwi — کد را کپی کنید و اجرا کنید</h2><span class="subtitle-bar"></span></div>
+      <div class="content-body">
+        <div style="display: flex; flex-direction: column; gap: 20px; max-height: 70vh; overflow-y: auto; padding-left: 8px;" class="animate-in">
+
+          <!-- پروژه ۱: LM35 -->
+          <div class="wokwi-project">
+            <div class="wokwi-info">
+              <span class="wokwi-badge"><i class="fas fa-thermometer-half"></i> پروژه ۱</span>
+              <h3>LM35 روی Serial Monitor</h3>
+              <p>خواندن دمای LM35 و نمایش روی سریال. ساده‌ترین روش اندازه‌گیری دما با Arduino.</p>
+              <div class="wokwi-goal"><strong>🎯 هدف:</strong> اندازه‌گیری دما و تبدیل ADC به °C.</div>
+              <button class="copy-btn" onclick="copyCode('code1')"><i class="fas fa-copy"></i> کپی کد</button>
+            </div>
+            <div class="wokwi-code-section">
+              <div class="code-panel" id="code1"><div class="code-block">
+<span class="cmt">// LM35 Temperature Sensor</span>
+<span class="kw">const int</span> <span class="var">lm35Pin</span> = A0;
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">Serial.begin</span>(<span class="num">9600</span>);
+}
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="kw">int</span> raw = <span class="fn">analogRead</span>(lm35Pin);
+  <span class="kw">float</span> voltage = raw * (<span class="num">5.0</span> / <span class="num">1023.0</span>);
+  <span class="kw">float</span> tempC = voltage * <span class="num">100.0</span>;
+  <span class="fn">Serial.print</span>(<span class="str">"Temp: "</span>);
+  <span class="fn">Serial.print</span>(tempC);
+  <span class="fn">Serial.println</span>(<span class="str">" C"</span>);
+  <span class="fn">delay</span>(<span class="num">1000</span>);
+}</div></div>
+            </div>
+          </div>
+
+          <!-- پروژه ۲: DHT22 + OLED -->
+          <div class="wokwi-project">
+            <div class="wokwi-info">
+              <span class="wokwi-badge"><i class="fas fa-tv"></i> پروژه ۲</span>
+              <h3>DHT22 روی نمایشگر OLED</h3>
+              <p>نمایش دما و رطوبت روی OLED. ترکیب دو مهارت جلسه ۷ و ۸.</p>
+              <div class="wokwi-goal"><strong>🎯 هدف:</strong> نمایش دما و رطوبت به صورت زنده.</div>
+              <button class="copy-btn" onclick="copyCode('code2')"><i class="fas fa-copy"></i> کپی کد</button>
+            </div>
+            <div class="wokwi-code-section">
+              <div class="code-panel" id="code2"><div class="code-block">
+<span class="kw">#include</span> <span class="str">&lt;Wire.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;Adafruit_SSD1306.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;DHT.h&gt;</span>
+<span class="kw">#define</span> DHTPIN <span class="num">2</span>
+<span class="kw">#define</span> DHTTYPE DHT22
+DHT <span class="var">dht</span>(DHTPIN, DHTTYPE);
+Adafruit_SSD1306 <span class="var">display</span>(<span class="num">128</span>, <span class="num">64</span>, &amp;Wire, <span class="num">-1</span>);
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">dht.begin</span>();
+  <span class="fn">display.begin</span>(SSD1306_SWITCHCAPVCC, <span class="num">0x3C</span>);
+  <span class="fn">display.clearDisplay</span>();
+}
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="kw">float</span> t = <span class="fn">dht.readTemperature</span>();
+  <span class="kw">float</span> h = <span class="fn">dht.readHumidity</span>();
+  <span class="fn">display.clearDisplay</span>();
+  <span class="fn">display.setTextSize</span>(<span class="num">2</span>);
+  <span class="fn">display.setTextColor</span>(WHITE);
+  <span class="fn">display.setCursor</span>(<span class="num">0</span>, <span class="num">10</span>);
+  <span class="fn">display.print</span>(t, <span class="num">1</span>); <span class="fn">display.print</span>(<span class="str">" C"</span>);
+  <span class="fn">display.setCursor</span>(<span class="num">0</span>, <span class="num">40</span>);
+  <span class="fn">display.print</span>(h, <span class="num">1</span>); <span class="fn">display.print</span>(<span class="str">" %"</span>);
+  <span class="fn">display.display</span>();
+  <span class="fn">delay</span>(<span class="num">2000</span>);
+}</div></div>
+            </div>
+          </div>
+
+          <!-- پروژه ۳: DS18B20 چندسنسوری -->
+          <div class="wokwi-project">
+            <div class="wokwi-info">
+              <span class="wokwi-badge"><i class="fas fa-water"></i> پروژه ۳</span>
+              <h3>DS18B20 چندسنسوری</h3>
+              <p>چند سنسور DS18B20 روی یک سیم با آدرس‌دهی. مناسب پایش چندنقطه‌ای.</p>
+              <div class="wokwi-goal"><strong>🎯 هدف:</strong> خواندن چند سنسور از یک باس 1-Wire.</div>
+              <button class="copy-btn" onclick="copyCode('code3')"><i class="fas fa-copy"></i> کپی کد</button>
+            </div>
+            <div class="wokwi-code-section">
+              <div class="code-panel" id="code3"><div class="code-block">
+<span class="kw">#include</span> <span class="str">&lt;OneWire.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;DallasTemperature.h&gt;</span>
+<span class="kw">#define</span> ONE_WIRE_BUS <span class="num">2</span>
+OneWire <span class="var">oneWire</span>(ONE_WIRE_BUS);
+DallasTemperature <span class="var">sensors</span>(&amp;oneWire);
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">Serial.begin</span>(<span class="num">9600</span>);
+  <span class="fn">sensors.begin</span>();
+  <span class="fn">Serial.print</span>(<span class="str">"Found: "</span>);
+  <span class="fn">Serial.println</span>(<span class="fn">sensors.getDeviceCount</span>());
+}
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="fn">sensors.requestTemperatures</span>();
+  <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; <span class="fn">sensors.getDeviceCount</span>(); i++) {
+    <span class="fn">Serial.print</span>(<span class="str">"Sensor "</span>);
+    <span class="fn">Serial.print</span>(i);
+    <span class="fn">Serial.print</span>(<span class="str">": "</span>);
+    <span class="fn">Serial.print</span>(<span class="fn">sensors.getTempCByIndex</span>(i));
+    <span class="fn">Serial.println</span>(<span class="str">" C"</span>);
+  }
+  <span class="fn">delay</span>(<span class="num">2000</span>);
+}</div></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 16: کوییز ===== -->
+    <section class="slide content-slide" data-slide="15">
+      <div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-question-circle"></i></div><h2>🧠 کوییز تعاملی</h2><span class="subtitle-bar"></span></div>
+      <div class="content-body">
+        <div class="quiz-container animate-in">
+          <div class="quiz-question" id="quizQuestion">سوال در حال بارگذاری...</div>
+          <div class="quiz-options" id="quizOptions"></div>
+          <div class="quiz-feedback" id="quizFeedback"></div>
+          <div style="display: flex; gap: 10px; margin-top: 16px;">
+            <button class="copy-btn" id="nextQuizBtn" style="flex: 1; background: linear-gradient(135deg, var(--accent), var(--accent2));"><i class="fas fa-arrow-left"></i> سوال بعدی</button>
+            <button class="copy-btn" id="resetQuizBtn" style="flex: 1; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);"><i class="fas fa-redo"></i> شروع مجدد</button>
+          </div>
+          <div style="text-align: center; margin-top: 12px; font-size: 0.85rem; color: rgba(255,255,255,0.7);">امتیاز: <span id="quizScore" style="color: var(--accent); font-weight: 900;">۰</span> از <span id="quizTotal" style="font-weight: 700;">۵</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 17: تمرین‌ها ===== -->
+    <section class="slide content-slide" data-slide="16">
+      <div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-pen-fancy"></i></div><h2>تمرین‌های کلاسی</h2><span class="subtitle-bar"></span></div>
+      <div class="content-body">
+        <div class="exercises-float-wrapper animate-in">
+          <div class="exercises-float-scroll">
+            <div class="exercise-group group-conceptual">
+              <div class="exercise-group-header"><div class="exercise-group-icon"><i class="fas fa-question-circle"></i></div><div><h4>الف) سؤالات مفهومی</h4><div class="group-subtitle">مباحث نظری — تفکر و تحلیل</div></div></div>
+              <ul class="exercise-list">
+                <li><span class="q-num">۱</span><span class="q-text">تفاوت <strong>ترمیستور</strong> و <strong>RTD</strong> در چیست؟ کدام برای دقت بالا مناسب‌تر است؟</span></li>
+                <li><span class="q-num">۲</span><span class="q-text">چرا <strong>DS18B20</strong> برای محیط‌های صنعتی مناسب است؟</span></li>
+                <li><span class="q-num">۳</span><span class="q-text">تفاوت <strong>LM35</strong> و <strong>DHT22</strong> در نوع خروجی چیست؟</span></li>
+                <li><span class="q-num">۴</span><span class="q-text">چرا صفر مطلق منفی است؟ توضیح دهید.</span></li>
+                <li><span class="q-num">۵</span><span class="q-text">چگونه می‌توان دمای خورشید را بدون دماسنج محاسبه کرد؟</span></li>
+              </ul>
+            </div>
+            <div class="exercise-group group-practical">
+              <div class="exercise-group-header"><div class="exercise-group-icon"><i class="fas fa-flask"></i></div><div><h4>ب) تمرین‌های عملی</h4><div class="group-subtitle">کار با Wokwi و Arduino IDE</div></div></div>
+              <ul class="exercise-list">
+                <li><span class="q-num">۱</span><span class="q-text"><strong>LM35:</strong> دما را روی Serial نمایش دهید و با دماسنج مرجع مقایسه کنید.</span></li>
+                <li><span class="q-num">۲</span><span class="q-text"><strong>DHT22:</strong> دما و رطوبت را روی OLED نمایش دهید.</span></li>
+                <li><span class="q-num">۳</span><span class="q-text"><strong>DS18B20:</strong> دو سنسور را روی یک باس 1-Wire راه‌اندازی کنید.</span></li>
+                <li><span class="q-num">۴</span><span class="q-text"><strong>کالیبراسیون:</strong> سنسور را در یخ (۰°C) و آب جوش (۱۰۰°C) تست کنید.</span></li>
+                <li><span class="q-num">۵</span><span class="q-text"><strong>جستجو:</strong> عبارت «<em>temperature sensor interfacing Arduino</em>» را در Google Scholar جستجو کنید.</span></li>
+              </ul>
+            </div>
+            <div class="exercise-group group-written">
+              <div class="exercise-group-header"><div class="exercise-group-icon"><i class="fas fa-pen-nib"></i></div><div><h4>ج) تمرین نوشتاری</h4><div class="group-subtitle">تحلیل و مستندسازی</div></div></div>
+              <ul class="exercise-list">
+                <li><span class="q-num">۱</span><span class="q-text">جدولی از دماهای مهم (از صفر مطلق تا سطح خورشید) با هر سه واحد C/K/F تهیه کنید.</span></li>
+                <li><span class="q-num">۲</span><span class="q-text">مقایسه‌ای بین ۵ سنسور دما از نظر دقت، محدوده، قیمت و کاربرد بنویسید.</span></li>
+              </ul>
+            </div>
+            <div class="exercise-group group-challenge">
+              <div class="exercise-group-header"><div class="exercise-group-icon"><i class="fas fa-star"></i></div><div><h4>د) چالش خلاقانهٔ کلاسی ★</h4><div class="group-subtitle">مسابقهٔ گروهی — امتیاز ویژه</div></div></div>
+              <div class="challenge-box">
+                <div class="challenge-title"><i class="fas fa-trophy"></i> «دماسنج هوشمند کلاس» — Smart Thermometer Challenge</div>
+                <p>هر گروه یک <strong>دماسنج هوشمند</strong> طراحی می‌کند که با LM35 یا DS18B20 دما را اندازه بگیرد و روی OLED نمایش دهد. 🎨 آستانه هشدار (مثلاً بالای ۳۰°C قرمز شود) و پیام مناسب نمایش دهد.</p>
+                <p>🏆 بهترین طراحی در گالری کلاسی به نمایش درمی‌آید و رأی‌گیری می‌شود.</p>
+                <div class="challenge-footer"><span class="tag"><i class="fas fa-clock"></i> ۲۰ دقیقه</span><span class="tag"><i class="fas fa-users"></i> گروه‌های سه‌نفره</span><span class="tag"><i class="fas fa-palette"></i> خلاقیت + فنی</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="scroll-hint"><i class="fas fa-mouse"></i> اسکرول کنید <i class="fas fa-arrow-down"></i></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 18: پایان ===== -->
+    <section class="slide end-slide" data-slide="17">
+      <span class="end-icon">🎓</span>
+      <h2 class="animate-in">پایان جلسه هشتم</h2>
+      <p class="animate-in">از صفر مطلق تا سطح خورشید — همه را اندازه گرفتیم!</p>
+      <div class="next-session animate-in"><div class="arrow-icon"><i class="fas fa-arrow-left"></i></div><div><div style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 4px;">جلسه بعدی:</div><div>اندازه‌گیری فشار</div></div></div>
+      <p class="animate-in" style="margin-top: 40px; font-size: 0.95rem; color: rgba(255,255,255,0.6);"><i class="fas fa-book" style="color: var(--accent);"></i> منابع پیشنهادی: DallasTemperature Library، Adafruit DHT Library</p>
+    </section>
+
+  </div>
+
+  <nav class="slide-nav">
+    <button class="nav-btn" id="prevBtn" title="اسلاید قبلی"><i class="fas fa-chevron-right"></i></button>
+    <div class="slide-counter"><span class="current" id="currentSlide">۱</span> / <span id="totalSlides">۱۸</span></div>
+    <button class="nav-btn" id="nextBtn" title="اسلاید بعدی"><i class="fas fa-chevron-left"></i></button>
+  </nav>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    (function() {
+      const slides = document.querySelectorAll('.slide');
+      const totalSlides = slides.length;
+      let currentIndex = 0;
+      let soundEnabled = true;
+      let musicEnabled = false;
+      let audioCtx = null;
+      let musicOscillators = [];
+
+      const progressBar = document.getElementById('progressBar');
+      const currentSlideSpan = document.getElementById('currentSlide');
+      const totalSlidesSpan = document.getElementById('totalSlides');
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const dotsNav = document.getElementById('dotsNav');
+      const toast = document.getElementById('toast');
+
+      totalSlidesSpan.textContent = toPersianNumber(totalSlides);
+
+      // ستاره‌ها
+      const starfield = document.getElementById('starfield');
+      for (let i = 0; i < 120; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        const size = Math.random() * 2.5 + 0.5;
+        star.style.width = size + 'px'; star.style.height = size + 'px';
+        star.style.left = Math.random() * 100 + '%'; star.style.top = Math.random() * 100 + '%';
+        star.style.animationDelay = Math.random() * 3 + 's';
+        star.style.animationDuration = (2 + Math.random() * 3) + 's';
+        const colors = ['#ffffff', '#ffb700', '#06b6d4', '#a855f7', '#00d4aa', '#ff6b35'];
+        star.style.color = colors[Math.floor(Math.random() * colors.length)];
+        star.style.background = 'currentColor';
+        starfield.appendChild(star);
+      }
+
+      // نقاط ناوبری
+      slides.forEach((_, i) => {
+        const dot = document.createElement('div');
+        dot.className = 'dot' + (i === 0 ? ' active' : '');
+        dot.title = `اسلاید ${toPersianNumber(i + 1)}`;
+        dot.addEventListener('click', () => goToSlide(i));
+        dotsNav.appendChild(dot);
+      });
+
+      function toPersianNumber(num) {
+        const p = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+        return String(num).replace(/\d/g, d => p[d]);
+      }
+
+      // صدا
+      function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+      function playClickSound() { if (!soundEnabled) return; try { initAudio(); const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); osc.type = 'sine'; osc.frequency.setValueAtTime(880, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.12); gain.gain.setValueAtTime(0.08, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12); osc.start(); osc.stop(audioCtx.currentTime + 0.12); } catch(e){} }
+      function playTransitionSound() { if (!soundEnabled) return; try { initAudio(); [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => { const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); osc.type = 'sine'; osc.frequency.value = f; const t = audioCtx.currentTime + i * 0.06; gain.gain.setValueAtTime(0.05, t); gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25); osc.start(t); osc.stop(t + 0.25); }); } catch(e){} }
+      function playSuccessSound() { if (!soundEnabled) return; try { initAudio(); [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((f, i) => { const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); osc.type = 'triangle'; osc.frequency.value = f; const t = audioCtx.currentTime + i * 0.08; gain.gain.setValueAtTime(0.06, t); gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3); osc.start(t); osc.stop(t + 0.3); }); } catch(e){} }
+
+      function startMusic() { if (!audioCtx) initAudio(); if (musicOscillators.length > 0) return; const notes = [130.81, 164.81, 196.00, 261.63]; notes.forEach((freq, idx) => { const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); const lfo = audioCtx.createOscillator(); const lfoGain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); osc.type = 'sine'; osc.frequency.value = freq; lfo.connect(lfoGain); lfoGain.connect(gain.gain); lfo.frequency.value = 0.1 + idx * 0.05; lfoGain.gain.value = 0.015; gain.gain.value = 0.02 + idx * 0.005; osc.start(); lfo.start(); musicOscillators.push({ osc, lfo, gain }); }); }
+      function stopMusic() { musicOscillators.forEach(({ osc, lfo, gain }) => { try { gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5); setTimeout(() => { try { osc.stop(); lfo.stop(); } catch(e){} }, 600); } catch(e){} }); musicOscillators = []; }
+
+      function goToSlide(index) {
+        if (index < 0 || index >= totalSlides) return;
+        if (index === totalSlides - 1) playSuccessSound(); else playTransitionSound();
+        slides[currentIndex].classList.remove('active');
+        slides[index].classList.add('active');
+        document.querySelectorAll('.dot')[currentIndex].classList.remove('active');
+        document.querySelectorAll('.dot')[index].classList.add('active');
+        currentIndex = index;
+        currentSlideSpan.textContent = toPersianNumber(currentIndex + 1);
+        progressBar.style.width = ((currentIndex + 1) / totalSlides * 100) + '%';
+        prevBtn.disabled = currentIndex === 0;
+        nextBtn.disabled = currentIndex === totalSlides - 1;
+        if (index === 3) initConv(); // اسلاید مبدل ۱
+        if (index === 12) initSim(); // شبیه‌ساز سه سنسور
+        if (index === 13) initConv2(); // مبدل دوم
+        if (index === 15) initQuiz(); // کوییز
+      }
+
+      function nextSlide() { goToSlide(currentIndex + 1); }
+      function prevSlide() { goToSlide(currentIndex - 1); }
+      nextBtn.addEventListener('click', nextSlide);
+      prevBtn.addEventListener('click', prevSlide);
+      document.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft') nextSlide(); else if (e.key === 'ArrowRight') prevSlide(); else if (e.key === ' ') { e.preventDefault(); nextSlide(); } else if (e.key === 'Home') goToSlide(0); else if (e.key === 'End') goToSlide(totalSlides - 1); });
+
+      let touchStartX = 0;
+      document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
+      document.addEventListener('touchend', (e) => { const diff = touchStartX - e.changedTouches[0].screenX; if (Math.abs(diff) > 50) { if (diff > 0) nextSlide(); else prevSlide(); } }, { passive: true });
+
+      const soundToggle = document.getElementById('soundToggle');
+      soundToggle.addEventListener('click', () => { soundEnabled = !soundEnabled; soundToggle.classList.toggle('active', soundEnabled); soundToggle.querySelector('i').className = soundEnabled ? 'fas fa-volume-up' : 'fas fa-volume-mute'; if (soundEnabled) playClickSound(); });
+
+      const musicToggle = document.getElementById('musicToggle');
+      musicToggle.addEventListener('click', () => { musicEnabled = !musicEnabled; musicToggle.classList.toggle('active', musicEnabled); if (musicEnabled) { initAudio(); startMusic(); showToast('<i class="fas fa-music"></i> موسیقی فعال شد'); } else { stopMusic(); showToast('<i class="fas fa-volume-mute"></i> موسیقی خاموش شد'); } });
+
+      document.getElementById('fullscreenBtn').addEventListener('click', () => { playClickSound(); if (!document.fullscreenElement) { document.documentElement.requestFullscreen(); document.getElementById('fullscreenBtn').querySelector('i').className = 'fas fa-compress'; } else { document.exitFullscreen(); document.getElementById('fullscreenBtn').querySelector('i').className = 'fas fa-expand'; } });
+
+      let toastTimeout;
+      function showToast(msg, duration = 2500) { clearTimeout(toastTimeout); toast.innerHTML = msg; toast.classList.add('show'); toastTimeout = setTimeout(() => toast.classList.remove('show'), duration); }
+
+      // ===== مبدل دما (اسلاید ۴) =====
+      function initConv() {
+        const c = document.getElementById('convC'), k = document.getElementById('convK'), f = document.getElementById('convF'), r = document.getElementById('convR');
+        if (!c) return;
+        c.addEventListener('input', () => { const v = parseFloat(c.value) || 0; k.value = (v + 273.15).toFixed(2); f.value = (v * 9/5 + 32).toFixed(2); r.value = ((v + 273.15) * 9/5).toFixed(2); });
+        k.addEventListener('input', () => { const v = parseFloat(k.value) || 0; c.value = (v - 273.15).toFixed(2); f.value = ((v - 273.15) * 9/5 + 32).toFixed(2); r.value = (v * 9/5).toFixed(2); });
+        f.addEventListener('input', () => { const v = parseFloat(f.value) || 0; c.value = ((v - 32) * 5/9).toFixed(2); k.value = (((v - 32) * 5/9) + 273.15).toFixed(2); r.value = ((v + 459.67)).toFixed(2); });
+        r.addEventListener('input', () => { const v = parseFloat(r.value) || 0; k.value = (v * 5/9).toFixed(2); c.value = (v * 5/9 - 273.15).toFixed(2); f.value = (v - 459.67).toFixed(2); });
+      }
+
+      // ===== شبیه‌ساز سه سنسور (اسلاید ۱۳) =====
+      function initSim() {
+        const slider = document.getElementById('simSlider');
+        const val = document.getElementById('simValue');
+        const lm35 = document.getElementById('simLM35');
+        const dht22 = document.getElementById('simDHT22');
+        const ds18b20 = document.getElementById('simDS18B20');
+        if (!slider) return;
+        function update() {
+          const t = parseFloat(slider.value);
+          val.textContent = toPersianNumber(t) + '°C';
+          lm35.textContent = (t * 10).toFixed(0) + ' mV';
+          dht22.textContent = t.toFixed(1) + ' °C';
+          ds18b20.textContent = t.toFixed(4) + ' °C';
+        }
+        slider.addEventListener('input', update);
+        update();
+      }
+
+      // ===== مبدل دوم (اسلاید ۱۴) =====
+      function initConv2() {
+        const c = document.getElementById('convC2'), k = document.getElementById('convK2'), f = document.getElementById('convF2'), r = document.getElementById('convR2');
+        const chart = document.getElementById('convChart');
+        if (!c) return;
+        function updateChart(tempC) {
+          const min = -100, max = 200;
+          const pct = Math.max(0, Math.min(100, ((tempC - min) / (max - min)) * 100));
+          chart.innerHTML = `
+            <div style="text-align: center; margin-bottom: 12px; font-weight: 800; color: var(--accent);">نمودار دما</div>
+            <div style="height: 30px; background: linear-gradient(90deg, #06b6d4, #00d4aa, #ffb700, #ff6b35, #ff4757); border-radius: 15px; position: relative;">
+              <div style="position: absolute; top: -5px; left: ${pct}%; transform: translateX(-50%); width: 40px; height: 40px; background: white; border-radius: 50%; border: 4px solid var(--accent); box-shadow: 0 0 20px var(--accent);"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.8rem; color: rgba(255,255,255,0.7);"><span>−۱۰۰°C</span><span>۰°C</span><span>۱۰۰°C</span><span>۲۰۰°C</span></div>
+            <div style="text-align: center; margin-top: 12px; font-size: 1.8rem; font-weight: 900; color: var(--accent);">${tempC.toFixed(1)}°C</div>
+          `;
+        }
+        function setFromC(v) { c.value = v.toFixed(2); k.value = (v + 273.15).toFixed(2); f.value = (v * 9/5 + 32).toFixed(2); r.value = ((v + 273.15) * 9/5).toFixed(2); updateChart(v); }
+        c.addEventListener('input', () => setFromC(parseFloat(c.value) || 0));
+        k.addEventListener('input', () => setFromC((parseFloat(k.value) || 0) - 273.15));
+        f.addEventListener('input', () => setFromC((parseFloat(f.value) || 0 - 32) * 5/9));
+        r.addEventListener('input', () => setFromC((parseFloat(r.value) || 0) * 5/9 - 273.15));
+        updateChart(37);
+      }
+
+      // ===== کپی کد =====
+      window.copyCode = function(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const code = el.querySelector('.code-block').innerText;
+        navigator.clipboard.writeText(code).then(() => {
+          showToast('<i class="fas fa-check-circle"></i> کد کپی شد!');
+          playSuccessSound();
+        }).catch(() => showToast('<i class="fas fa-times-circle"></i> خطا در کپی'));
+      };
+
+      // ===== کوییز =====
+      const quizData = [
+        { q: 'LM35 چه نوع خروجی دارد؟', options: ['دیجیتال', 'آنالوگ', 'PWM', '1-Wire'], correct: 1, explanation: 'LM35 خروجی آنالوگ خطی ۱۰mV/°C دارد.' },
+        { q: 'DS18B20 از چه پروتکلی استفاده می‌کند؟', options: ['I2C', 'SPI', '1-Wire', 'UART'], correct: 2, explanation: 'DS18B20 از پروتکل 1-Wire استفاده می‌کند و به مقاومت pull-up ۴.۷kΩ نیاز دارد.' },
+        { q: 'کدام سنسور رطوبت هم اندازه می‌گیرد؟', options: ['LM35', 'PT100', 'DHT22', 'DS18B20'], correct: 2, explanation: 'DHT22 دما و رطوبت را همزمان اندازه می‌گیرد.' },
+        { q: 'صفر مطلق چند کلوین است؟', options: ['−۲۷۳.۱۵ K', '۰ K', '۲۷۳.۱۵ K', '۱۰۰ K'], correct: 1, explanation: 'صفر مطلق برابر ۰ کلوین = −۲۷۳.۱۵°C است.' },
+        { q: 'ترموکوپل بر اساس چه اثری کار می‌کند؟', options: ['اثر هال', 'اثر سیبک', 'اثر پیزوالکتریک', 'اثر فتوالکتریک'], correct: 1, explanation: 'ترموکوپل بر اساس اثر سیبک (اختلاف ولتاژ بین دو فلز غیرهمجنس) کار می‌کند.' }
+      ];
+
+      let currentQuizIndex = 0, quizScore = 0, answeredQuestions = new Set();
+
+      function initQuiz() { currentQuizIndex = 0; quizScore = 0; answeredQuestions.clear(); document.getElementById('quizScore').textContent = '۰'; document.getElementById('quizTotal').textContent = toPersianNumber(quizData.length); renderQuiz(); }
+
+      function renderQuiz() {
+        const question = quizData[currentQuizIndex];
+        document.getElementById('quizQuestion').textContent = `سوال ${toPersianNumber(currentQuizIndex + 1)}: ${question.q}`;
+        const optionsContainer = document.getElementById('quizOptions');
+        optionsContainer.innerHTML = '';
+        question.options.forEach((opt, idx) => { const btn = document.createElement('button'); btn.className = 'quiz-option'; btn.textContent = opt; btn.addEventListener('click', () => handleAnswer(idx)); optionsContainer.appendChild(btn); });
+        const feedback = document.getElementById('quizFeedback');
+        feedback.classList.remove('show', 'success', 'error'); feedback.textContent = '';
+      }
+
+      function handleAnswer(selectedIdx) {
+        const question = quizData[currentQuizIndex];
+        const options = document.querySelectorAll('#quizOptions .quiz-option');
+        options.forEach((opt, idx) => { opt.classList.add('disabled'); if (idx === question.correct) opt.classList.add('correct'); else if (idx === selectedIdx) opt.classList.add('incorrect'); });
+        const feedback = document.getElementById('quizFeedback'); feedback.classList.add('show');
+        if (selectedIdx === question.correct) {
+          feedback.classList.add('success'); feedback.innerHTML = `<i class="fas fa-check-circle"></i> <strong>پاسخ صحیح!</strong><br>${question.explanation}`;
+          if (!answeredQuestions.has(currentQuizIndex)) { quizScore++; answeredQuestions.add(currentQuizIndex); document.getElementById('quizScore').textContent = toPersianNumber(quizScore); }
+          playSuccessSound();
+        } else {
+          feedback.classList.add('error'); feedback.innerHTML = `<i class="fas fa-times-circle"></i> <strong>پاسخ نادرست</strong><br>${question.explanation}`; playClickSound();
+        }
+      }
+
+      document.getElementById('nextQuizBtn')?.addEventListener('click', () => { currentQuizIndex = (currentQuizIndex + 1) % quizData.length; renderQuiz(); });
+      document.getElementById('resetQuizBtn')?.addEventListener('click', () => { initQuiz(); });
+
+      goToSlide(0);
+      setTimeout(() => { showToast('<i class="fas fa-hand-sparkles"></i> خوش آمدید به جلسه هشتم — اندازه‌گیری دما', 4000); }, 800);
+    })();
+  </script>
+</body>
+</html>
