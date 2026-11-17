@@ -215,23 +215,37 @@ html,body{font-family:'Vazirmatn',sans-serif;background:#050818;color:#fff;heigh
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
 .toast i{color:var(--accent);font-size:1.2rem}
 @media (max-width:900px){.slide{padding:110px 20px 130px}.title-slide h1{font-size:2.2rem}.content-slide .slide-title h2{font-size:1.7rem}.question-slide h2{font-size:1.7rem}.end-slide h2{font-size:1.9rem}.dots-nav{display:none}}
+.help-overlay{position:fixed;inset:0;background:rgba(5,8,24,.85);backdrop-filter:blur(20px);z-index:3000;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:all .3s ease}
+.help-overlay.show{opacity:1;visibility:visible}
+.help-card{background:linear-gradient(145deg,rgba(10,14,39,.95),rgba(30,40,70,.9));border:1px solid rgba(255,183,0,.4);border-radius:24px;padding:28px 36px;max-width:540px;width:90%;box-shadow:0 30px 80px rgba(0,0,0,.6);max-height:85vh;overflow-y:auto}
+.help-card h3{font-size:1.4rem;font-weight:900;color:var(--accent);margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.help-card .shortcut-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:.95rem;color:rgba(255,255,255,.9)}
+.help-card .shortcut-row:last-of-type{border-bottom:none}
+.help-card kbd{background:rgba(255,183,0,.15);border:1px solid rgba(255,183,0,.4);color:var(--accent);padding:4px 12px;border-radius:8px;font-family:'Fira Code',monospace;font-size:.85rem;font-weight:700;direction:ltr}
+.help-card .close-hint{text-align:center;margin-top:16px;font-size:.8rem;color:rgba(255,255,255,.5)}
+.goto-prompt{position:fixed;inset:0;background:rgba(5,8,24,.8);backdrop-filter:blur(15px);z-index:3000;display:none;align-items:center;justify-content:center}
+.goto-prompt.show{display:flex}
+.goto-prompt .goto-box{background:linear-gradient(145deg,rgba(10,14,39,.95),rgba(30,40,70,.9));border:1px solid rgba(255,183,0,.4);border-radius:20px;padding:24px 32px;text-align:center}
+.goto-prompt label{display:block;color:var(--accent);font-weight:800;margin-bottom:12px;font-size:1rem}
+.goto-prompt input{width:120px;padding:12px;border-radius:12px;border:2px solid rgba(255,183,0,.4);background:rgba(0,0,0,.5);color:#fff;font-family:'Fira Code',monospace;font-size:1.3rem;text-align:center}
 ::-webkit-scrollbar{width:8px}
 ::-webkit-scrollbar-track{background:rgba(0,0,0,.2)}
 ::-webkit-scrollbar-thumb{background:var(--accent);border-radius:10px}
 </style>
 </head>
 <body>
-<div class="starfield" id="starfield"></div>
-<div class="neon-bubble"></div><div class="neon-bubble"></div><div class="neon-bubble"></div><div class="neon-bubble"></div>
+<div class="starfield" id="starfield" aria-hidden="true"></div>
+<div class="neon-bubble" aria-hidden="true"></div><div class="neon-bubble" aria-hidden="true"></div><div class="neon-bubble" aria-hidden="true"></div><div class="neon-bubble" aria-hidden="true"></div>
 <div class="progress-bar" id="progressBar"></div>
 <header class="slide-header">
 <div class="logo"><div class="logo-icon"><i class="fas fa-wave-square"></i></div><span>سیستم‌های اندازه‌گیری و کنترل</span></div>
 <div class="slide-info"><span><i class="fas fa-user-tie"></i> دکتر مسعود گوهری‌منش</span><span><i class="fas fa-university"></i> دانشگاه تربت حیدریه</span></div>
 </header>
 <div class="controls">
-<button class="ctrl-btn active" id="soundToggle" title="افکت صوتی"><i class="fas fa-volume-up"></i></button>
-<button class="ctrl-btn" id="musicToggle" title="موسیقی"><i class="fas fa-music"></i></button>
-<button class="ctrl-btn" id="fullscreenBtn" title="تمام صفحه"><i class="fas fa-expand"></i></button>
+<button class="ctrl-btn active" id="soundToggle" title="افکت صوتی" aria-label="فعال یا غیرفعال کردن افکت صوتی"><i class="fas fa-volume-up"></i></button>
+<button class="ctrl-btn" id="musicToggle" title="موسیقی پس‌زمینه" aria-label="فعال یا غیرفعال کردن موسیقی پس‌زمینه"><i class="fas fa-music"></i></button>
+<button class="ctrl-btn" id="fullscreenBtn" title="تمام صفحه" aria-label="حالت تمام صفحه"><i class="fas fa-expand"></i></button>
+<button class="ctrl-btn" id="helpBtn" title="میانبرهای صفحه‌کلید (؟)" aria-label="راهنمای میانبرهای صفحه‌کلید"><i class="fas fa-keyboard"></i></button>
 </div>
 <div class="dots-nav" id="dotsNav"></div>
 <div class="slides-container" id="slidesContainer">
@@ -246,6 +260,26 @@ html,body{font-family:'Vazirmatn',sans-serif;background:#050818;color:#fff;heigh
 <h1 class="animate-in">فاصله‌سنج اولتراسونیک</h1>
 <p class="subtitle animate-in">از خفاش تا محصول — ۹ پروژه از سرگرمی تا صنعت</p>
 <div class="instructor-card animate-in"><div class="instructor-avatar"><i class="fas fa-user-tie"></i></div><div class="instructor-info"><div class="name">دکتر مسعود گوهری‌منش</div><div class="title">دانشیار گروه مهندسی مکانیک دانشگاه تربت حیدریه</div></div></div>
+</section>
+
+<!-- نقشه راه -->
+<section class="slide content-slide" data-slide="roadmap">
+<div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-map-signs"></i></div><h2>🗺️ نقشه راه جلسه دهم</h2><span class="subtitle-bar"></span></div>
+<div class="content-body">
+<p class="animate-in" style="text-align:center;font-size:1.1rem;color:rgba(255,255,255,.85);margin-bottom:22px;line-height:1.9">از ایده تا محصول — ۴ فاز، ۲۷ اسلاید، ۹ پروژه عملی، ۳ ابزار تعاملی</p>
+<div class="info-grid animate-in" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+<div class="info-card" style="border-right-color:var(--accent)"><div class="info-icon"><i class="fas fa-wave-square"></i></div><h5>فاز ۱ — مبانی</h5><p>الهام از خفاش، دیتاشیت HC-SR04، اصل زمان‌پرواز، محدودیت‌ها و مقایسه با IR و لیزری ToF.</p><div style="margin-top:10px;font-size:.72rem;color:var(--accent);font-family:'Fira Code',monospace;direction:ltr">slides 2 → 7</div></div>
+<div class="info-card" style="border-right-color:var(--success)"><div class="info-icon" style="color:var(--success)"><i class="fas fa-microchip"></i></div><h5>فاز ۲ — ۹ پروژه</h5><p>از Serial و OLED تا رادار، MQTT، هشدار نفوذ، چراغ مطالعه و دستگاه قد با باکس پرینت سه‌بعدی.</p><div style="margin-top:10px;font-size:.72rem;color:var(--success);font-family:'Fira Code',monospace;direction:ltr">slides 8 → 18</div></div>
+<div class="info-card" style="border-right-color:var(--purple)"><div class="info-icon" style="color:var(--purple)"><i class="fas fa-flask"></i></div><h5>فاز ۳ — آزمایشگاه</h5><p>شبیه‌ساز فاصله، مبدل زمان↔فاصله، و کوییز تعاملی ۱۰ سؤالی برای سنجش یادگیری.</p><div style="margin-top:10px;font-size:.72rem;color:var(--purple);font-family:'Fira Code',monospace;direction:ltr">slides 19 → 21</div></div>
+<div class="info-card" style="border-right-color:var(--pink)"><div class="info-icon" style="color:var(--pink)"><i class="fas fa-clipboard-check"></i></div><h5>فاز ۴ — جمع‌بندی</h5><p>تمرین‌های مفهومی/عملی/نوشتاری، چالش خلاقانه، عیب‌یابی، پرسش‌های پایانی و مرور.</p><div style="margin-top:10px;font-size:.72rem;color:var(--pink);font-family:'Fira Code',monospace;direction:ltr">slides 22 → 27</div></div>
+</div>
+<div class="animate-in" style="margin-top:22px;display:flex;justify-content:center;gap:12px;flex-wrap:wrap">
+<div style="display:inline-flex;align-items:center;gap:8px;background:rgba(0,212,170,.1);border:1px solid rgba(0,212,170,.4);padding:10px 18px;border-radius:30px;font-size:.85rem;color:var(--success)"><i class="fas fa-clock"></i> حدود ۹۰ دقیقه</div>
+<div style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,183,0,.1);border:1px solid rgba(255,183,0,.4);padding:10px 18px;border-radius:30px;font-size:.85rem;color:var(--accent)"><i class="fas fa-tools"></i> ۹ پروژه Wokwi</div>
+<div style="display:inline-flex;align-items:center;gap:8px;background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.4);padding:10px 18px;border-radius:30px;font-size:.85rem;color:var(--purple)"><i class="fas fa-laptop-code"></i> ۳ ابزار تعاملی</div>
+<div style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,71,87,.1);border:1px solid rgba(255,71,87,.4);padding:10px 18px;border-radius:30px;font-size:.85rem;color:var(--danger)"><i class="fas fa-trophy"></i> ۱ چالش مسابقه‌ای</div>
+</div>
+</div>
 </section>
 
 <!-- 2 سوال -->
@@ -385,15 +419,19 @@ html,body{font-family:'Vazirmatn',sans-serif;background:#050818;color:#fff;heigh
   <span class="fn">delayMicroseconds</span>(<span class="num">10</span>);
   <span class="fn">digitalWrite</span>(TRIG_PIN, LOW);
 
-  <span class="cmt">// Read echo pulse duration</span>
+  <span class="cmt">// Read echo pulse duration (timeout 30ms = ~5m max range)</span>
   <span class="kw">long</span> duration = <span class="fn">pulseIn</span>(ECHO_PIN, HIGH, <span class="num">30000</span>);
 
-  <span class="cmt">// Calculate distance in cm</span>
-  <span class="kw">float</span> distance = duration * <span class="num">0.0343</span> / <span class="num">2.0</span>;
-
-  <span class="fn">Serial.print</span>(<span class="str">"Distance: "</span>);
-  <span class="fn">Serial.print</span>(distance);
-  <span class="fn">Serial.println</span>(<span class="str">" cm"</span>);
+  <span class="cmt">// Handle out-of-range: pulseIn returns 0 when no echo arrives</span>
+  <span class="kw">if</span> (duration == <span class="num">0</span>) {
+    <span class="fn">Serial.println</span>(<span class="str">"Out of range or no target detected!"</span>);
+  } <span class="kw">else</span> {
+    <span class="cmt">// Calculate distance: sound ~0.0343 cm/us, divide by 2 for round trip</span>
+    <span class="kw">float</span> distance = duration * <span class="num">0.0343</span> / <span class="num">2.0</span>;
+    <span class="fn">Serial.print</span>(<span class="str">"Distance: "</span>);
+    <span class="fn">Serial.print</span>(distance);
+    <span class="fn">Serial.println</span>(<span class="str">" cm"</span>);
+  }
 
   <span class="fn">delay</span>(<span class="num">200</span>);
 }</div></div>
@@ -606,6 +644,7 @@ Servo <span class="var">sorterServo</span>;
 <section class="slide content-slide" data-slide="11">
 <div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-satellite-dish"></i></div><h2>📡 پروژه ۵ (صنعتی): رادار اولتراسونیک</h2><span class="subtitle-bar"></span></div>
 <div class="content-body">
+<img src="images/radar-oled.jpg" alt="رادار اولتراسونیک با Servo و OLED" style="width:100%;max-width:760px;margin:0 auto 18px;border-radius:20px;border:2px solid rgba(0,151,156,.4);display:block" class="animate-in">
 <div class="wokwi-project animate-in">
 <div class="wokwi-info">
 <span class="wokwi-badge"><i class="fas fa-satellite-dish"></i> پروژه ۵ — سطح: پیشرفته</span>
@@ -662,14 +701,14 @@ Adafruit_SSD1306 <span class="var">display</span>(<span class="num">128</span>, 
   <span class="fn">display.clearDisplay</span>();
   <span class="fn">display.setTextSize</span>(<span class="num">1</span>);
   <span class="fn">display.setCursor</span>(<span class="num">0</span>, <span class="num">0</span>);
-  <span class="fn">display.print</span>(<span class="str">"Angle: "</span>); <span class="fn">display.print</span>(angle);
+  <span class="fn">display.print</span>(<span class="str">"Angle:"</span>); <span class="fn">display.print</span>(angle); <span class="fn">display.print</span>(<span class="str">"deg"</span>);
+  <span class="fn">display.drawFastHLine</span>(<span class="num">0</span>, <span class="num">10</span>, <span class="num">128</span>, WHITE); <span class="cmt">// header separator</span>
   <span class="fn">display.setCursor</span>(<span class="num">0</span>, <span class="num">56</span>);
-  <span class="fn">display.print</span>(<span class="str">"Dist: "</span>); <span class="fn">display.print</span>(dist, <span class="num">1</span>); <span class="fn">display.print</span>(<span class="str">"cm"</span>);
-  <span class="fn">display.setCursor</span>(<span class="num">0</span>, <span class="num">48</span>);
-  <span class="fn">display.print</span>(<span class="str">"Dr. Goharimanesh"</span>);
-  <span class="kw">if</span> (dist &lt; <span class="num">40</span>) {
-    <span class="kw">int</span> x = <span class="fn">map</span>(angle, <span class="num">0</span>, <span class="num">180</span>, <span class="num">0</span>, <span class="num">127</span>);
-    <span class="kw">int</span> y = <span class="fn">map</span>(dist, <span class="num">0</span>, <span class="num">40</span>, <span class="num">50</span>, <span class="num">10</span>);
+  <span class="kw">if</span> (dist &gt; <span class="num">0</span>) { <span class="fn">display.print</span>(<span class="str">"D:"</span>); <span class="fn">display.print</span>(dist, <span class="num">1</span>); <span class="fn">display.print</span>(<span class="str">"cm"</span>); }
+  <span class="kw">else</span> { <span class="fn">display.print</span>(<span class="str">"No echo"</span>); }
+  <span class="kw">if</span> (dist &gt; <span class="num">0</span> &amp;&amp; dist &lt; <span class="num">40</span>) {
+    <span class="kw">int</span> x = <span class="fn">map</span>(angle, <span class="num">0</span>, <span class="num">180</span>, <span class="num">2</span>, <span class="num">125</span>);
+    <span class="kw">int</span> y = <span class="fn">map</span>(dist, <span class="num">0</span>, <span class="num">40</span>, <span class="num">48</span>, <span class="num">14</span>);
     <span class="fn">display.fillCircle</span>(x, y, <span class="num">2</span>, WHITE);
   }
   <span class="fn">display.display</span>();
@@ -685,6 +724,7 @@ Adafruit_SSD1306 <span class="var">display</span>(<span class="num">128</span>, 
 <section class="slide content-slide" data-slide="12">
 <div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-cloud-upload-alt"></i></div><h2>☁️ پروژه ۶ (IoT): ارسال فاصله به MQTT</h2><span class="subtitle-bar"></span></div>
 <div class="content-body">
+<img src="images/iot-mqtt.jpg" alt="ارسال فاصله به MQTT Broker" style="width:100%;max-width:760px;margin:0 auto 18px;border-radius:20px;border:2px solid rgba(0,151,156,.4);display:block" class="animate-in">
 <div class="wokwi-project animate-in">
 <div class="wokwi-info">
 <span class="wokwi-badge"><i class="fas fa-cloud-upload-alt"></i> پروژه ۶ — سطح: پیشرفته (IoT)</span>
@@ -923,7 +963,8 @@ Adafruit_SSD1306 <span class="var">display</span>(<span class="num">128</span>, 
 <span class="kw">#define</span> ECHO_PIN <span class="num">10</span>
 <span class="kw">#define</span> OLED_RESET <span class="num">-1</span>
 Adafruit_SSD1306 <span class="var">display</span>(<span class="num">128</span>, <span class="num">64</span>, &amp;Wire, OLED_RESET);
-<span class="kw">const float</span> <span class="var">OFFSET_CM</span> = <span class="num">2.0</span>; <span class="cmt">// Calibration offset</span>
+<span class="kw">const float</span> <span class="var">MOUNT_HEIGHT_CM</span> = <span class="num">210.0</span>; <span class="cmt">// Sensor height above floor (calibrate per install)</span>
+<span class="kw">const float</span> <span class="var">OFFSET_CM</span> = <span class="num">2.0</span>; <span class="cmt">// Calibration offset for sensor face depth</span>
 
 <span class="kw">void</span> <span class="fn">setup</span>() {
   <span class="fn">pinMode</span>(TRIG_PIN, OUTPUT);
@@ -946,17 +987,40 @@ Adafruit_SSD1306 <span class="var">display</span>(<span class="num">128</span>, 
   <span class="fn">delayMicroseconds</span>(<span class="num">10</span>);
   <span class="fn">digitalWrite</span>(TRIG_PIN, LOW);
   <span class="kw">long</span> d = <span class="fn">pulseIn</span>(ECHO_PIN, HIGH, <span class="num">30000</span>);
-  <span class="kw">float</span> dist = d * <span class="num">0.0343</span> / <span class="num">2.0</span> - OFFSET_CM;
   <span class="fn">display.clearDisplay</span>();
   <span class="fn">display.setTextSize</span>(<span class="num">1</span>);
   <span class="fn">display.setCursor</span>(<span class="num">0</span>, <span class="num">0</span>);
-  <span class="fn">display.println</span>(<span class="str">"Your Height:"</span>);
-  <span class="fn">display.setTextSize</span>(<span class="num">3</span>);
-  <span class="fn">display.setCursor</span>(<span class="num">10</span>, <span class="num">20</span>);
-  <span class="fn">display.print</span>(dist, <span class="num">1</span>);
-  <span class="fn">display.setTextSize</span>(<span class="num">1</span>);
-  <span class="fn">display.print</span>(<span class="str">" cm"</span>);
-  <span class="fn">display.setCursor</span>(<span class="num">0</span>, <span class="num">50</span>);
+  <span class="kw">if</span> (d == <span class="num">0</span>) {
+    <span class="fn">display.println</span>(<span class="str">"Out of range!"</span>);
+    <span class="fn">display.println</span>(<span class="str">"Stand under sensor"</span>);
+  } <span class="kw">else</span> {
+    <span class="kw">float</span> rawDist = d * <span class="num">0.0343</span> / <span class="num">2.0</span>;
+    <span class="kw">if</span> (rawDist &gt; <span class="num">400.0</span>) {
+      <span class="fn">display.println</span>(<span class="str">"Too far!"</span>);
+      <span class="fn">display.println</span>(<span class="str">"Stand closer"</span>);
+    } <span class="kw">else</span> {
+      <span class="cmt">// Average 3 samples to reduce jitter</span>
+      <span class="kw">float</span> sum = rawDist;
+      <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; <span class="num">2</span>; i++) {
+        <span class="fn">delay</span>(<span class="num">60</span>);
+        <span class="fn">digitalWrite</span>(TRIG_PIN, LOW); <span class="fn">delayMicroseconds</span>(<span class="num">2</span>);
+        <span class="fn">digitalWrite</span>(TRIG_PIN, HIGH); <span class="fn">delayMicroseconds</span>(<span class="num">10</span>);
+        <span class="fn">digitalWrite</span>(TRIG_PIN, LOW);
+        <span class="kw">long</span> d2 = <span class="fn">pulseIn</span>(ECHO_PIN, HIGH, <span class="num">30000</span>);
+        <span class="kw">if</span> (d2 &gt; <span class="num">0</span>) sum += d2 * <span class="num">0.0343</span> / <span class="num">2.0</span>;
+      }
+      <span class="kw">float</span> avgDist = sum / <span class="num">3.0</span>;
+      <span class="cmt">// Height = mount height - distance - calibration offset</span>
+      <span class="kw">float</span> height = MOUNT_HEIGHT_CM - avgDist - OFFSET_CM;
+      <span class="fn">display.println</span>(<span class="str">"Your Height:"</span>);
+      <span class="fn">display.setTextSize</span>(<span class="num">3</span>);
+      <span class="fn">display.setCursor</span>(<span class="num">10</span>, <span class="num">20</span>);
+      <span class="fn">display.print</span>(height, <span class="num">1</span>);
+      <span class="fn">display.setTextSize</span>(<span class="num">1</span>);
+      <span class="fn">display.print</span>(<span class="str">" cm"</span>);
+    }
+  }
+  <span class="fn">display.setCursor</span>(<span class="num">0</span>, <span class="num">56</span>);
   <span class="fn">display.print</span>(<span class="str">"Dr. Goharimanesh"</span>);
   <span class="fn">display.display</span>();
   <span class="fn">delay</span>(<span class="num">500</span>);
@@ -1039,7 +1103,7 @@ Adafruit_SSD1306 <span class="var">display</span>(<span class="num">128</span>, 
 
 <!-- 21 کوییز -->
 <section class="slide content-slide" data-slide="20">
-<div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-question-circle"></i></div><h2>🧠 کوییز تعاملی</h2><span class="subtitle-bar"></span></div>
+<div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-question-circle"></i></div><h2>🧠 کوییز تعاملی — ۱۰ سؤال</h2><span class="subtitle-bar"></span></div>
 <div class="content-body">
 <div class="quiz-container animate-in">
 <div class="quiz-question" id="quizQuestion">سوال در حال بارگذاری...</div>
@@ -1049,7 +1113,7 @@ Adafruit_SSD1306 <span class="var">display</span>(<span class="num">128</span>, 
 <button class="copy-btn" id="nextQuizBtn" style="flex:1;background:linear-gradient(135deg,var(--accent),var(--accent2))"><i class="fas fa-arrow-left"></i> سوال بعدی</button>
 <button class="copy-btn" id="resetQuizBtn" style="flex:1;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2)"><i class="fas fa-redo"></i> شروع مجدد</button>
 </div>
-<div style="text-align:center;margin-top:12px;font-size:.85rem;color:rgba(255,255,255,.7)">امتیاز: <span id="quizScore" style="color:var(--accent);font-weight:900">۰</span> از <span id="quizTotal" style="font-weight:700">۵</span></div>
+<div style="text-align:center;margin-top:12px;font-size:.85rem;color:rgba(255,255,255,.7)">امتیاز: <span id="quizScore" style="color:var(--accent);font-weight:900">۰</span> از <span id="quizTotal" style="font-weight:700">۱۰</span></div>
 </div>
 </div>
 </section>
@@ -1118,6 +1182,32 @@ Adafruit_SSD1306 <span class="var">display</span>(<span class="num">128</span>, 
 </div>
 </section>
 
+<!-- عیب‌یابی -->
+<section class="slide content-slide" data-slide="troubleshoot">
+<div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-wrench"></i></div><h2>🛠️ عیب‌یابی رایج — راهنمای کارگاهی</h2><span class="subtitle-bar"></span></div>
+<div class="content-body">
+<p class="animate-in" style="text-align:center;font-size:.95rem;color:rgba(255,255,255,.8);margin-bottom:18px;line-height:1.8">هشت مشکل متداول پروژه‌های HC-SR04 با علت و راه‌حل عملی — برای کار گروهی در کلاس.</p>
+<div style="overflow-x:auto" class="animate-in">
+<table class="sensor-table">
+<thead><tr><th style="width:30%">مشکل</th><th style="width:32%">علت محتمل</th><th style="width:38%">راه‌حل</th></tr></thead>
+<tbody>
+<tr><td class="sensor-name">خوانش همیشه <code style="color:var(--danger)">0 cm</code></td><td>قطع اتصال Trig/Echo یا timeout در <code>pulseIn</code></td><td>سیم‌ها را با مولتی‌متر تست کنید؛ پین‌ها را در کد با <code>Serial.print</code> تأیید کنید</td></tr>
+<tr><td class="sensor-name">عدد ثابت <code style="color:var(--danger)">~400 cm</code></td><td>جسم خارج از محدوده یا زاویه‌ی ۹۰° رعایت نشده</td><td>سنسور را موازی سطح هدف قرار دهید؛ شیء را در فاصله‌ی ۲ تا ۴۰۰ cm نگه دارید</td></tr>
+<tr><td class="sensor-name">خوانش پرش و ناپایدار</td><td>نویز تغذیه، تداخل موتور/رله، نبود فیلتر</td><td>میانگین ۳-۵ نمونه؛ خازن ۰.۱µF نزدیک سنسور؛ کابل شیلددار</td></tr>
+<tr><td class="sensor-name">خطای بزرگ روی ESP32</td><td>Echo خروجی ۵V دارد و ESP32 پایه‌ی ۳.۳V است</td><td>تقسیم مقاومتی ۱kΩ + ۲kΩ برای کاهش Echo به ۳.۳V</td></tr>
+<tr><td class="sensor-name">خطای وابسته به دما</td><td>سرعت صوت با دما تغییر می‌کند (۰.۶ m/s به ازای هر °C)</td><td>جبران دما: <code>v = 331.3 + 0.6×T</code> و سپس <code>d = v × t / 2</code></td></tr>
+<tr><td class="sensor-name">عدم کار روی پارچه/فوم</td><td>سطوح جاذب موج اولتراسونیک را خاموش می‌کنند</td><td>سطح بازتابنده اضافه کنید یا از سنسور ToF لیزری استفاده کنید</td></tr>
+<tr><td class="sensor-name">OLED روشن نمی‌شود</td><td>آدرس I2C نادرست (۰x3C یا ۰x3D) یا اشتباه SDA/SCL</td><td>با اسکنر I2C آدرس را بیابید؛ SDA→A4، SCL→A5 روی Arduino Uno</td></tr>
+<tr><td class="sensor-name">لرزش Servo در رادار</td><td>تغذیه مشترک با سنسور یا افت ولتاژ</td><td>تغذیه‌ی جداگانه ۵V برای Servo؛ خازن ۴۷۰µF روی ورودی</td></tr>
+</tbody>
+</table>
+</div>
+<div class="animate-in" style="margin-top:18px;background:rgba(0,151,156,.08);border-right:4px solid var(--wokwi);border-radius:12px;padding:12px 16px;font-size:.85rem;color:rgba(255,255,255,.9);line-height:1.8">
+<strong style="color:var(--wokwi)"><i class="fas fa-lightbulb"></i> نکته‌ی کلاسی:</strong> قبل از شروع هر پروژه، یک بار <code>Serial.println(duration)</code> اضافه کنید تا مطمئن شوید <code>pulseIn</code> عدد غیرصفر می‌دهد. این عادت، ۸۰٪ مشکلات را در همان مرحله‌ی اول کشف می‌کند.
+</div>
+</div>
+</section>
+
 <!-- 24 جمع‌بندی -->
 <section class="slide content-slide" data-slide="23">
 <div class="slide-title animate-in"><div class="title-icon-wrap"><i class="fas fa-clipboard-check"></i></div><h2>📋 جمع‌بندی و مرور</h2><span class="subtitle-bar"></span></div>
@@ -1144,11 +1234,39 @@ Adafruit_SSD1306 <span class="var">display</span>(<span class="num">128</span>, 
 
 <nav class="slide-nav">
 <button class="nav-btn" id="prevBtn" title="اسلاید قبلی"><i class="fas fa-chevron-right"></i></button>
-<div class="slide-counter"><span class="current" id="currentSlide">۱</span> / <span id="totalSlides">۳۰</span></div>
+<div class="slide-counter"><span class="current" id="currentSlide">۱</span> / <span id="totalSlides">۲۷</span></div>
 <button class="nav-btn" id="nextBtn" title="اسلاید بعدی"><i class="fas fa-chevron-left"></i></button>
 </nav>
 
 <div class="toast" id="toast"></div>
+
+<div class="help-overlay" id="helpOverlay">
+<div class="help-card">
+<h3><i class="fas fa-keyboard"></i> میانبرهای صفحه‌کلید</h3>
+<div class="shortcut-row"><span>اسلاید بعدی</span><kbd>← / Space</kbd></div>
+<div class="shortcut-row"><span>اسلاید قبلی</span><kbd>→</kbd></div>
+<div class="shortcut-row"><span>اولین اسلاید</span><kbd>Home</kbd></div>
+<div class="shortcut-row"><span>آخرین اسلاید</span><kbd>End</kbd></div>
+<div class="shortcut-row"><span>پرش به اسلاید دلخواه</span><kbd>G</kbd></div>
+<div class="shortcut-row"><span>راهنمای میانبرها</span><kbd>?</kbd></div>
+<div class="shortcut-row"><span>پرش به مبدل زمان↔فاصله</span><kbd>C</kbd></div>
+<div class="shortcut-row"><span>پرش به کوییز</span><kbd>Q</kbd></div>
+<div class="shortcut-row"><span>پرش به نقشه راه</span><kbd>R</kbd></div>
+<div class="shortcut-row"><span>فعال/غیرفعال صدا</span><kbd>M</kbd></div>
+<div class="close-hint"><i class="fas fa-times-circle"></i> برای بستن، کلید <kbd style="padding:2px 8px">?</kbd> یا <kbd style="padding:2px 8px">Esc</kbd> را فشار دهید</div>
+</div>
+</div>
+
+<div class="goto-prompt" id="gotoPrompt">
+<div class="goto-box">
+<label for="gotoInput">شماره اسلاید (۱ تا <span id="gotoMax">۲۷</span>)</label>
+<input type="number" id="gotoInput" min="1" max="27" value="1">
+<div style="margin-top:14px;display:flex;gap:8px;justify-content:center">
+<button class="copy-btn" id="gotoConfirm"><i class="fas fa-check"></i> برو</button>
+<button class="copy-btn" id="gotoCancel" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2)"><i class="fas fa-times"></i> لغو</button>
+</div>
+</div>
+</div>
 
 <script>
 (function(){
@@ -1167,7 +1285,7 @@ Adafruit_SSD1306 <span class="var">display</span>(<span class="num">128</span>, 
   totalSlidesSpan.textContent=toPersianNumber(totalSlides);
 
   const starfield=document.getElementById('starfield');
-  for(let i=0;i<120;i++){
+  for(let i=0;i<80;i++){
     const star=document.createElement('div');
     star.className='star';
     const size=Math.random()*2.5+0.5;
@@ -1207,23 +1325,79 @@ Adafruit_SSD1306 <span class="var">display</span>(<span class="num">128</span>, 
     progressBar.style.width=((currentIndex+1)/totalSlides*100)+'%';
     prevBtn.disabled=currentIndex===0;
     nextBtn.disabled=currentIndex===totalSlides-1;
-    if(index===18)initSim();
-    if(index===19)initConv();
-    if(index===20)initQuiz();
+    if(index===19)initSim();
+    if(index===20)initConv();
+    if(index===21)initQuiz();
+    try{localStorage.setItem('session10_slide',index);}catch(e){}
   }
   function nextSlide(){goToSlide(currentIndex+1);}
   function prevSlide(){goToSlide(currentIndex-1);}
   nextBtn.addEventListener('click',nextSlide);
   prevBtn.addEventListener('click',prevSlide);
-  document.addEventListener('keydown',(e)=>{if(e.key==='ArrowLeft')nextSlide();else if(e.key==='ArrowRight')prevSlide();else if(e.key===' '){e.preventDefault();nextSlide();}else if(e.key==='Home')goToSlide(0);else if(e.key==='End')goToSlide(totalSlides-1);});
+  document.addEventListener('keydown',(e)=>{
+    const tag=(e.target.tagName||'').toLowerCase();
+    const typing=tag==='input'||tag==='textarea';
+    if(e.key==='?'||(e.shiftKey&&e.key==='/')){e.preventDefault();document.getElementById('helpOverlay').classList.toggle('show');return;}
+    if(e.key==='Escape'){document.getElementById('helpOverlay').classList.remove('show');document.getElementById('gotoPrompt').classList.remove('show');return;}
+    if(typing)return;
+    if(e.key==='ArrowLeft')nextSlide();
+    else if(e.key==='ArrowRight')prevSlide();
+    else if(e.key===' '){e.preventDefault();nextSlide();}
+    else if(e.key==='Home')goToSlide(0);
+    else if(e.key==='End')goToSlide(totalSlides-1);
+    else if(e.key==='g'||e.key==='G'){const p=document.getElementById('gotoPrompt');p.classList.add('show');const inp=document.getElementById('gotoInput');inp.max=totalSlides;document.getElementById('gotoMax').textContent=toPersianNumber(totalSlides);inp.value=currentIndex+1;setTimeout(()=>{inp.focus();inp.select();},50);}
+    else if(e.key==='c'||e.key==='C')goToSlide(20);
+    else if(e.key==='q'||e.key==='Q')goToSlide(21);
+    else if(e.key==='r'||e.key==='R')goToSlide(1);
+    else if(e.key==='m'||e.key==='M')document.getElementById('soundToggle').click();
+  });
+
+  document.getElementById('gotoConfirm').addEventListener('click',()=>{
+    const v=parseInt(document.getElementById('gotoInput').value);
+    if(!isNaN(v)&&v>=1&&v<=totalSlides)goToSlide(v-1);
+    document.getElementById('gotoPrompt').classList.remove('show');
+  });
+  document.getElementById('gotoCancel').addEventListener('click',()=>document.getElementById('gotoPrompt').classList.remove('show'));
+  document.getElementById('gotoInput').addEventListener('keydown',(e)=>{if(e.key==='Enter'){e.preventDefault();document.getElementById('gotoConfirm').click();}});
 
   let touchStartX=0;
   document.addEventListener('touchstart',(e)=>{touchStartX=e.changedTouches[0].screenX;},{passive:true});
   document.addEventListener('touchend',(e)=>{const diff=touchStartX-e.changedTouches[0].screenX;if(Math.abs(diff)>50){if(diff>0)nextSlide();else prevSlide();}},{passive:true});
 
   document.getElementById('soundToggle').addEventListener('click',function(){soundEnabled=!soundEnabled;this.classList.toggle('active',soundEnabled);this.querySelector('i').className=soundEnabled?'fas fa-volume-up':'fas fa-volume-mute';if(soundEnabled)playClickSound();});
-  document.getElementById('musicToggle').addEventListener('click',()=>{showToast('<i class="fas fa-music"></i> موسیقی پس‌زمینه (به‌زودی)');});
+
+  let musicPlaying=false,musicNodes=[];
+  function startMusic(){
+    initAudio();if(musicNodes.length)return;
+    const freqs=[110,164.81,220,329.63]; // A2 + E3 + A3 + E4 — pad with perfect fifth
+    const master=audioCtx.createGain();master.gain.value=0;master.connect(audioCtx.destination);
+    freqs.forEach((f,i)=>{
+      const osc=audioCtx.createOscillator();const g=audioCtx.createGain();
+      osc.type='sine';osc.frequency.value=f;g.gain.value=0.035/(i+1);
+      osc.connect(g);g.connect(master);
+      const lfo=audioCtx.createOscillator();const lfoGain=audioCtx.createGain();
+      lfo.frequency.value=0.08+i*0.04;lfoGain.gain.value=1.5;
+      lfo.connect(lfoGain);lfoGain.connect(osc.frequency);
+      osc.start();lfo.start();musicNodes.push(osc,lfo,g);
+    });
+    master.gain.linearRampToValueAtTime(0.5,audioCtx.currentTime+2);
+    musicNodes.push(master);musicPlaying=true;
+  }
+  function stopMusic(){
+    if(!musicNodes.length)return;
+    const master=musicNodes[musicNodes.length-1];
+    master.gain.linearRampToValueAtTime(0,audioCtx.currentTime+1);
+    const toStop=musicNodes.slice();
+    setTimeout(()=>{toStop.forEach(n=>{try{if(n.stop)n.stop();if(n.disconnect)n.disconnect();}catch(e){}});},1100);
+    musicNodes=[];musicPlaying=false;
+  }
+  document.getElementById('musicToggle').addEventListener('click',function(){
+    if(musicPlaying){stopMusic();this.classList.remove('active');this.querySelector('i').className='fas fa-music';showToast('<i class="fas fa-volume-mute"></i> موسیقی پس‌زمینه خاموش شد');}
+    else{startMusic();this.classList.add('active');this.querySelector('i').className='fas fa-music';showToast('<i class="fas fa-music"></i> موسیقی پس‌زمینه فعال شد — pad ملایم A/E');}
+  });
   document.getElementById('fullscreenBtn').addEventListener('click',function(){playClickSound();if(!document.fullscreenElement){document.documentElement.requestFullscreen();this.querySelector('i').className='fas fa-compress';}else{document.exitFullscreen();this.querySelector('i').className='fas fa-expand';}});
+  document.getElementById('helpBtn').addEventListener('click',function(){playClickSound();document.getElementById('helpOverlay').classList.toggle('show');});
+  document.getElementById('helpOverlay').addEventListener('click',function(e){if(e.target===this)this.classList.remove('show');});
 
   let toastTimeout;
   function showToast(msg,duration=2500){clearTimeout(toastTimeout);toast.innerHTML=msg;toast.classList.add('show');toastTimeout=setTimeout(()=>toast.classList.remove('show'),duration);}
@@ -1270,8 +1444,15 @@ Adafruit_SSD1306 <span class="var">display</span>(<span class="num">128</span>, 
     {q:'فرمول محاسبه فاصله با HC-SR04 چیست؟',options:['cm = µs / 58','cm = µs × 58','cm = µs / 2','cm = µs × 340'],correct:0,explanation:'فرمول استاندارد: cm = duration (µs) / 58.'},
     {q:'حداقل تأخیر بین دو اندازه‌گیری چقدر است؟',options:['۱۰ ms','۶۰ ms','۱۰۰ ms','۵۰۰ ms'],correct:1,explanation:'حداقل ۶۰ms برای جلوگیری از تداخل.'},
     {q:'کدام سطح برای اولتراسونیک مشکل‌ساز است؟',options:['فلز','شیشه','پارچه','آجر'],correct:2,explanation:'پارچه و فوم موج را جذب می‌کنند.'},
-    {q:'برای ESP32 (۳.۳V)، Echo را چگونه وصل کنیم؟',options:['مستقیم','تقسیم مقاومتی','بدون اتصال','با خازن'],correct:1,explanation:'Echo خروجی ۵V دارد و برای ESP32 باید با تقسیم مقاومتی کاهش یابد.'}
-  ];
+  {q:'برای ESP32 (۳.۳V)، Echo را چگونه وصل کنیم؟',options:['مستقیم','تقسیم مقاومتی','بدون اتصال','با خازن'],correct:1,explanation:'Echo خروجی ۵V دارد و برای ESP32 باید با تقسیم مقاومتی کاهش یابد.'},
+  {q:'زاویه مخروط پخش موج HC-SR04 چقدر است؟',options:['۵°','۱۵°','۳۰°','۹۰°'],correct:1,explanation:'مخروط پخش موج HC-SR04 حدود ۱۵° است — اجسام باریک ممکن است تشخیص داده نشوند.'},
+  {q:'حداقل فاصله قابل اندازه‌گیری با HC-SR04 چقدر است؟',options:['۰ cm','۲ cm','۵ cm','۱۰ cm'],correct:1,explanation:'کمتر از ۲cm قابل اندازه‌گیری نیست — محدودیت فیزیکی سنسور.'},
+  {q:'سرعت صوت در هوای ۲۰°C تقریباً چقدر است؟',options:['۲۰۰ m/s','۳۴۳ m/s','۵۰۰ m/s','۱۰۰۰ m/s'],correct:1,explanation:'حدود ۳۴۳ m/s؛ فرمول دقیق: v = 331.3 + 0.6 × T (°C).'},
+  {q:'اثر دما بر سرعت صوت به ازای هر °C چقدر است؟',options:['۰.۰۶ m/s','۰.۶ m/s','۶ m/s','۶۰ m/s'],correct:1,explanation:'۰.۶ m/s به ازای هر °C — در محدوده‌ی میانی دقت بهتر است.'},
+  {q:'در دستگاه قد، فرمول صحیح محاسبه قد چیست؟',options:['قد = فاصله','قد = MOUNT_HEIGHT - فاصله','قد = فاصله × ۲','قد = MOUNT_HEIGHT + فاصله'],correct:1,explanation:'قد = ارتفاع نصب سنسور از زمین - فاصله تا سر - آفست کالیبراسیون.'},
+  {q:'کدام روش برای کاهش نویز خوانش HC-SR04 مؤثرتر است؟',options:['افزایش ولتاژ تغذیه','میانگین‌گیری ۳ تا ۵ نمونه','کاهش تأخیر بین اندازه‌گیری','استفاده از کابل بلندتر'],correct:1,explanation:'میانگین‌گیری ۳-۵ نمونه به‌همراه خازن ۰.۱µF نزدیک سنسور، نویز را به‌طور مؤثری کاهش می‌دهد.'},
+  {q:'کدام پروژه این جلسه برای پایش راه دور مناسب‌تر است؟',options:['پروژه ۱ Serial','پروژه ۲ OLED','پروژه ۶ MQTT','پروژه ۸ چراغ مطالعه'],correct:2,explanation:'پروژه ۶ با ESP32 و MQTT، فاصله را به Broker عمومی می‌فرستد و از راه دور قابل مشاهده است.'}
+];
   let currentQuizIndex=0,quizScore=0,answeredQuestions=new Set();
   function initQuiz(){currentQuizIndex=0;quizScore=0;answeredQuestions.clear();document.getElementById('quizScore').textContent='۰';document.getElementById('quizTotal').textContent=toPersianNumber(quizData.length);renderQuiz();}
   function renderQuiz(){
@@ -1299,7 +1480,9 @@ Adafruit_SSD1306 <span class="var">display</span>(<span class="num">128</span>, 
   document.getElementById('nextQuizBtn')?.addEventListener('click',()=>{currentQuizIndex=(currentQuizIndex+1)%quizData.length;renderQuiz();});
   document.getElementById('resetQuizBtn')?.addEventListener('click',()=>{initQuiz();});
 
-  goToSlide(0);
+  let startSlide=0;
+  try{const saved=parseInt(localStorage.getItem('session10_slide'));if(!isNaN(saved)&&saved>=0&&saved<totalSlides)startSlide=saved;}catch(e){}
+  goToSlide(startSlide);
   setTimeout(()=>{showToast('<i class="fas fa-hand-sparkles"></i> خوش آمدید به جلسه دهم — فاصله‌سنج اولتراسونیک',4000);},800);
 })();
 </script>
