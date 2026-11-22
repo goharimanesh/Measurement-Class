@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>جلسه ۱۱: سنسورهای مجاورتی صنعتی — سیستم‌های اندازه‌گیری و کنترل</title>
+<meta name="description" content="جلسه یازدهم درس سیستم‌های اندازه‌گیری و کنترل — کالبدشکافی و کاربرد سنسورهای مجاورتی صنعتی: القایی، خازنی، نوری، PIR، اثر هال و AMR">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;300;400;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+<style>
+:root{
+  --accent:#ffb700; --accent2:#ff6b35; --success:#00d4aa; --danger:#ff4757;
+  --purple:#a855f7; --pink:#ec4899; --cyan:#06b6d4; --dark:#050818; --wokwi:#00979c;
+  --bg:#070b1e; --card:rgba(255,255,255,.04); --card-border:rgba(255,255,255,.08);
+  --text:#e8eaf2; --text-dim:rgba(232,234,242,.7);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Vazirmatn',sans-serif;
+  background:
+    radial-gradient(ellipse at top right, rgba(255,183,0,.08), transparent 50%),
+    radial-gradient(ellipse at bottom left, rgba(168,85,247,.08), transparent 50%),
+    linear-gradient(180deg,#070b1e 0%, #0a1024 100%);
+  background-attachment:fixed;
+  color:var(--text);
+  min-height:100vh;
+  line-height:1.8;
+  overflow-x:hidden;
+}
+/* ===== Progress bar ===== */
+.progress-bar{
+  position:fixed;top:0;right:0;height:5px;
+  background:linear-gradient(90deg,#06b6d4,#a855f7,#ff6b35,#ffb700,#06b6d4);
+  background-size:400% 100%;width:0;
+  transition:width .6s cubic-bezier(.4,0,.2,1);
+  z-index:1000;box-shadow:0 0 20px rgba(255,183,0,.8);
+  animation:gradientFlow 3s linear infinite;
+}
+@keyframes gradientFlow{0%{background-position:0 0}100%{background-position:400% 0}}
+
+/* ===== Top Nav ===== */
+.top-nav{
+  position:fixed;top:0;right:0;left:0;z-index:900;
+  background:rgba(7,11,30,.85);backdrop-filter:blur(18px);
+  border-bottom:1px solid rgba(255,183,0,.15);
+  padding:10px 18px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+.nav-brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:.92rem}
+.nav-brand .badge{
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#050818;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:900;
+}
+.nav-links{display:flex;gap:6px;flex-wrap:wrap}
+.nav-links a{
+  color:var(--text-dim);text-decoration:none;font-size:.8rem;
+  padding:6px 12px;border-radius:10px;transition:all .25s ease;white-space:nowrap;
+}
+.nav-links a:hover{color:var(--accent);background:rgba(255,183,0,.1)}
+.nav-menu-btn{display:none;background:none;border:none;color:var(--text);font-size:1.2rem;cursor:pointer}
+@media(max-width:780px){
+  .nav-links{display:none;position:absolute;top:100%;right:0;left:0;flex-direction:column;background:rgba(7,11,30,.98);padding:12px;border-bottom:1px solid rgba(255,183,0,.15)}
+  .nav-links.open{display:flex}
+  .nav-menu-btn{display:block}
+  .nav-links a{padding:10px 14px}
+}
+
+/* ===== Hero ===== */
+.hero{
+  position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;
+  padding:80px 20px 40px;text-align:center;overflow:hidden;
+}
+.hero-bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.18;z-index:-1;
+  background:radial-gradient(circle at 30% 40%, rgba(255,183,0,.25), transparent 40%),
+             radial-gradient(circle at 70% 60%, rgba(168,85,247,.25), transparent 40%),
+             radial-gradient(circle at 50% 80%, rgba(6,182,212,.2), transparent 40%);
+}
+.hero-content{max-width:980px;position:relative;z-index:2}
+.hero-chip{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(255,183,0,.1);border:1px solid rgba(255,183,0,.4);
+  padding:8px 18px;border-radius:30px;font-size:.82rem;color:var(--accent);
+  margin-bottom:22px;backdrop-filter:blur(10px);
+}
+.hero h1{
+  font-size:clamp(2.2rem, 7vw, 4.6rem);font-weight:900;line-height:1.15;
+  background:linear-gradient(135deg,#fff 0%, #ffb700 40%, #ff6b35 70%, #ec4899 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:14px;
+}
+.hero .subtitle{
+  font-size:clamp(1rem,2.5vw,1.4rem);color:var(--text-dim);font-weight:300;margin-bottom:8px;
+}
+.hero .en-title{
+  font-size:clamp(.85rem,2vw,1.05rem);color:var(--cyan);font-family:'Fira Code',monospace;
+  direction:ltr;margin-bottom:26px;letter-spacing:.5px;
+}
+.hero .lead{
+  font-size:1.05rem;color:var(--text-dim);max-width:760px;margin:0 auto 28px;line-height:2;
+}
+.hero-meta{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:8px}
+.hero-meta .pill{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,.04);border:1px solid var(--card-border);
+  padding:9px 16px;border-radius:30px;font-size:.82rem;color:var(--text);
+}
+.hero-meta .pill i{color:var(--accent)}
+.scroll-cue{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);color:var(--text-dim);font-size:1.4rem;animation:bounce 2s infinite}
+@keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-8px)}}
+
+/* ===== Sections ===== */
+.slide{
+  max-width:1180px;margin:0 auto;padding:70px 20px;
+  position:relative;
+}
+.slide-title{display:flex;align-items:center;gap:14px;margin-bottom:30px;flex-wrap:wrap}
+.title-icon-wrap{
+  width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,rgba(255,183,0,.18),rgba(255,107,53,.12));
+  border:1px solid rgba(255,183,0,.3);font-size:1.5rem;color:var(--accent);flex-shrink:0;
+}
+.slide-title h2{font-size:clamp(1.4rem,3.5vw,2rem);font-weight:800;color:#fff}
+.subtitle-bar{flex:1;height:3px;background:linear-gradient(90deg,var(--accent),transparent);border-radius:3px;min-width:60px}
+.content-body{color:var(--text)}
+.content-body p{margin-bottom:14px;color:var(--text-dim);line-height:2}
+.content-body strong{color:var(--accent)}
+.content-body ul{list-style:none;margin:14px 0;padding:0}
+.content-body ul li{position:relative;padding-right:26px;margin-bottom:10px;color:var(--text-dim)}
+.content-body ul li::before{content:'▸';position:absolute;right:0;top:0;color:var(--accent);font-weight:bold}
+
+/* ===== Cards grid ===== */
+.info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin:20px 0}
+.info-card{
+  background:linear-gradient(145deg,rgba(255,255,255,.04),rgba(255,255,255,.01));
+  border:1px solid var(--card-border);border-right:4px solid var(--accent);
+  border-radius:18px;padding:20px;transition:all .3s ease;
+}
+.info-card:hover{transform:translateY(-4px);border-color:rgba(255,183,0,.4);box-shadow:0 14px 30px rgba(0,0,0,.3)}
+.info-icon{font-size:1.5rem;color:var(--accent);margin-bottom:10px}
+.info-card h5{font-size:1rem;color:#fff;margin-bottom:8px;font-weight:700}
+.info-card p{font-size:.88rem;color:var(--text-dim);line-height:1.8}
+
+/* ===== Hint / Tip / Warn ===== */
+.hint,.tip,.warn{
+  border-radius:14px;padding:14px 18px;margin:14px 0;font-size:.92rem;line-height:1.9;
+  display:flex;gap:12px;align-items:flex-start;
+}
+.hint{background:rgba(255,183,0,.08);border-right:4px solid var(--accent);color:rgba(255,255,255,.92)}
+.tip{background:rgba(0,212,170,.08);border-right:4px solid var(--success);color:rgba(255,255,255,.92)}
+.warn{background:rgba(255,71,87,.08);border-right:4px solid var(--danger);color:rgba(255,255,255,.92)}
+.hint i,.tip i,.warn i{font-size:1.1rem;margin-top:4px;flex-shrink:0}
+.hint i{color:var(--accent)} .tip i{color:var(--success)} .warn i{color:var(--danger)}
+
+/* ===== Tables ===== */
+.sensor-table-wrap{overflow-x:auto;margin:18px 0;border-radius:18px;border:1px solid var(--card-border)}
+table.sensor-table{width:100%;border-collapse:collapse;min-width:560px;background:rgba(255,255,255,.02)}
+table.sensor-table th{
+  background:linear-gradient(135deg,rgba(255,183,0,.2),rgba(255,107,53,.12));
+  color:#fff;padding:14px 16px;text-align:right;font-weight:700;font-size:.85rem;border-bottom:2px solid rgba(255,183,0,.3);
+}
+table.sensor-table td{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.05);font-size:.88rem;color:var(--text-dim)}
+table.sensor-table tr:hover td{background:rgba(255,183,0,.04)}
+table.sensor-table td.sensor-name{color:var(--accent);font-weight:600}
+
+/* ===== Image figure ===== */
+.figure{
+  display:block;max-width:100%;margin:18px auto;border-radius:20px;
+  border:1px solid var(--card-border);background:rgba(255,255,255,.02);
+  box-shadow:0 14px 40px rgba(0,0,0,.4);height:auto;
+}
+@media(max-width:640px){
+  .figure{max-width:100% !important;width:100% !important;}
+}
+.figure-caption{
+  text-align:center;color:var(--text-dim);font-size:.82rem;margin-top:8px;font-style:italic;
+}
+
+/* ===== Question slide ===== */
+.question-slide{text-align:center;padding:90px 20px}
+.question-slide .question-img{
+  width:100%;max-width:760px;border-radius:24px;margin:0 auto 24px;
+  border:2px solid rgba(255,183,0,.3);display:block;
+}
+.question-slide h2{font-size:clamp(1.4rem,4vw,2.2rem);margin-bottom:18px;color:#fff;font-weight:800}
+.question-slide p{font-size:1.05rem;color:var(--text-dim);max-width:760px;margin:0 auto 16px;line-height:2}
+
+/* ===== Lab / Simulator ===== */
+.sim-section{padding:60px 0}
+.sim-container{display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:1180px;margin:0 auto}
+@media(max-width:780px){.sim-container{grid-template-columns:1fr}}
+.sim-panel{
+  background:linear-gradient(145deg,rgba(10,14,39,.7),rgba(30,40,70,.4));
+  border:1px solid rgba(255,183,0,.25);border-radius:20px;padding:22px;
+}
+.sim-panel h4{color:var(--accent);margin-bottom:14px;font-size:1.05rem;font-weight:700;display:flex;align-items:center;gap:8px}
+.sim-canvas{
+  background:radial-gradient(circle at 50% 50%, rgba(255,183,0,.05), transparent 70%),#04060f;
+  border-radius:14px;border:1px solid rgba(255,255,255,.06);
+  display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;
+}
+.sim-controls{display:flex;flex-direction:column;gap:14px;margin-top:16px}
+.sim-controls label{font-size:.85rem;color:var(--text-dim);display:flex;justify-content:space-between;align-items:center;gap:10px}
+.sim-controls input[type=range]{width:100%;accent-color:var(--accent);height:6px}
+.sim-value{font-family:'Fira Code',monospace;color:var(--accent);font-weight:700;min-width:70px;text-align:left;direction:ltr}
+.sim-readout{
+  background:rgba(0,0,0,.3);border:1px solid rgba(0,212,170,.25);
+  border-radius:12px;padding:14px;margin-top:14px;
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+}
+.sim-readout .item{font-size:.82rem}
+.sim-readout .item .label{color:var(--text-dim);display:block;margin-bottom:4px}
+.sim-readout .item .val{font-family:'Fira Code',monospace;font-size:1.1rem;font-weight:700;color:var(--success);direction:ltr}
+.led-indicator{
+  width:18px;height:18px;border-radius:50%;background:#1a1a1a;
+  box-shadow:inset 0 0 6px rgba(0,0,0,.5);transition:all .2s ease;
+  display:inline-block;margin-left:6px;vertical-align:middle;
+}
+.led-indicator.on{background:var(--success);box-shadow:0 0 14px var(--success), inset 0 0 4px rgba(255,255,255,.4)}
+.led-indicator.on.red{background:var(--danger);box-shadow:0 0 14px var(--danger), inset 0 0 4px rgba(255,255,255,.4)}
+.led-indicator.on.amber{background:var(--accent);box-shadow:0 0 14px var(--accent), inset 0 0 4px rgba(255,255,255,.4)}
+
+/* ===== Quiz ===== */
+.quiz-container{
+  background:linear-gradient(145deg,rgba(10,14,39,.9),rgba(30,40,70,.7));
+  border-radius:24px;padding:26px;border:2px solid rgba(168,85,247,.4);
+  max-width:900px;margin:0 auto;
+}
+.quiz-progress{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.quiz-progress .bar{flex:1;height:8px;background:rgba(255,255,255,.08);border-radius:6px;overflow:hidden}
+.quiz-progress .bar .fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--pink));width:0;transition:width .4s ease;border-radius:6px}
+.quiz-progress .count{font-size:.85rem;color:var(--text-dim);font-family:'Fira Code',monospace;direction:ltr}
+.quiz-question{font-size:1.05rem;color:#fff;margin-bottom:18px;font-weight:700;line-height:1.9}
+.quiz-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+@media(max-width:700px){.quiz-options{grid-template-columns:1fr}}
+.quiz-option{
+  background:rgba(255,255,255,.05);border:2px solid rgba(255,255,255,.15);
+  border-radius:14px;padding:14px 18px;color:#fff;cursor:pointer;
+  transition:all .3s ease;text-align:right;font-family:'Vazirmatn',sans-serif;font-size:.88rem;line-height:1.7;
+}
+.quiz-option:hover{background:rgba(168,85,247,.15);border-color:var(--purple)}
+.quiz-option.correct{background:rgba(0,212,170,.2);border-color:var(--success);color:var(--success)}
+.quiz-option.incorrect{background:rgba(255,71,87,.2);border-color:var(--danger);color:var(--danger)}
+.quiz-option.disabled{cursor:not-allowed;opacity:.6}
+.quiz-feedback{background:rgba(255,255,255,.05);border-radius:14px;padding:14px;font-size:.88rem;line-height:1.8;margin-top:10px;display:none}
+.quiz-feedback.show{display:block}
+.quiz-feedback.success{background:rgba(0,212,170,.1);border-right:4px solid var(--success);color:rgba(255,255,255,.9)}
+.quiz-feedback.error{background:rgba(255,71,87,.1);border-right:4px solid var(--danger);color:rgba(255,255,255,.9)}
+.quiz-actions{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:10px;flex-wrap:wrap}
+.btn{
+  background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;border:none;
+  padding:10px 22px;border-radius:30px;font-family:'Vazirmatn',sans-serif;font-size:.9rem;
+  font-weight:700;cursor:pointer;transition:all .25s ease;
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(168,85,247,.4)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn.outline{background:transparent;border:1px solid var(--card-border);color:var(--text-dim)}
+.btn.outline:hover{border-color:var(--accent);color:var(--accent);box-shadow:none}
+.quiz-score{font-size:.9rem;color:var(--text-dim);font-family:'Fira Code',monospace;direction:ltr}
+.quiz-score b{color:var(--accent)}
+
+/* ===== Accordion ===== */
+.accordion{margin:20px 0;border-radius:16px;overflow:hidden;border:1px solid var(--card-border)}
+.acc-item{background:rgba(255,255,255,.02);border-bottom:1px solid var(--card-border)}
+.acc-item:last-child{border-bottom:none}
+.acc-head{
+  padding:16px 20px;cursor:pointer;display:flex;align-items:center;gap:12px;
+  font-weight:600;color:#fff;transition:all .25s ease;font-size:.95rem;
+}
+.acc-head:hover{background:rgba(255,183,0,.05);color:var(--accent)}
+.acc-head .acc-icon{color:var(--accent);transition:transform .25s ease;width:24px;text-align:center}
+.acc-item.open .acc-icon{transform:rotate(90deg)}
+.acc-body{max-height:0;overflow:hidden;transition:max-height .35s ease;padding:0 20px}
+.acc-item.open .acc-body{max-height:2400px;padding:0 20px 18px}
+.acc-body p{color:var(--text-dim);font-size:.9rem;line-height:2;margin:8px 0}
+
+/* ===== Code block ===== */
+.code-block{
+  background:#04060f;border:1px solid rgba(0,212,170,.2);border-radius:14px;
+  padding:16px 18px;overflow-x:auto;margin:16px 0;direction:ltr;text-align:left;
+  font-family:'Fira Code',monospace;font-size:.82rem;line-height:1.7;
+  color:#a8e6cf;
+}
+.code-block .kw{color:#c792ea} .code-block .str{color:#c3e88d} .code-block .com{color:#5c6370;font-style:italic}
+.code-block .fn{color:#82aaff} .code-block .num{color:#f78c6c}
+
+/* ===== Comparison radar chart container ===== */
+.chart-card{
+  background:linear-gradient(145deg,rgba(10,14,39,.7),rgba(30,40,70,.4));
+  border:1px solid var(--card-border);border-radius:20px;padding:20px;margin:18px 0;
+}
+.chart-card h4{color:var(--accent);margin-bottom:12px;font-size:1rem;display:flex;align-items:center;gap:8px}
+.chart-wrapper{position:relative;width:100%;height:340px}
+.chart-wrapper.tall{height:420px}
+@media(max-width:640px){.chart-wrapper{height:280px}.chart-wrapper.tall{height:340px}}
+
+/* ===== Tabs ===== */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0 0;border-bottom:1px solid var(--card-border)}
+.tab{
+  background:transparent;border:none;color:var(--text-dim);
+  padding:10px 18px;cursor:pointer;font-family:'Vazirmatn',sans-serif;font-size:.88rem;
+  border-bottom:3px solid transparent;transition:all .25s ease;font-weight:600;
+}
+.tab:hover{color:var(--accent)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-panel{display:none;padding:20px 0;animation:fadeIn .35s ease}
+.tab-panel.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ===== Roadmap phase bar (4 phases) ===== */
+.phase-track{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:24px 0;
+}
+@media(max-width:640px){.phase-track{grid-template-columns:1fr}}
+.phase-item{
+  background:rgba(255,255,255,.03);border:1px solid var(--card-border);
+  border-right:4px solid var(--accent);border-radius:14px;padding:14px;
+}
+.phase-item.p2{border-right-color:var(--success)} .phase-item.p3{border-right-color:var(--purple)} .phase-item.p4{border-right-color:var(--pink)}
+.phase-item .num{font-size:1.4rem;font-weight:900;color:var(--accent);font-family:'Fira Code',monospace;direction:ltr}
+.phase-item.p2 .num{color:var(--success)} .phase-item.p3 .num{color:var(--purple)} .phase-item.p4 .num{color:var(--pink)}
+.phase-item .title{font-weight:700;color:#fff;margin:4px 0;font-size:.92rem}
+.phase-item .desc{font-size:.8rem;color:var(--text-dim);line-height:1.7}
+
+/* ===== Market dashboard grid ===== */
+.market-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:18px 0}
+.market-stat{
+  background:linear-gradient(145deg,rgba(255,183,0,.06),rgba(255,107,53,.03));
+  border:1px solid rgba(255,183,0,.2);border-radius:16px;padding:18px;text-align:center;
+}
+.market-stat .val{font-size:1.8rem;font-weight:900;color:var(--accent);font-family:'Fira Code',monospace;direction:ltr}
+.market-stat .lbl{font-size:.82rem;color:var(--text-dim);margin-top:4px}
+.market-stat.green{background:linear-gradient(145deg,rgba(0,212,170,.06),rgba(0,212,170,.03));border-color:rgba(0,212,170,.2)}
+.market-stat.green .val{color:var(--success)}
+.market-stat.purple{background:linear-gradient(145deg,rgba(168,85,247,.06),rgba(168,85,247,.03));border-color:rgba(168,85,247,.2)}
+.market-stat.purple .val{color:var(--purple)}
+
+/* ===== Application matrix ===== */
+.app-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:20px 0}
+.app-card{
+  background:rgba(255,255,255,.03);border:1px solid var(--card-border);border-radius:16px;padding:18px;
+  transition:all .3s ease;
+}
+.app-card:hover{transform:translateY(-3px);border-color:rgba(255,183,0,.4)}
+.app-card .icon{width:42px;height:42px;border-radius:10px;background:rgba(255,183,0,.1);display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:1.1rem;margin-bottom:10px}
+.app-card h5{color:#fff;font-size:.95rem;margin-bottom:6px}
+.app-card p{color:var(--text-dim);font-size:.82rem;line-height:1.7}
+.app-card .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.app-card .tags span{font-size:.72rem;padding:3px 9px;border-radius:12px;background:rgba(168,85,247,.12);color:var(--purple)}
+
+/* ===== Selection guide ===== */
+.guide-flow{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;margin:18px 0;
+  padding:18px;background:rgba(255,255,255,.02);border-radius:16px;border:1px solid var(--card-border);
+}
+.guide-step{
+  background:linear-gradient(145deg,rgba(255,183,0,.1),rgba(255,107,53,.05));
+  border:1px solid rgba(255,183,0,.25);border-radius:12px;padding:10px 14px;
+  font-size:.82rem;color:var(--text);text-align:center;min-width:120px;
+}
+.guide-step .step{display:block;color:var(--accent);font-weight:900;font-size:.75rem;margin-bottom:2px}
+.guide-arrow{color:var(--accent);font-size:1.2rem}
+
+/* ===== Footer ===== */
+.footer{
+  text-align:center;padding:40px 20px;border-top:1px solid var(--card-border);
+  color:var(--text-dim);font-size:.85rem;background:rgba(0,0,0,.3);
+}
+.footer a{color:var(--accent);text-decoration:none}
+.footer .credits{margin-top:10px;font-size:.78rem;color:rgba(232,234,242,.5)}
+
+/* ===== Animate-in ===== */
+.animate-in{opacity:0;transform:translateY(20px);transition:all .7s cubic-bezier(.2,.7,.2,1)}
+.animate-in.in{opacity:1;transform:translateY(0)}
+
+/* ===== Mermaid ===== */
+.mermaid-wrap{background:rgba(255,255,255,.02);border:1px solid var(--card-border);border-radius:16px;padding:18px;margin:18px 0;text-align:center;overflow-x:auto}
+.mermaid{display:inline-block;min-width:100%}
+
+/* ===== Print ===== */
+@media print{.top-nav,.progress-bar,.scroll-cue{display:none}body{background:#fff;color:#000}.slide{page-break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- NAV -->
+<nav class="top-nav">
+  <div class="nav-brand"><span class="badge">جلسه ۱۱</span> <span>سنسورهای مجاورتی صنعتی</span></div>
+  <button class="nav-menu-btn" id="navMenuBtn" aria-label="منو"><i class="fas fa-bars"></i></button>
+  <div class="nav-links" id="navLinks">
+    <a href="#hero">شروع</a>
+    <a href="#roadmap">نقشه راه</a>
+    <a href="#paradigm">پارادایم</a>
+    <a href="#architecture">معماری</a>
+    <a href="#inductive">القایی</a>
+    <a href="#optical">نوری</a>
+    <a href="#pir">PIR</a>
+    <a href="#hall">هال و AMR</a>
+    <a href="#comparison">مقایسه</a>
+    <a href="#lab">آزمایشگاه</a>
+    <a href="#market">بازار</a>
+    <a href="#applications">کاربردها</a>
+    <a href="#quiz">کوییز</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="hero-chip animate-in"><i class="fas fa-radar"></i> فاز ۳ — جلسه یازدهم از ۲۴</div>
+    <h1 class="animate-in">کالبدشکافی و کاربرد سنسورهای مجاورتی صنعتی</h1>
+    <div class="subtitle animate-in">Proximity Sensors — از نوسان‌ساز تا تشخیص میدان</div>
+    <div class="en-title animate-in">Industrial Proximity Sensors · Inductive · Capacitive · Optical · PIR · Hall · AMR</div>
+    <p class="lead animate-in">در این جلسه به دلِ سنسورهای مجاورتی صنعتی می‌رویم: چطور بدون هیچ تماس فیزیکی، حضور یک قطعه فلزی، یک انسان یا یک آهنربا را با دقت میلی‌متری و سرعت کیلوهرتز تشخیص می‌دهند. شش فناوری، شش اصل فیزیکی، یک هدف مشترک: <strong style="color:var(--accent)">حذف سایش و گسترش اتوماسیون</strong>.</p>
+    <div class="hero-meta animate-in">
+      <span class="pill"><i class="fas fa-chalkboard-teacher"></i> دکتر مسعود گوهری‌منش</span>
+      <span class="pill"><i class="fas fa-clock"></i> ۹۰ دقیقه</span>
+      <span class="pill"><i class="fas fa-microchip"></i> ۶ فناوری سنسور</span>
+      <span class="pill"><i class="fas fa-flask"></i> ۴ شبیه‌ساز تعاملی</span>
+      <span class="pill"><i class="fas fa-brain"></i> کوییز ۱۰ سؤالی</span>
+    </div>
+  </div>
+  <div class="scroll-cue animate-in"><i class="fas fa-chevron-down"></i></div>
+</section>
+
+<!-- ROADMAP -->
+<section class="slide" id="roadmap" data-slide="roadmap">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-map-signs"></i></div>
+    <h2>🗺️ نقشه راه جلسه یازدهم</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <p class="animate-in" style="text-align:center;font-size:1.05rem;color:var(--text-dim);margin-bottom:20px;line-height:1.9">از تغییر پارادایم تا شبیه‌ساز زنده — ۴ فاز، ۶ فناوری، ۴ داشبورد تعاملی</p>
+    <div class="phase-track animate-in">
+      <div class="phase-item p1"><div class="num">۰۱</div><div class="title">مبانی و پارادایم</div><div class="desc">گذر از تماس به بدون‌تماس، معماری داخلی (نوسان‌ساز، دمدولاتور، تراشه تریگر) و آناتومی سنسور القایی.</div></div>
+      <div class="phase-item p2"><div class="num">۰۲</div><div class="title">شش فناوری سنسور</div><div class="desc">القایی، خازنی، نوری (Through-Beam / Retro / Diffuse)، PIR، اثر هال و AMR/TMR گرادیانی.</div></div>
+      <div class="phase-item p3"><div class="num">۰۳</div><div class="title">آزمایشگاه تعاملی</div><div class="desc">شبیه‌ساز زون القایی، تشخیص حرکت PIR با لنز فرنل، انتخابگر تعاملی سنسور و کوییز ۱۰ سؤالی.</div></div>
+      <div class="phase-item p4"><div class="num">۰۴</div><div class="title">بازار و کاربرد</div><div class="desc">داشبورد بازار جهانی ۲۰۲۴-۲۰۳۴، ماتریس کاربردها، راهنمای انتخاب و مرور نهایی.</div></div>
+    </div>
+    <div class="animate-in" style="margin-top:22px;display:flex;justify-content:center;gap:12px;flex-wrap:wrap">
+      <span style="display:inline-flex;align-items:center;gap:8px;background:rgba(0,212,170,.1);border:1px solid rgba(0,212,170,.4);padding:10px 18px;border-radius:30px;font-size:.85rem;color:var(--success)"><i class="fas fa-clock"></i> حدود ۹۰ دقیقه</span>
+      <span style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,183,0,.1);border:1px solid rgba(255,183,0,.4);padding:10px 18px;border-radius:30px;font-size:.85rem;color:var(--accent)"><i class="fas fa-industry"></i> ۶ فناوری صنعتی</span>
+      <span style="display:inline-flex;align-items:center;gap:8px;background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.4);padding:10px 18px;border-radius:30px;font-size:.85rem;color:var(--purple)"><i class="fas fa-laptop-code"></i> ۴ داشبورد تعاملی</span>
+      <span style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,71,87,.1);border:1px solid rgba(255,71,87,.4);padding:10px 18px;border-radius:30px;font-size:.85rem;color:var(--danger)"><i class="fas fa-trophy"></i> ۱ چالش طراحی</span>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE IMAGE 1: ANATOMY -->
+<section class="slide" id="anatomy-img">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-magnifying-glass"></i></div>
+    <h2>🔬 کالبدشکافی یک سنسور مجاورتی</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <p class="animate-in">پیش از آن‌که وارد اصول فیزیکی شش فناوری شویم، بد نیست یک سنسور مجاورتی صنعتی واقعی را باز کنیم. تصویر زیر تمام قطعات کلیدی را نشان می‌دهد: از کویل القایی و هسته فریت گرفته تا مدار نوسان‌ساز، بدنه روه‌دار M18 و کابل شیلدداز. این یک نمای کلی است که در ادامه تک‌تک بلوک‌های آن را تحلیل می‌کنیم.</p>
+    <img src="images/01-anatomy-inductive-proximity.png" alt="کالبدشکافی سنسور مجاورتی القایی صنعتی" class="figure animate-in" loading="lazy">
+    <div class="figure-caption animate-in">اسلاید ۱ — کالبدشکافی کامل یک سنسور مجاورتی القایی صنعتی M18 (ساختار داخلی: کویل L1، هسته فریت، نوسان‌ساز، بدنه روه‌دار، کابل شیلدداز و زون تشخیص)</div>
+    <div class="info-grid animate-in" style="margin-top:18px">
+      <div class="info-card" style="border-right-color:var(--accent)"><div class="info-icon"><i class="fas fa-magnet"></i></div><h5>سطح فعال (Active Surface)</h5><p>نقطه‌ای که میدان از آن ساطع می‌شود. در القایی فلزی، در خازنی عایق و در نوری لنز است.</p></div>
+      <div class="info-card" style="border-right-color:var(--success)"><div class="info-icon" style="color:var(--success)"><i class="fas fa-wave-square"></i></div><h5>نوسان‌ساز (Oscillator)</h5><p>قلب مداری؛ فرکانس ثابتی تولید می‌کند که حضور قطعه آن را تغییر می‌دهد.</p></div>
+      <div class="info-card" style="border-right-color:var(--purple)"><div class="info-icon" style="color:var(--purple)"><i class="fas fa-microchip"></i></div><h5>تراشه تریگر و خروجی</h5><p>تغییر دامنه را به سیگنال دیجیتال PNP/NPN تبدیل می‌کند. نوع IO-Link داده‌های آنالوگ هم می‌فرستد.</p></div>
+      <div class="info-card" style="border-right-color:var(--pink)"><div class="info-icon" style="color:var(--pink)"><i class="fas fa-shield-halved"></i></div><h5>بدنه و کابل شیلدداز</h5><p>محافظ IP67، بدنه M18/M12 روه‌دار و کابل شیلدداز برای مقاومت در برابر نویز صنعتی.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- PARADIGM SHIFT -->
+<section class="slide" id="paradigm">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-arrows-spin"></i></div>
+    <h2>🔄 پارادایم شیفت در ابزار دقیق</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <p class="animate-in">چرا صنعت از سوئیچ‌های مکانیکی و میکروسوئیچ‌ها فاصله می‌گیرد؟ پاسخ در یک کلمه خلاصه می‌شود: <strong>سایش</strong>. هر تماس فیزیکی، پس از میلیون‌ها سیکل، فرسایش مکانیکی ایجاد می‌کند، نویز صوتی تولید می‌کند و سرعت خط تولید را به چند کیلوهرتز محدود می‌کند. سنسورهای مجاورتی تمام این محدودیت‌ها را با یک حرکت حذف می‌کنند: <strong>تشخیص بدون تماس</strong>.</p>
+    <div class="info-grid animate-in" style="grid-template-columns:1fr 1fr;margin-top:20px">
+      <div class="info-card" style="border-right-color:var(--danger)">
+        <div class="info-icon" style="color:var(--danger)"><i class="fas fa-hand-back-fist"></i></div>
+        <h5>گذشته — مبتنی بر تماس</h5>
+        <ul style="margin-top:8px">
+          <li>استهلاک مکانیکی بعد از میلیون‌ها سیکل</li>
+          <li>وابستگی به نیروی فیزیکی و سایش</li>
+          <li>نویز مکانیکی و صدا</li>
+          <li>سرعت پایین سوئیچینگ (چند ده هرتز)</li>
+          <li>تعمیر و نگهداری مکرر</li>
+        </ul>
+      </div>
+      <div class="info-card" style="border-right-color:var(--success)">
+        <div class="info-icon" style="color:var(--success)"><i class="fas fa-bolt"></i></div>
+        <h5>آینده — بدون تماس</h5>
+        <ul style="margin-top:8px">
+          <li>عمر طولانی (بدون سایش مکانیکی)</li>
+          <li>سرعت سوئیچینگ بسیار بالا (تا kHz)</li>
+          <li>عدم نیاز به اعمال نیرو</li>
+          <li>حذف نویز مکانیکی</li>
+          <li>مقاوم در محیط‌های خشن (روغن، گرد و غبار، رطوبت)</li>
+        </ul>
+      </div>
+    </div>
+    <img src="images/02-paradigm-shift-non-contact.png" alt="مقایسه تماس فیزیکی و بدون تماس" class="figure animate-in" loading="lazy" style="max-width:900px">
+    <div class="figure-caption animate-in">اسلاید ۲ — پارادایم شیفت: گذر از سوئیچ‌های مکانیکی به سنسورهای بدون‌تماس</div>
+    <div class="tip animate-in" style="margin-top:18px"><i class="fas fa-lightbulb"></i><div><strong>نکته صنعتی:</strong> در خطوط بسته‌بندی که سرعت عبور قطعات به ۱۲۰ قطعه در دقیقه می‌رسد، یک میکروسوئیچ مکانیکی هر دو ماه یک‌بار نیاز به تعویض دارد. یک سنسور مجاورتی القایی در همان خط، بیش از ۱۰ سال بدون توقف کار می‌کند.</div></div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section class="slide" id="architecture">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-diagram-project"></i></div>
+    <h2>🏗️ معماری داخلی — سنسور چه می‌بیند؟</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <p class="animate-in">هر سنسور مجاورتی صنعتی، فارغ از اصل فیزیکی‌اش، یک معماری چهارطبقه دارد. این لایه‌ها به ترتیب: <strong>مبدل (Transducer) ← نوسان‌ساز (Oscillator) ← دمدولاتور (Demodulator) ← تراشه تریگر و خروجی</strong>. در اینجا این زنجیره را با یک دیاگرام دقیق می‌بینیم.</p>
+    <img src="images/03-internal-architecture.png" alt="معماری داخلی سنسور مجاورتی" class="figure animate-in" loading="lazy" style="max-width:920px">
+    <div class="figure-caption animate-in">اسلاید ۳ — معماری داخلی سنسور مجاورتی: نوسان‌ساز، دمدولاتور، تراشه تریگر و طبقه خروجی</div>
+    <div class="mermaid-wrap animate-in">
+      <pre class="mermaid">
+flowchart LR
+  A[<b>مبدل فیزیکی</b><br/>کویل/خازن/فتودیود/پروالکتریک] -->|تغییر دامنه| B[<b>نوسان‌ساز</b><br/>Oscillator]
+  B -->|سیگنال مدوله‌شده| C[<b>دمدولاتور</b><br/>Demodulator]
+  C -->|ولتاژ DC| D[<b>آمپلی‌فایر/تریگر</b><br/>Schmitt Trigger]
+  D -->|سیگنال دیجیتال| E[<b>خروجی</b><br/>PNP/NPN/NO/NC]
+  E -.->|IO-Link| F[(Cloud / PLC)]
+  style A fill:#ffb70022,stroke:#ffb700,color:#fff
+  style B fill:#ff6b3522,stroke:#ff6b35,color:#fff
+  style C fill:#a855f722,stroke:#a855f7,color:#fff
+  style D fill:#06b6d422,stroke:#06b6d4,color:#fff
+  style E fill:#00d4aa22,stroke:#00d4aa,color:#fff
+  style F fill:#ec489922,stroke:#ec4899,color:#fff
+      </pre>
+    </div>
+    <div class="accordion animate-in">
+      <div class="acc-item open">
+        <div class="acc-head"><span class="acc-icon">▶</span> 🔧 لایه ۱ — مبدل فیزیکی (Transducer)</div>
+        <div class="acc-body">
+          <p>اولین لایه‌ای که با محیط در تماس است. در سنسور القایی یک کویل با هسته فریت، در خازنی دو الکترود، در نوری یک LED مادون قرمز یا لیزری، در PIR یک عنصر پیروالکتریک با لنز فرنل و در اثر هال یک نیمه‌هادی گالیوم آرسناید است. این لایه پدیده فیزیکی را (میدان مغناطیسی، ظرفیت خازنی، شدت نور، حرارت) به یک تغییر الکتریکی تبدیل می‌کند.</p>
+        </div>
+      </div>
+      <div class="acc-item">
+        <div class="acc-head"><span class="acc-icon">▶</span> 🌊 لایه ۲ — نوسان‌ساز (Oscillator)</div>
+        <div class="acc-body">
+          <p>یک مدار LC یا RC که فرکانس ثابتی (معمولاً صدها کیلوهرتز تا چند مگاهرتز) تولید می‌کند. حضور قطعه هدف در زون تشخیص، اندوکتانس/خازنس/فتوولتاییک این مدار را تغییر می‌دهد و دامنه یا فرکانس نوسان را جابه‌جا می‌کند. هرچه تغییر بزرگ‌تر، سیگنال نهایی قوی‌تر.</p>
+        </div>
+      </div>
+      <div class="acc-item">
+        <div class="acc-head"><span class="acc-icon">▶</span> 📉 لایه ۳ — دمدولاتور (Demodulator)</div>
+        <div class="acc-body">
+          <p>سیگنال مدوله‌شده AC را به یک ولتاژ DC تبدیل می‌کند. این لایه با فیلتر پایین‌گذر، ریپل را حذف می‌کند و یک سطح آنالوگ تمیز تحویل می‌دهد که متناسب با شدت پدیده (نزدیکی قطعه) است.</p>
+        </div>
+      </div>
+      <div class="acc-item">
+        <div class="acc-head"><span class="acc-icon">▶</span> ⚡ لایه ۴ — تراشه تریگر و خروجی</div>
+        <div class="acc-body">
+          <p>یک مدار اشمیت‌تریگر، ولتاژ آنالوگ را به یک سیگنال دیجیتال قطعی تبدیل می‌کند. خروجی می‌تواند PNP، NPN، NO (Normally Open) یا NC (Normally Closed) باشد. در سنسورهای IO-Link مدرن، همین لایه داده‌های آنالوگ، دما و تعداد سیکل را هم برای تعمیر و نگهداری پیش‌بینانه به سمت PLC یا فضای ابری می‌فرستد.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INDUCTIVE -->
+<section class="slide" id="inductive">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-magnet"></i></div>
+    <h2>🧲 سنسورهای القایی — قهرمان محیط‌های خشن</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <p class="animate-in">سنسورهای القایی <strong>تنها به فلزات حساس</strong> هستند و بر اساس تغییرات میدان الکترومغناطیسی کار می‌کنند. در یک کویل با هسته فریت، جریان متناوب فرکانس‌بالا (صدها کیلوهرتز) تولید یک میدان مغناطیسی متناوب می‌کند که از سطح فعال سنسور بیرون می‌زند. وقتی یک قطعه فلزی وارد این میدان شود، جریان‌های گردابی (Eddy Currents) در سطح فلز ایجاد می‌شوند که انرژی از میدان می‌کشند و دامنه نوسان را کاهش می‌دهند. این افت دامنه، سیگنال تشخیص است.</p>
+    <img src="images/04-inductive-sensor-anatomy.png" alt="آناتومی سنسور القایی" class="figure animate-in" loading="lazy" style="max-width:900px">
+    <div class="figure-caption animate-in">اسلاید ۴ — آناتومی سنسور القایی: سطح فعال، بدنه رزوه‌دار و ساختار داخلی</div>
+    <div class="info-grid animate-in">
+      <div class="info-card" style="border-right-color:var(--accent)"><div class="info-icon"><i class="fas fa-gears"></i></div><h5>اصل فیزیکی</h5><p>جریان گردابی (Eddy Current) ناشی از میدان مغناطیسی متناوب در سطح فلز هدف، انرژی نوسان‌ساز را کاهش می‌دهد.</p></div>
+      <div class="info-card" style="border-right-color:var(--success)"><div class="info-icon" style="color:var(--success)"><i class="fas fa-coins"></i></div><h5>متریال هدف</h5><p>فقط فلزات. فولاد ضریب کاهش ۱، آلومینیوم ۰.۳۵ تا ۰.۵، مس ۰.۳ تا ۰.۴ (نیازمند ضریب کاهش).</p></div>
+      <div class="info-card" style="border-right-color:var(--purple)"><div class="info-icon" style="color:var(--purple)"><i class="fas fa-ruler-vertical"></i></div><h5>محدوده تشخیص</h5><p>۰.۸ تا ۱۵ میلی‌متر (بسته به سایز و فلش). برای سنسور M18 معمولاً ۵-۸ میلی‌متر.</p></div>
+      <div class="info-card" style="border-right-color:var(--pink)"><div class="info-icon" style="color:var(--pink)"><i class="fas fa-shield-halved"></i></div><h5>مقاومت محیطی</h5><p>IP67/IP69K، مقاوم به روغن، گرد و غبار، رطوبت، ضربه و لرزش صنعتی.</p></div>
+    </div>
+    <div class="hint animate-in"><i class="fas fa-lightbulb"></i><div><strong>ضریب کاهش (Reduction Factor):</strong> مسافت تشخیص به جنس فلز بستگی دارد. فولاد ضریب ۱ دارد، اما آلومینیوم ضریب ۰.۳۵-۰.۵ و مس ۰.۳-۰.۴. به‌عنوان مثال یک سنسور M18 که با فولاد تا ۸ میلی‌متر تشخیص می‌دهد، با آلومینیوم فقط تا ۳.۵ میلی‌متر کار می‌کند.</div></div>
+
+    <h4 style="color:var(--accent);margin:26px 0 10px;font-size:1.05rem">📐 خطی و دورانی — موقعیت در دو بعد</h4>
+    <p class="animate-in">سنسورهای القایی فقط حضور/غیاب را تشخیص نمی‌دهند؛ با چیدمان مناسب می‌توانند موقعیت خطی و دورانی را هم اندازه بگیرند. یک سنسور خطی از عبور یک شفت دندانه‌دار، و یک سنسور دورانی از چرخش یک گیربکسی یا شفت، موقعیت را پیگیری می‌کند.</p>
+    <img src="images/05-linear-vs-rotary.png" alt="کنترل خطی و دورانی با سنسور القایی" class="figure animate-in" loading="lazy" style="max-width:900px">
+    <div class="figure-caption animate-in">اسلاید ۵ — دو کاربرد موقعیت‌سنجی: کنترل دورانی و کنترل خطی با سنسور القایی</div>
+
+    <h4 style="color:var(--accent);margin:26px 0 10px;font-size:1.05rem">⚙️ پایش سرعت ماشین‌آلات (Speed Monitoring)</h4>
+    <p class="animate-in">یکی از کاربردهای صنعتی سنسور القایی، پایش سرعت دورانی ماشین‌آلات است. با نصب سنسور روبروی یک چرخ دندانه‌دار، هر بار که یک دندانه از مقابل سنسور عبور می‌کند، یک پالس تولید می‌شود. فرکانس این پالس‌ها (بر حسب هرتز) ضربدر ۶۰ و تقسیم بر تعداد دندانه‌ها، سرعت دورانی را به‌صورت <strong>RPM</strong> می‌دهد.</p>
+    <img src="images/06-speed-monitoring-rpm.png" alt="پایش سرعت با سنسور القایی و چرخ دندانه‌دار" class="figure animate-in" loading="lazy" style="max-width:900px">
+    <div class="figure-caption animate-in">اسلاید ۶ — پایش سرعت: تبدیل فرکانس عبور دندانه‌ها به RPM</div>
+    <div class="code-block animate-in">
+<span class="com">// محاسبه RPM از تعداد پالس سنسور القایی</span>
+<span class="kw">const</span> teeth = <span class="num">60</span>;            <span class="com">// تعداد دندانه چرخ</span>
+<span class="kw">const</span> sample_ms = <span class="num">1000</span>;     <span class="com">// نمونه‌برداری ۱ ثانیه</span>
+<span class="kw">let</span> pulseCount = <span class="num">0</span>;
+
+<span class="fn">attachInterrupt</span>(<span class="num">0</span>, () => pulseCount++, <span class="str">RISING</span>);
+
+<span class="kw">function</span> <span class="fn">readRPM</span>() {
+  <span class="kw">const</span> freq_Hz = pulseCount / (sample_ms / <span class="num">1000</span>);
+  <span class="kw">const</span> rpm = (freq_Hz * <span class="num">60</span>) / teeth;
+  <span class="fn">Serial</span>.<span class="fn">print</span>(<span class="str">"RPM = "</span>);
+  <span class="fn">Serial</span>.<span class="fn">println</span>(rpm);
+  pulseCount = <span class="num">0</span>;
+}</div>
+  </div>
+</section>
+
+<!-- CAPACITIVE -->
+<section class="slide" id="capacitive">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-droplet"></i></div>
+    <h2>💧 سنسورهای خازنی — شکارچیان همه‌متریالی</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <p class="animate-in">اگر سنسور القایی فقط فلز را می‌بیند، سنسور خازنی تقریباً <strong>هر چیزی</strong> را می‌بیند: فلز، پلاستیک، شیشه، مایعات، پودر، چوب، حتی سطوح انسانی. اصل کار بر اساس ظرفیت خازنی است: دو الکترود در پشت سطح فعال سنسور قرار دارند که یک خازن کوچک می‌سازند. ورود هر متریالی با ثابت دی‌الکتریک متفاوت از هوا (k&gt;1)، ظرفیت این خازن را تغییر می‌دهد و نوسان‌ساز این تغییر را به سیگنال تشخیص تبدیل می‌کند.</p>
+    <div class="info-grid animate-in">
+      <div class="info-card" style="border-right-color:var(--cyan)"><div class="info-icon" style="color:var(--cyan)"><i class="fas fa-droplet"></i></div><h5>متریال هدف</h5><p>فلز، پلاستیک، شیشه، مایع، پودر، چوب. حساس به ثابت دی‌الکتریک متریال.</p></div>
+      <div class="info-card" style="border-right-color:var(--accent)"><div class="info-icon"><i class="fas fa-gauge-high"></i></div><h5>محدوده تشخیص</h5><p>۱ تا ۲۵ میلی‌متر (بزرگ‌تر از القایی، چون میدان ضعیف‌تر است).</p></div>
+      <div class="info-card" style="border-right-color:var(--success)"><div class="info-icon" style="color:var(--success)"><i class="fas fa-industry"></i></div><h5>کاربرد شاخص</h5><p>تشخیص سطح مایعات در تانک، شمارش بطری پلاستیکی، تشخیص وجود پودر در قالب.</p></div>
+      <div class="info-card" style="border-right-color:var(--pink)"><div class="info-icon" style="color:var(--pink)"><i class="fas fa-temperature-half"></i></div><h5>حساسیت به دما</h5><p>بیشتر از القایی. رطوبت محیط هم روی ثابت دی‌الکتریک اثر می‌گذارد.</p></div>
+    </div>
+    <div class="warn animate-in"><i class="fas fa-triangle-exclamation"></i><div><strong>نکته کالیبراسیون:</strong> سنسور خازنی حساس به رطوبت و دما است. در خطوط تولید با رطوبت متغیر، هر هفته کالیبراسیون مجدد لازم است. در محیط‌های خشک و دما-ثابت، چند سال بدون تنظیم کار می‌کند.</div></div>
+    <div class="tip animate-in"><i class="fas fa-lightbulb"></i><div><strong>کاربرد هوشمند:</strong> تشخیص سطح مایع در یک مخزن پلاستیکی شفاف — جایی که سنسور القایی از بیرون قادر به دیدن مایع نیست. سنسور خازنی از بیرون دیوار پلاستیکی، سطح مایع را می‌بیند چون پلاستیک و مایع هر دو ثابت دی‌الکتریک قابل‌سنجش دارند.</div></div>
+  </div>
+</section>
+
+<!-- OPTICAL -->
+<section class="slide" id="optical">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-eye"></i></div>
+    <h2>👁️ سنسورهای نوری — چشمان الکترونیکی</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <p class="animate-in">سنسورهای نوری پرکاربردترین نوع سنسور مجاورتی هستند. اصل کار ساده است: یک فرستنده نور (LED مادون قرمز، قرمز یا لیزر) و یک گیرنده (فتوترانزیستور یا فوتودیود). حضور قطعه، مسیر نور را قطع یا بازتاب می‌دهد و گیرنده این تغییر را تشخیص می‌دهد. سه پیکربندی اصلی وجود دارد که هرکدام کاربرد، برد و حساسیت متفاوتی دارند.</p>
+    <img src="images/07-optical-throughbeam-retro.png" alt="مدل‌های نوری Through-Beam و Retro-Reflective" class="figure animate-in" loading="lazy" style="max-width:920px">
+    <div class="figure-caption animate-in">اسلاید ۷ — مکانیزم سنسور نوری: مدل تقاطعی (Through-Beam) و بازتابی (Retro-Reflective)</div>
+
+    <div class="tabs animate-in" id="opticalTabs">
+      <button class="tab active" data-tab="through">دوربرد — تقاطعی</button>
+      <button class="tab" data-tab="retro">بازتابی — آسان‌نصب</button>
+      <button class="tab" data-tab="diffuse">پراکندگی — تک‌واحدی</button>
+    </div>
+    <div class="tab-panel active" id="panel-through">
+      <div class="info-grid">
+        <div class="info-card" style="border-right-color:var(--accent)"><div class="info-icon"><i class="fas fa-arrow-right-arrow-left"></i></div><h5>پیکربندی</h5><p>فرستنده و گیرنده دو واحد مجزا در دو طرف مسیر. قطعه وقتی از بین آن‌ها عبور کند، نور مسدود می‌شود.</p></div>
+        <div class="info-card" style="border-right-color:var(--success)"><div class="info-icon" style="color:var(--success)"><i class="fas fa-ruler-horizontal"></i></div><h5>برد</h5><p>بسیار زیاد — تا ۵۰ متر و حتی بیشتر با لیزر. بلندبردترین نوع نوری.</p></div>
+        <div class="info-card" style="border-right-color:var(--danger)"><div class="info-icon" style="color:var(--danger)"><i class="fas fa-exclamation"></i></div><h5>معایب</h5><p>نیازمند دو کابل‌کشی مجزا برای فرستنده و گیرنده. نصب دشوارتر و گران‌تر.</p></div>
+        <div class="info-card" style="border-right-color:var(--purple)"><div class="info-icon" style="color:var(--purple)"><i class="fas fa-warehouse"></i></div><h5>کاربرد</h5><p>درهای سوله‌ها، خطوط انتقال، انبارداری بزرگ، تشخیص عبور قطعات بزرگ در فاصله زیاد.</p></div>
+      </div>
+    </div>
+    <div class="tab-panel" id="panel-retro">
+      <div class="info-grid">
+        <div class="info-card" style="border-right-color:var(--accent)"><div class="info-icon"><i class="fas fa-rotate"></i></div><h5>پیکربندی</h5><p>فرستنده و گیرنده در یک واحد، و یک بازتابنده (Reflector) در طرف مقابل. نور از فرستنده به بازتابنده و سپس به گیرنده.</p></div>
+        <div class="info-card" style="border-right-color:var(--success)"><div class="info-icon" style="color:var(--success)"><i class="fas fa-ruler-horizontal"></i></div><h5>برد</h5><p>متوسط — ۱ تا ۶ متر. نصف Through-Beam به‌خاطر تلفات بازتاب.</p></div>
+        <div class="info-card" style="border-right-color:var(--cyan)"><div class="info-icon" style="color:var(--cyan)"><i class="fas fa-screwdriver-wrench"></i></div><h5>مزیت نصب</h5><p>فقط یک کابل‌کشی لازم است. نصب بازتابنده ساده و ارزان.</p></div>
+        <div class="info-card" style="border-right-color:var(--danger)"><div class="info-icon" style="color:var(--danger)"><i class="fas fa-palette"></i></div><h5>حساسیت</h5><p>حساس به رنگ و شفافیت قطعه. قطعات براق می‌توانند بازتابنده جعلی بسازند.</p></div>
+      </div>
+    </div>
+    <div class="tab-panel" id="panel-diffuse">
+      <div class="info-grid">
+        <div class="info-card" style="border-right-color:var(--accent)"><div class="info-icon"><i class="fas fa-bullseye"></i></div><h5>پیکربندی</h5><p>فرستنده و گیرنده در یک واحد، بدون بازتابنده. نور از قطعه هدف بازتاب می‌کند و به گیرنده می‌رسد.</p></div>
+        <div class="info-card" style="border-right-color:var(--success)"><div class="info-icon" style="color:var(--success)"><i class="fas fa-ruler-horizontal"></i></div><h5>برد</h5><p>کوتاه — ۱۰ تا ۳۰۰ میلی‌متر. بستگی به رنگ و بازتابندگی قطعه.</p></div>
+        <div class="info-card" style="border-right-color:var(--purple)"><div class="info-icon" style="color:var(--purple)"><i class="fas fa-microchip"></i></div><h5>مزیت</h5><p>ساده‌ترین نصب: فقط یک سنسور در یک طرف. نیازی به بازتابنده یا واحد مقابل نیست.</p></div>
+        <div class="info-card" style="border-right-color:var(--pink)"><div class="info-icon" style="color:var(--pink)"><i class="fas fa-palette"></i></div><h5>محدودیت</h5><p>قطعات تیره یا مات بازتاب ضعیفی دارند و برد کاهش می‌یابد. قطعات براق هم سیگنال نوسانی می‌دهند.</p></div>
+      </div>
+    </div>
+    <div class="hint animate-in"><i class="fas fa-lightbulb"></i><div><strong>قانون کلی:</strong> در محیط‌های گرد و غبار و روغن، سنسور نوری به‌خاطر آلودگی لنز، افت کارایی دارد. در این محیط‌ها، القایی یا خازنی گزینه بهتری است؛ مگر آنکه از تکنولوژی خود‌تمیزشونده یا پوشش PTFE روی لنز استفاده شود.</div></div>
+  </div>
+</section>
+
+<!-- PIR -->
+<section class="slide" id="pir">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-person-running"></i></div>
+    <h2>🔥 سنسورهای PIR — شکارچیان حرارت پنهان</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <p class="animate-in">سنسورهای PIR (Passive Infrared) منحصراً برای تشخیص <strong>حرکت انسان و حیوان</strong> طراحی شده‌اند. برخلاف سنسورهای فعال (مثل رادار یا اولتراسونیک) که سیگنال ساطع می‌کنند، PIR «گیرنده مطلق» است: هیچ نوری تولید نمی‌کند، فقط تابش مادون قرمز گرمایی محیط را می‌بیند. هر جسم با دمای بالاتر از صفر مطلق، تابش مادون قرمز ساطع می‌کند. بدن انسان در دمای ۳۷ درجه سانتی‌گراد، پیک تابش در طول‌موج ۹.۴ میکرون دارد. سنسور PIR این پیک را تشخیص می‌دهد.</p>
+    <img src="images/08-pir-pyroelectric-fresnel.png" alt="اصل کار PIR با لنز فرنل و سنسور پیروالکتریک" class="figure animate-in" loading="lazy" style="max-width:920px">
+    <div class="figure-caption animate-in">اسلاید ۸ — اصول تشخیص حرارتی با لنز فرنل و سنسور پیروالکتریک</div>
+    <div class="info-grid animate-in">
+      <div class="info-card" style="border-right-color:var(--danger)"><div class="info-icon" style="color:var(--danger)"><i class="fas fa-ear-listen"></i></div><h5>گیرنده مطلق (Passive)</h5><p>هیچ نوری ساطع نمی‌کند. فقط تابش مادون قرمز محیط را می‌بیند. کم‌مصرف‌ترین سنسور حرکتی.</p></div>
+      <div class="info-card" style="border-right-color:var(--accent)"><div class="info-icon"><i class="fas fa-fire"></i></div><h5>اصل کار</h5><p>تشخیص عبور یک منبع حرارتی متحرک از مقابل. تابش گرمایی بدن (pذ ۹.۴ میکرون) با عبور، باعث تغییر ولتاژ می‌شود.</p></div>
+      <div class="info-card" style="border-right-color:var(--purple)"><div class="info-icon" style="color:var(--purple)"><i class="fas fa-atom"></i></div><h5>مواد پیروالکتریک</h5><p>قلب سنسور، کریستالی مانند LiTaO₃ یا PZT است که با تغییر دما، ولتاژ تولید می‌کند. این بلوک حرارت را به ولتاژ تبدیل می‌کند.</p></div>
+      <div class="info-card" style="border-right-color:var(--success)"><div class="info-icon" style="color:var(--success)"><i class="fas fa-vector-square"></i></div><h5>لنز فرنل (Fresnel)</h5><p>آرایه‌ای از لنزهای پلاستیکی کوچک که زون‌های دید مجزا می‌سازند. انسان در حال حرکت از یک زون به زون دیگر، سیگنال قطعی تولید می‌کند.</p></div>
+    </div>
+
+    <h4 style="color:var(--accent);margin:26px 0 10px;font-size:1.05rem">🧮 خروجی تفاضلی و مناطق کور</h4>
+    <p class="animate-in">سنسور PIR از <strong>دو عنصر پیروالکتریک</strong> با خروجی تفاضلی تشکیل شده است. وقتی یک منبع حرارتی از مقابل یکی عبور می‌کند، سیگنال متفاوتی تولید می‌شود. این چیدمان، تشخیص حرکت را تا حد بسیار حساس می‌کند و همزمان نویز دمایی محیطی (که به‌طور یکنواخت بر هر دو عنصر اثر می‌گذارد) حذف می‌شود. در پایین، هندسه دید و مناطق کور یک لنز فرنل را می‌بینید.</p>
+    <img src="images/09-pir-differential-geometry.png" alt="هندسه دید و مناطق کور در شبکه PIR" class="figure animate-in" loading="lazy" style="max-width:920px">
+    <div class="figure-caption animate-in">اسلاید ۹ — هندسه دید، مناطق کور و کالیبراسیون دما برای حذف نویز محیطی در شبکه PIR</div>
+    <div class="tip animate-in"><i class="fas fa-lightbulb"></i><div><strong>چرا PIR حرکت را تشخیص می‌دهد اما حضور ساکن را نه؟</strong> چون کریستال پیروالکتریک فقط به <em>تغییر</em> دما واکنش می‌دهد، نه مقدار مطلق آن. یک انسان ساکن، پس از چند ثانیه با محیط به تعادل می‌رسد و دیگر قابل‌تشخیص نیست. به همین دلیل PIR به‌طور طبیعی «حساس به حرکت» است، نه «حساس به حضور».</div></div>
+    <div class="warn animate-in"><i class="fas fa-triangle-exclamation"></i><div><strong>محدودیت‌های PIR:</strong> تشخیص حیوانات کوچک (گربه، سگ) به‌خاطر اندازه کوچک‌تر منبع حرارتی، سخت است. در محیط‌های با منابع حرارتی متحرک (مانند رادیاتور، دمنده هوا، نور خورشید از پنجره) تشخیص کاذب رخ می‌دهد. کالیبراسیون دما و فیلتر الگوریتمی برای حل این مشکل لازم است.</div></div>
+  </div>
+</section>
+
+<!-- HALL & AMR -->
+<section class="slide" id="hall">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-compass"></i></div>
+    <h2>🧭 اثر هال و سنسورهای AMR — دقت در چرخش</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <p class="animate-in">برای تشخیص میدان مغناطیسی، دو فناوری وجود دارد: <strong>اثر هال</strong> کلاسیک و <strong>AMR/GMR/TMR</strong> نسل جدید. اثر هال وقتی کشف شد که یک حامل بار در میدان مغناطیسی قرار می‌گیرد و توسط نیروی لورنتز به‌سمت یک طرف متمایل می‌شود، یک اختلاف پتانسیل (Hall Voltage) در عرض نیمه‌هادی ایجاد می‌کند. این اختلاف، متناسب با شدت میدان مغناطیسی است.</p>
+    <img src="images/10-hall-effect-sensors.png" alt="اصل اثر هال و سنسورهای مغناطیسی" class="figure animate-in" loading="lazy" style="max-width:920px">
+    <div class="figure-caption animate-in">اسلاید ۱۰ — اثر هال: مغناطیس و سنسورهای مغناطیسی</div>
+
+    <div class="info-grid animate-in">
+      <div class="info-card" style="border-right-color:var(--accent)"><div class="info-icon"><i class="fas fa-bolt"></i></div><h5>اصل اثر هال</h5><p>حامل بار در نیمه‌هادی توسط میدان مغناطیسی منحرف می‌شود. اختلاف پتانسیل ایجادشده متناسب با B است.</p></div>
+      <div class="info-card" style="border-right-color:var(--success)"><div class="info-icon" style="color:var(--success)"><i class="fas fa-rotate"></i></div><h5>کاربرد اصلی</h5><p>تشخیص سرعت چرخش موتور، موقعیت میل‌سوپاپ، شمارش دور، جریان‌سنج غیرتماسی.</p></div>
+      <div class="info-card" style="border-right-color:var(--purple)"><div class="info-icon" style="color:var(--purple)"><i class="fas fa-temperature-low"></i></div><h5>نقطه ضعف هال</h5><p>حساسیت پایین، وابسته به دما، افت دقت در میدان‌های ضعیف. به‌همین دلیل AMR جایگزین می‌شود.</p></div>
+      <div class="info-card" style="border-right-color:var(--pink)"><div class="info-icon" style="color:var(--pink)"><i class="fas fa-microchip"></i></div><h5>AMR/TMR نسل جدید</h5><p>حساسیت ۱۰۰-۱۰۰۰ برابر هال، کم‌مصرف‌تر، مستقل از دما. استاندارد خودرویی مدرن (AEC-Q100).</p></div>
+    </div>
+
+    <h4 style="color:var(--accent);margin:26px 0 10px;font-size:1.05rem">🎯 سنسورهای گرادیانی و مماسی (AMR)</h4>
+    <p class="animate-in">نسل جدید سنسورهای مغناطیسی، <strong>AMR (Anisotropic Magneto-Resistance)</strong> هستند. این سنسورها از یک لایه نازک پرمالوی (آلیاژ نیکل-آهن) استفاده می‌کنند که مقاومت آن با زاویه میدان مغناطیسی نسبت به محور آسانی، تغییر می‌کند. با چیدمان دو عنصر AMR به‌صورت مماسی و گرادیانی، خروجی سیگنال دو برابر می‌شود و زاویه چرخش با دقت زیر ۰.۱ درجه قابل‌اندازه‌گیری است — <strong>مستقل از فاصله هوایی</strong> بین آهنربا و سنسور.</p>
+    <img src="images/11-amr-gradient-tangential.png" alt="سنسورهای گرادیانی و مماسی AMR" class="figure animate-in" loading="lazy" style="max-width:920px">
+    <div class="figure-caption animate-in">اسلاید ۱۱ — دقت مطلق در چرخش: سنسورهای گرادیانی و مماسی AMR با فیلم پرمالوی</div>
+    <div class="hint animate-in"><i class="fas fa-lightbulb"></i><div><strong>چرا AMR بر هال برتری دارد؟</strong> در فرمان الکتریکی (Steer-by-Wire) خودرو، زاویه فرمان باید با دقت کمتر از ۰.۱ درجه اندازه‌گیری شود. هال کلاسیک در این دقت به‌خاطر نویز و وابستگی به دما شکست می‌خورد. AMR با اختلاف‌سنجی دو عنصر، این نویز را حذف می‌کند و سیگنال خالص می‌دهد. TMR (نسل بعد) حتی ۱۰ برابر AMR هم حساس‌تر است.</div></div>
+
+    <h4 style="color:var(--accent);margin:26px 0 10px;font-size:1.05rem">📊 مقایسه حساسیت: هال / AMR / GMR / TMR</h4>
+    <div class="chart-card animate-in">
+      <h4><i class="fas fa-chart-column"></i> حساسیت نسبی چهار فناوری مغناطیسی (mV/V/mT)</h4>
+      <div class="chart-wrapper tall"><canvas id="magCompareChart"></canvas></div>
+    </div>
+    <div class="hint animate-in"><i class="fas fa-lightbulb"></i><div><strong>روند بازار ۲۰۲۴-۲۰۲۵:</strong> سنسورهای TMR به‌سرعت در حال جایگزینی هال در کاربردهای حساس خودرویی هستند (CNT Q1 2025: بازار TMR با CAGR ۲۵٪ رشد می‌کند). AMR و TMR از اصل تونل‌زنی کوانتومی یا مقاومت مغناطیسی استفاده می‌کنند که حساسیت ۱۰۰-۱۰۰۰ برابر هال کلاسیک دارند.</div></div>
+  </div>
+</section>
+
+<!-- COMPARISON -->
+<section class="slide" id="comparison">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-scale-balanced"></i></div>
+    <h2>⚖️ مقایسه جامع شش فناوری</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <p class="animate-in">هر فناوری جای خود را دارد. در جدول زیر، شش فناوری سنسور مجاورتی را بر اساس متریال هدف، برد، سرعت، مزایا و معایب مقایسه می‌کنیم. این جدول به‌عنوان راهنمای انتخاب عملی استفاده می‌شود.</p>
+    <div class="sensor-table-wrap animate-in">
+      <table class="sensor-table">
+        <thead>
+          <tr>
+            <th>فناوری</th>
+            <th>متریال هدف</th>
+            <th>برد</th>
+            <th>سرعت سوئیچینگ</th>
+            <th>مزیت کلیدی</th>
+            <th>محدودیت اصلی</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="sensor-name">القایی</td><td>فقط فلز</td><td>۰.۸–۱۵ mm</td><td>تا ۵ kHz</td><td>مقاوم در محیط خشن، IP67</td><td>فقط فلزات، ضریب کاهش آلومینیوم</td></tr>
+          <tr><td class="sensor-name">خازنی</td><td>فلز/عایق/مایع</td><td>۱–۲۵ mm</td><td>تا ۱ kHz</td><td>تشخیص همه متریال‌ها، مایعات</td><td>حساس به دما و رطوبت</td></tr>
+          <tr><td class="sensor-name">نوری (Through-Beam)</td><td>هر جسم کدر</td><td>تا ۵۰ m</td><td>تا ۱۰ kHz</td><td>برد بسیار دور، دقت بالا</td><td>نیاز به دو واحد، آلودگی لنز</td></tr>
+          <tr><td class="sensor-name">نوری (Retro)</td><td>هر جسم کدر</td><td>۱–۶ m</td><td>تا ۵ kHz</td><td>نصب تک‌طرفه، آسان</td><td>حساس به رنگ/شفافیت</td></tr>
+          <tr><td class="sensor-name">PIR</td><td>منبع حرارتی متحرک</td><td>۵–۱۲ m</td><td>۰.۱–۱ Hz</td><td>تشخیص حرکت انسان، کم‌مصرف</td><td>فقط حرکت، نویز محیطی</td></tr>
+          <tr><td class="sensor-name">هال</td><td>آهنربا/فرومغناطیس</td><td>۱–۱۰ mm</td><td>تا ۱۰۰ kHz</td><td>سرعت بالا، قیمت پایین</td><td>حساس به دما، دقت پایین</td></tr>
+          <tr><td class="sensor-name">AMR / TMR</td><td>آهنربا</td><td>۱–۵ mm</td><td>تا ۱ MHz</td><td>دقت زیر ۰.۱°، مستقل از فاصله</td><td>قیمت بالاتر، نیاز به آهنربا</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="chart-card animate-in">
+      <h4><i class="fas fa-chart-radar"></i> رادار شش‌فازی — مقایسه بر اساس ۶ شاخص</h4>
+      <div class="chart-wrapper tall"><canvas id="radarChart"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- LAB / INTERACTIVE -->
+<section class="slide sim-section" id="lab">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-flask"></i></div>
+    <h2>🧪 آزمایشگاه تعاملی — داشبوردهای زنده</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <p class="animate-in">در ادامه سه داشبورد تعاملی می‌سازیم: <strong>(۱) شبیه‌ساز زون القایی</strong> که نشان می‌دهد چطور جنس فلز مسافت تشخیص را تغییر می‌دهد، <strong>(۲) تشخیص حرکت PIR با لنز فرنل</strong> که هندسه زون‌ها را زنده نشان می‌دهد، و <strong>(۳) داشبورد تولید زنده</strong> که نرخ عبور قطعات و OEE خط را شبیه‌سازی می‌کند.</p>
+
+    <!-- SIM 1: Inductive zone -->
+    <h3 style="color:var(--accent);margin:24px 0 12px;font-size:1.15rem">🔧 داشبورد ۱ — شبیه‌ساز زون تشخیص القایی</h3>
+    <div class="sim-container animate-in">
+      <div class="sim-panel">
+        <h4><i class="fas fa-magnet"></i> زون تشخیص — جنس قطعه را تغییر دهید</h4>
+        <div class="sim-canvas" style="height:280px"><canvas id="inductiveCanvas" style="width:100%;height:100%"></canvas></div>
+        <div class="sim-controls">
+          <label>مسافت قطعه (mm): <span class="sim-value" id="distVal">4.0</span></label>
+          <input type="range" id="distRange" min="0" max="15" step="0.1" value="4">
+          <label>جنس فلز: <span class="sim-value" id="metalVal">فولاد</span></label>
+          <input type="range" id="metalRange" min="0" max="2" step="1" value="0">
+          <label>سایز سنسور: <span class="sim-value" id="sizeVal">M18</span></label>
+          <input type="range" id="sizeRange" min="0" max="2" step="1" value="1">
+        </div>
+      </div>
+      <div class="sim-panel">
+        <h4><i class="fas fa-gauge-high"></i> خروجی سنسور — وضعیت زنده</h4>
+        <div class="sim-readout">
+          <div class="item"><span class="label">وضعیت خروجی:</span><span class="val" id="outputState" style="color:var(--danger)">OFF</span></div>
+          <div class="item"><span class="label">LED تشخیص:</span><span class="val"><span class="led-indicator" id="detectLed"></span></span></div>
+          <div class="item"><span class="label">مسافت مؤثر (mm):</span><span class="val" id="effDist">4.00</span></div>
+          <div class="item"><span class="label">ضریب کاهش:</span><span class="val" id="redFactor">1.00</span></div>
+          <div class="item"><span class="label">برد نامی (mm):</span><span class="val" id="nomRange">8.0</span></div>
+          <div class="item"><span class="label">درصد سیگنال:</span><span class="val" id="sigPct">0%</span></div>
+        </div>
+        <div class="hint" style="margin-top:14px"><i class="fas fa-lightbulb"></i><div id="inductiveHint">قطعه را به سنسور نزدیک کنید. حداقل فاصله برای تشخیص به جنس فلز بستگی دارد.</div></div>
+      </div>
+    </div>
+
+    <!-- SIM 2: PIR -->
+    <h3 style="color:var(--accent);margin:34px 0 12px;font-size:1.15rem">🔥 داشبورد ۲ — تشخیص حرکت PIR با لنز فرنل</h3>
+    <div class="sim-container animate-in">
+      <div class="sim-panel">
+        <h4><i class="fas fa-person-running"></i> شبیه‌ساز زون دید — انسان را حرکت دهید</h4>
+        <div class="sim-canvas" style="height:280px"><canvas id="pirCanvas" style="width:100%;height:100%"></canvas></div>
+        <div class="sim-controls">
+          <label>زاویه موقعیت انسان (°): <span class="sim-value" id="angleVal">45</span></label>
+          <input type="range" id="angleRange" min="-90" max="90" step="1" value="45">
+          <label>فاصله (m): <span class="sim-value" id="pirDistVal">5.0</span></label>
+          <input type="range" id="pirDistRange" min="1" max="12" step="0.5" value="5">
+          <label>سرعت حرکت: <span class="sim-value" id="speedVal">آهسته</span></label>
+          <input type="range" id="speedRange" min="0" max="2" step="1" value="0">
+        </div>
+      </div>
+      <div class="sim-panel">
+        <h4><i class="fas fa-signal"></i> خروجی PIR — سیگنال زنده</h4>
+        <div class="sim-readout">
+          <div class="item"><span class="label">وضعیت تشخیص:</span><span class="val" id="pirState" style="color:var(--danger)">NO MOTION</span></div>
+          <div class="item"><span class="label">LED پین OUT:</span><span class="val"><span class="led-indicator" id="pirLed"></span></span></div>
+          <div class="item"><span class="label">ولتاژ خروجی (V):</span><span class="val" id="pirV">0.0</span></div>
+          <div class="item"><span class="label">تعداد دفعات تریگر:</span><span class="val" id="pirCount">0</span></div>
+          <div class="item"><span class="label">زون فعال:</span><span class="val" id="pirZone">--</span></div>
+          <div class="item"><span class="label">کیفیت سیگنال:</span><span class="val" id="pirQ">Weak</span></div>
+        </div>
+        <div class="hint" style="margin-top:14px"><i class="fas fa-lightbulb"></i><div id="pirHint">انسان را از یک زون به زون دیگر حرکت دهید. PIR فقط به تغییر زون واکنش می‌دهد، نه حضور ساکن را.</div></div>
+      </div>
+    </div>
+
+    <!-- SIM 3: Production dashboard -->
+    <h3 style="color:var(--accent);margin:34px 0 12px;font-size:1.15rem">🏭 داشبورد ۳ — خط تولید با سنسور مجاورتی</h3>
+    <div class="sim-container animate-in" style="grid-template-columns:1fr">
+      <div class="sim-panel">
+        <h4><i class="fas fa-industry"></i> خط بسته‌بندی — سنسور مجاورتی به‌عنوان شمارنده</h4>
+        <div class="market-grid">
+          <div class="market-stat green"><div class="val" id="prodCount">0</div><div class="lbl">قطعات عبوری</div></div>
+          <div class="market-stat"><div class="val" id="prodRate">0</div><div class="lbl">قطعه/دقیقه</div></div>
+          <div class="market-stat purple"><div class="val" id="prodOee">0%</div><div class="lbl">OEE تقریبی</div></div>
+          <div class="market-stat"><div class="val" id="prodUptime">0s</div><div class="lbl">زمان کارکرد</div></div>
+        </div>
+        <div class="chart-wrapper" style="height:240px;margin-top:14px"><canvas id="prodChart"></canvas></div>
+        <div class="sim-controls" style="flex-direction:row;justify-content:center;gap:12px;flex-wrap:wrap">
+          <button class="btn" id="prodStart"><i class="fas fa-play"></i> شروع خط</button>
+          <button class="btn outline" id="prodStop"><i class="fas fa-stop"></i> توقف</button>
+          <button class="btn outline" id="prodReset"><i class="fas fa-rotate-left"></i> ریست</button>
+        </div>
+        <div class="hint" style="margin-top:14px"><i class="fas fa-lightbulb"></i><div>این شبیه‌ساز یک خط تولید واقعی با سنسور مجاورتی را نشان می‌دهد. هر قطعه عبوری، یک پالس تولید می‌کند که PLC می‌شمارد. با IO-Link، همین داده به فضای ابری می‌رود و الگوریتم‌های تعمیر پیش‌بینانه زمان تخمینی خرابی سنسور را پیش‌بینی می‌کنند.</div></div>
+      </div>
+    </div>
+
+    <!-- SIM 4: Selection guide -->
+    <h3 style="color:var(--accent);margin:34px 0 12px;font-size:1.15rem">🎯 داشبورد ۴ — انتخابگر تعاملی سنسور</h3>
+    <div class="sim-panel animate-in">
+      <h4><i class="fas fa-wand-magic-sparkles"></i> پارامترهای کاربرد را انتخاب کنید تا سنسور مناسب پیشنهاد داده شود</h4>
+      <div class="sim-controls" style="margin-top:14px">
+        <label>متریال هدف: <span class="sim-value" id="selMaterial">فلز</span></label>
+        <input type="range" id="selMaterialRange" min="0" max="3" step="1" value="0">
+        <label>برد لازم (mm): <span class="sim-value" id="selRange">5</span></label>
+        <input type="range" id="selRangeRange" min="1" max="100" step="1" value="5">
+        <label>محیط: <span class="sim-value" id="selEnv">خشک و تمیز</span></label>
+        <input type="range" id="selEnvRange" min="0" max="2" step="1" value="0">
+      </div>
+      <div id="selResult" style="margin-top:18px;padding:18px;border-radius:14px;background:linear-gradient(135deg,rgba(255,183,0,.1),rgba(255,107,53,.05));border:1px solid rgba(255,183,0,.3)">
+        <h5 style="color:var(--accent);margin-bottom:8px">پیشنهاد:</h5>
+        <div id="selResultText" style="color:#fff;font-size:.95rem;line-height:2">سنسور القایی M18 — بهترین گزینه برای فلز در محیط خشک و تمیز با برد کوتاه.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARKET -->
+<section class="slide" id="market">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-chart-line"></i></div>
+    <h2>📈 داشبورد بازار جهانی — ۲۰۲۴ تا ۲۰۳۴</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <p class="animate-in">بازار جهانی سنسورهای مجاورتی در حال انفجار است. بر اساس گزارش‌های Fortune Business Insights (Q3 2025) و MarketsandMarkets، این بازار از ۴.۷ میلیارد دلار در ۲۰۲۳ به بیش از ۸ میلیارد دلار در ۲۰۳۴ خواهد رسید. راننده‌های اصلی این رشد: خودروی الکتریکی، اتوماسیون صنعتی (Industry 4.0)، اینترنت اشیا صنعتی (IIoT) و رشد تقاضا برای سنسورهای IO-Link هوشمند.</p>
+    <div class="market-grid animate-in">
+      <div class="market-stat green"><div class="val">$4.7B</div><div class="lbl">حجم بازار جهانی ۲۰۲۳</div></div>
+      <div class="market-stat"><div class="val">$8.16B</div><div class="lbl">پیش‌بینی ۲۰۳۴</div></div>
+      <div class="market-stat purple"><div class="val">7.03%</div><div class="lbl">CAGR 2026-2034</div></div>
+      <div class="market-stat green"><div class="val">9.2%</div><div class="lbl">CAGR هال مغناطیسی</div></div>
+      <div class="market-stat"><div class="val">25%</div><div class="lbl">CAGR TMR (نسل جدید)</div></div>
+      <div class="market-stat purple"><div class="val">6.8%</div><div class="lbl">CAGR سنسورهای مغناطیسی</div></div>
+    </div>
+    <div class="chart-card animate-in">
+      <h4><i class="fas fa-chart-area"></i> رشد بازار جهانی سنسورهای مجاورتی (میلیارد دلار)</h4>
+      <div class="chart-wrapper tall"><canvas id="marketChart"></canvas></div>
+    </div>
+    <div class="chart-card animate-in">
+      <h4><i class="fas fa-chart-pie"></i> سهم فناوری‌ها از بازار ۲۰۲۵ (تقریبی)</h4>
+      <div class="chart-wrapper tall"><canvas id="shareChart"></canvas></div>
+    </div>
+    <div class="info-grid animate-in" style="margin-top:18px">
+      <div class="info-card" style="border-right-color:var(--accent)"><div class="info-icon"><i class="fas fa-car"></i></div><h5>راننده ۱ — خودروی الکتریکی</h5><p>هر خودروی الکتریکی به ۲۰+ سنسور مجاورتی (هال، AMR) نیاز دارد برای موقعیت موتور، فرمان، چرخ‌دنده و BMS.</p></div>
+      <div class="info-card" style="border-right-color:var(--success)"><div class="info-icon" style="color:var(--success)"><i class="fas fa-robot"></i></div><h5>راننده ۲ — Industry 4.0</h5><p>اتوماسیون صنعتی و IO-Link، تقاضا برای سنسورهای هوشمند را با قابلیت تعمیر پیش‌بینانه افزایش داده است.</p></div>
+      <div class="info-card" style="border-right-color:var(--purple)"><div class="info-icon" style="color:var(--purple)"><i class="fas fa-house-signal"></i></div><h5>راننده ۳ — ساختمان هوشمند</h5><p>PIR و آرایه‌های حرارتی (MLX90640) برای کنترل روشنایی، HVAC و امنیت، تقاضای فزاینده ایجاد کرده‌اند.</p></div>
+      <div class="info-card" style="border-right-color:var(--pink)"><div class="info-icon" style="color:var(--pink)"><i class="fas fa-mobile-screen"></i></div><h5>راننده ۴ — لوازم مصرفی</h5><p>گوشی‌های هوشمند (تشخیص نزدکی)، لپ‌تاپ‌ها و لوازم خانگی هوشمند، حجم بالایی از سنسورهای خازنی را مصرف می‌کنند.</p></div>
+    </div>
+    <div class="hint animate-in"><i class="fas fa-lightbulb"></i><div><strong>روند کلیدی ۲۰۲۴-۲۰۲۵:</strong> بر اساس گزارش Balluff (2024) و OMRON، IO-Link سنسور مجاورتی را از یک سوئیچ ساده به یک «سنسور هوشمند متصل به فضای ابری» تبدیل کرده است. این سنسورها دما، تعداد سیکل و کیفیت تشخیص را زنده به سمت cloud می‌فرستند و الگوریتم‌های AI زمان تخمینی خرابی را پیش‌بینی می‌کنند (Predictive Maintenance).</div></div>
+  </div>
+</section>
+
+<!-- APPLICATIONS -->
+<section class="slide" id="applications">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-th-large"></i></div>
+    <h2>🏭 ماتریس کاربردها — جایی که هر فناوری می‌درخشد</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <p class="animate-in">در زیر ماتریس کاربردها را می‌بینید. هر کاربرد با فناوری مناسب و دلیل انتخاب آن مشخص شده است. این ماتریس، خلاصه عملی یک پروژه صنعتی واقعی است که در آن باید چند سنسور برای خط تولید انتخاب کرد.</p>
+    <img src="images/12-industrial-dashboard-matrix.png" alt="ماتریس کاربردهای صنعتی سنسور مجاورتی" class="figure animate-in" loading="lazy" style="max-width:920px">
+    <div class="figure-caption animate-in">اسلاید ۱۲ — داشبورد کاربردهای صنعتی: ماتریس فناوری‌ها در سناریوهای واقعی</div>
+
+    <div class="app-grid animate-in">
+      <div class="app-card">
+        <div class="icon"><i class="fas fa-cogs"></i></div>
+        <h5>خط تولید قطعات فلزی</h5>
+        <p>تشخیص حضور قطعه فولادی در ایستگاه کاری، شمارش و فعال‌سازی عملیات بعدی.</p>
+        <div class="tags"><span>القایی</span><span>M18</span><span>IP67</span></div>
+      </div>
+      <div class="app-card">
+        <div class="icon"><i class="fas fa-oil-can"></i></div>
+        <h5>تشخیص سطح روغن</h5>
+        <p>سنجش سطح مایع در یک تانک پلاستیکی شفاف، بدون تماس با مایع.</p>
+        <div class="tags"><span>خازنی</span><span>غیرتماسی</span></div>
+      </div>
+      <div class="app-card">
+        <div class="icon"><i class="fas fa-box"></i></div>
+        <h5>شمارش بطری پلاستیکی</h5>
+        <p>شمارش بطری‌های پلاستیکی روی نوار نقاله با سرعت بالا.</p>
+        <div class="tags"><span>نوری Retro</span><span>۱۰۰ قطعه/دقیقه</span></div>
+      </div>
+      <div class="app-card">
+        <div class="icon"><i class="fas fa-door-open"></i></div>
+        <h5>درهای اتوماتیک</h5>
+        <p>تشخیص حضور انسان و باز کردن درب اتوماتیک فروشگاه.</p>
+        <div class="tags"><span>PIR</span><span>کم‌مصرف</span></div>
+      </div>
+      <div class="app-card">
+        <div class="icon"><i class="fas fa-lightbulb"></i></div>
+        <h5>روشنایی هوشمند ساختمان</h5>
+        <p>روشن/خاموش کردن لامپ بر اساس حضور در اتاق، صرفه‌جویی انرژی.</p>
+        <div class="tags"><span>PIR</span><span>IoT</span></div>
+      </div>
+      <div class="app-card">
+        <div class="icon"><i class="fas fa-shield-halved"></i></div>
+        <h5>سیستم امنیتی داخلی/خارجی</h5>
+        <p>هشدار نفوذ انسان به محوطه در ساعات غیرکار.</p>
+        <div class="tags"><span>PIR</span><span>دوگانه</span></div>
+      </div>
+      <div class="app-card">
+        <div class="icon"><i class="fas fa-car-battery"></i></div>
+        <h5>موقعیت موتور EV</h5>
+        <p>تشخیص زاویه روتور موتور BLDC با دقت زیر ۰.۱ درجه.</p>
+        <div class="tags"><span>AMR</span><span>TMR</span><span>AEC-Q100</span></div>
+      </div>
+      <div class="app-card">
+        <div class="icon"><i class="fas fa-gauge"></i></div>
+        <h5>سنجش سرعت خودرو</h5>
+        <p>شمارش پالس از چرخ‌دنده گیربکس برای محاسبه سرعت.</p>
+        <div class="tags"><span>هال</span><span>AMR</span></div>
+      </div>
+      <div class="app-card">
+        <div class="icon"><i class="fas fa-water"></i></div>
+        <h5>تشخیص نشت سیال</h5>
+        <p>تشخیص نشت روی کف کارخانه با سنسور خازنی پهن.</p>
+        <div class="tags"><span>خازنی</span><span>نوار باندی</span></div>
+      </div>
+      <div class="app-card">
+        <div class="icon"><i class="fas fa-warehouse"></i></div>
+        <h5>انبارداری هوشمند</h5>
+        <p>تشخیص عبور پالت در درب سوله با برد دور.</p>
+        <div class="tags"><span>نوری Through-Beam</span><span>۵۰m</span></div>
+      </div>
+      <div class="app-card">
+        <div class="icon"><i class="fas fa-microchip"></i></div>
+        <h5>تشخیص نزدکی گوشی</h5>
+        <p>خاموش کردن صفحه گوشی هنگام نزدیک شدن به گوش.</p>
+        <div class="tags"><span>خازنی</span><span>IR</span><span>کوچک</span></div>
+      </div>
+      <div class="app-card">
+        <div class="icon"><i class="fas fa-vial"></i></div>
+        <h5>خط تولید دارو</h5>
+        <p>تشخیص حضور ویال شیشه‌ای در ایستگاه پرژن.</p>
+        <div class="tags"><span>خازنی</span><span>کلاس ۱۰۰</span></div>
+      </div>
+    </div>
+
+    <h3 style="color:var(--accent);margin:30px 0 12px;font-size:1.15rem">🧭 راهنمای انتخاب — ۴ گام تا سنسور درست</h3>
+    <div class="guide-flow animate-in">
+      <div class="guide-step"><span class="step">گام ۱</span>متریال هدف؟</div>
+      <span class="guide-arrow">←</span>
+      <div class="guide-step"><span class="step">گام ۲</span>برد لازم؟</div>
+      <span class="guide-arrow">←</span>
+      <div class="guide-step"><span class="step">گام ۳</span>محیط کار؟</div>
+      <span class="guide-arrow">←</span>
+      <div class="guide-step"><span class="step">گام ۴</span>سرعت و دقت؟</div>
+    </div>
+    <img src="images/13-whitepaper-summary.png" alt="جدول راهنمای انتخاب سنسور" class="figure animate-in" loading="lazy" style="max-width:920px">
+    <div class="figure-caption animate-in">اسلاید ۱۳ — وایت‌پیپر جمع‌بندی: جدول جنس قطعه، تکنولوژی، و کاربرد هر سنسور</div>
+    <div class="hint animate-in"><i class="fas fa-lightbulb"></i><div><strong>قانون طلایی انتخاب:</strong> برای حذف نویزهای محیطی (دما یا نور)، زون‌بندی دقیق هندسی الزامی است. فلزات → القایی یا اثر هال. انسان → PIR. مایعات و پلاستیک → خازنی. سایر متریال‌ها → نوری. هیچ فناوری واحدی برای همه کاربردها بهترین نیست؛ انتخاب همیشه تعهد است بین برد، دقت، محیط و قیمت.</div></div>
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section class="slide" id="quiz">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-brain"></i></div>
+    <h2>🧠 کوییز تعاملی — ۱۰ سؤال</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <p class="animate-in">حالا که با شش فناوری آشنا شدید، آموخته‌هایتان را بسنجید. هر سؤال چهار گزینه دارد. پس از انتخاب، توضیح کامل ظاهر می‌شود. در پایان، امتیاز کلی شما نمایش داده خواهد شد.</p>
+    <div class="quiz-container animate-in">
+      <div class="quiz-progress">
+        <div class="bar"><div class="fill" id="quizFill"></div></div>
+        <div class="count" id="quizCount">سؤال ۱ از ۱۰</div>
+      </div>
+      <div class="quiz-question" id="quizQuestion">در حال بارگذاری...</div>
+      <div class="quiz-options" id="quizOptions"></div>
+      <div class="quiz-feedback" id="quizFeedback"></div>
+      <div class="quiz-actions">
+        <button class="btn" id="quizNext" disabled>سؤال بعدی ←</button>
+        <div class="quiz-score">امتیاز: <b id="quizScore">۰</b> از ۱۰</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXERCISES -->
+<section class="slide" id="exercises">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-pen-to-square"></i></div>
+    <h2>📝 تمرین‌های کلاسی</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <div class="accordion animate-in">
+      <div class="acc-item open">
+        <div class="acc-head"><span class="acc-icon">▶</span> الف) سؤالات مفهومی</div>
+        <div class="acc-body">
+          <p><strong style="color:var(--accent)">۱.</strong> چرا سنسور القایی به آلومینیوم با ضریب کاهش ۰.۳۵ کار می‌کند اما فولاد با ضریب ۱؟ پدیده فیزیکی زیربنایی چیست؟</p>
+          <p><strong style="color:var(--accent)">۲.</strong> تفاوت PIR و سنسور نوری فعال در چیست؟ چرا PIR «گیرنده مطلق» نامیده می‌شود؟</p>
+          <p><strong style="color:var(--accent)">۳.</strong> چهار لایه داخلی یک سنسور مجاورتی را به ترتیب نام ببرید و نقش هرکدام را توضیح دهید.</p>
+          <p><strong style="color:var(--accent)">۴.</strong> چرا AMR در فرمان الکتریکی خودرو جایگزین هال شده است؟ دو دلیل فنی بگویید.</p>
+        </div>
+      </div>
+      <div class="acc-item">
+        <div class="acc-head"><span class="acc-icon">▶</span> ب) تمرین‌های عملی</div>
+        <div class="acc-body">
+          <p><strong style="color:var(--success)">۵.</strong> یک سنسور القایی M18 با برد نامی ۸ میلی‌متر برای فولاد داریم. مسافت تشخیص برای آلومینیوم (ضریب ۰.۴) و مس (ضریب ۰.۳) را حساب کنید.</p>
+          <p><strong style="color:var(--success)">۶.</strong> یک چرخ ۶۰ دندانه با سرعت ۱۸۰۰ RPM می‌چرخد. فرکانس پالس سنسور القایی که روبروی چرخ نصب شده را به دست آورید. (پاسخ: ۱۸۰۰ Hz)</p>
+          <p><strong style="color:var(--success)">۷.</strong> در یک خط بسته‌بندی با ۱۲۰ قطعه در دقیقه، در ۲۴ ساعت چند پالس تولید می‌شود؟ اگر عمر سنسور ۱۰۰ میلیون سیکل باشد، چه مدت کار می‌کند؟</p>
+        </div>
+      </div>
+      <div class="acc-item">
+        <div class="acc-head"><span class="acc-icon">▶</span> ج) تمرین نوشتاری</div>
+        <div class="acc-body">
+          <p><strong style="color:var(--purple)">۸.</strong> در یک سناریوی فرضی، یک کارخانه دارویی نیاز دارد ویال‌های شیشه‌ای پر از دارو را در ایستگاه کاری تشخیص دهد. محیط تمیز، دما ثابت، سرعت بالا. کدام سنسور را پیشنهاد می‌دهید و چرا؟ حداقل ۲۰۰ کلمه بنویسید.</p>
+          <p><strong style="color:var(--purple)">۹.</strong> مقایسه‌ای ۳۰۰ کلمه‌ای بین PIR و آرایه حرارتی MLX90640 برای کاربرد «تشخیص اشغال بودن اتاق هوشمند» بنویسید.</p>
+        </div>
+      </div>
+      <div class="acc-item">
+        <div class="acc-head"><span class="acc-icon">▶</span> د) چالش خلاقانه کلاسی ★</div>
+        <div class="acc-body">
+          <p><strong style="color:var(--danger)">۱۰.</strong> یک سیستم ترکیبی طراحی کنید که حضور انسان را در یک راهرو طولانی (۳۰ متر) با دقت تشخیص دهد و همزمان تشخیص دهد آیا ایستاده است یا در حرکت. از حداقل دو فناوری سنسور مجاورتی استفاده کنید و دیاگرام بلوکی سیستم را رسم کنید.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL REVIEW -->
+<section class="slide" id="review">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-clipboard-check"></i></div>
+    <h2>📋 جمع‌بندی و مرور</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <p class="animate-in">در این جلسه، شش فناوری سنسور مجاورتی صنعتی را کالبدشکافی کردیم. هرکدام برای سناریو و متریالی متفاوت طراحی شده‌اند. در یک نگاه:</p>
+    <div class="info-grid animate-in">
+      <div class="info-card" style="border-right-color:var(--accent)"><div class="info-icon"><i class="fas fa-magnet"></i></div><h5>القایی</h5><p>قهرمان فلز در محیط خشن. اصل: جریان گردابی. IP67، سریع، ارزان، اما فقط فلز.</p></div>
+      <div class="info-card" style="border-right-color:var(--cyan)"><div class="info-icon" style="color:var(--cyan)"><i class="fas fa-droplet"></i></div><h5>خازنی</h5><p>تشخیص همه متریال‌ها. اصل: ظرفیت خازنی. برای مایع، پلاستیک، شیشه. حساس به دما.</p></div>
+      <div class="info-card" style="border-right-color:var(--success)"><div class="info-icon" style="color:var(--success)"><i class="fas fa-eye"></i></div><h5>نوری</h5><p>چشمان الکترونیکی. سه پیکربندی: دوربرد، بازتابی، پراکندگی. سریع و دقیق اما حساس به آلودگی.</p></div>
+      <div class="info-card" style="border-right-color:var(--danger)"><div class="info-icon" style="color:var(--danger)"><i class="fas fa-fire"></i></div><h5>PIR</h5><p>شکارچی حرارت. گیرنده مطلق، کم‌مصرف، فقط حرکت انسان/حیوان. با لنز فرنل زون‌بندی می‌کند.</p></div>
+      <div class="info-card" style="border-right-color:var(--purple)"><div class="info-icon" style="color:var(--purple)"><i class="fas fa-bolt"></i></div><h5>هال</h5><p>تشخیص مغناطیس. اصل: انحراف بار در میدان. ارزان، سریع، اما حساس به دما و دقت محدود.</p></div>
+      <div class="info-card" style="border-right-color:var(--pink)"><div class="info-icon" style="color:var(--pink)"><i class="fas fa-compass"></i></div><h5>AMR/TMR</h5><p>نسل جدید مغناطیسی. دقت زیر ۰.۱°، مستقل از فاصله. استاندارد خودرویی مدرن.</p></div>
+    </div>
+    <div class="tip animate-in"><i class="fas fa-lightbulb"></i><div><strong>پیام پایانی:</strong> صنعت آینده بدون سایش، بدون تماس، با تعمیر پیش‌بینانه و اتصال به فضای ابری است. سنسورهای مجاورتی، پایه این تحول هستند. در جلسه بعد، سطح و دبی سیال را بررسی می‌کنیم و میان‌ترم برگزار می‌شود — آماده باشید!</div></div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div>جلسه یازدهم — <strong>سنسورهای مجاورتی صنعتی</strong> | درس سیستم‌های اندازه‌گیری و کنترل</div>
+  <div class="credits">مدرس: دکتر مسعود گوهری‌منش · دانشگاه تربت حیدریه · <a href="https://goharimanesh.github.io/Measurement-Class/">صفحه درس</a></div>
+</footer>
+
+<!-- SCRIPTS -->
+<script>
+/* ===== Mermaid init ===== */
+mermaid.initialize({startOnLoad:true, theme:'dark', themeVariables:{primaryColor:'#ffb700', primaryTextColor:'#fff', primaryBorderColor:'#ff6b35', lineColor:'#a855f7', secondaryColor:'#0a1024', fontFamily:'Vazirmatn, sans-serif'}});
+
+/* ===== Animate-in observer ===== */
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); } });
+},{threshold:0.12, rootMargin:'0px 0px -8% 0px'});
+document.querySelectorAll('.animate-in').forEach(el=>io.observe(el));
+
+/* ===== Progress bar ===== */
+window.addEventListener('scroll',()=>{
+  const h = document.documentElement;
+  const scrolled = (h.scrollTop)/(h.scrollHeight-h.clientHeight)*100;
+  document.getElementById('progressBar').style.width = scrolled + '%';
+});
+
+/* ===== Nav toggle ===== */
+document.getElementById('navMenuBtn').addEventListener('click',()=>{
+  document.getElementById('navLinks').classList.toggle('open');
+});
+document.querySelectorAll('.nav-links a').forEach(a=>{
+  a.addEventListener('click',()=>document.getElementById('navLinks').classList.remove('open'));
+});
+
+/* ===== Accordion ===== */
+document.querySelectorAll('.acc-head').forEach(h=>{
+  h.addEventListener('click',()=>{
+    h.parentElement.classList.toggle('open');
+  });
+});
+
+/* ===== Tabs (optical) ===== */
+document.querySelectorAll('#opticalTabs .tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('#opticalTabs .tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-'+tab.dataset.tab).classList.add('active');
+  });
+});
+
+/* ===== Chart.js: Magnetic compare ===== */
+const faNum = s => s.toLocaleString('fa-IR');
+new Chart(document.getElementById('magCompareChart'),{
+  type:'bar',
+  data:{
+    labels:['Hall','AMR','GMR','TMR'],
+    datasets:[{
+      label:'حساسیت نسبی (mV/V/mT - لگاریتمی)',
+      data:[0.05, 5, 50, 200],
+      backgroundColor:['#06b6d4','#a855f7','#ec4899','#00d4aa'],
+      borderRadius:8
+    }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{labels:{color:'#e8eaf2',font:{family:'Vazirmatn'}}},tooltip:{}},
+    scales:{
+      y:{type:'logarithmic',ticks:{color:'#9aa3b5',font:{family:'Fira Code'}},grid:{color:'rgba(255,255,255,.06)'}},
+      x:{ticks:{color:'#e8eaf2',font:{family:'Vazirmatn',size:13}},grid:{display:false}}
+    }
+  }
+});
+
+/* ===== Radar: 6 technologies comparison ===== */
+new Chart(document.getElementById('radarChart'),{
+  type:'radar',
+  data:{
+    labels:['برد','دقت','سرعت','مقاومت محیطی','قیمت پایین','تنوع متریال'],
+    datasets:[
+      {label:'القایی',data:[3,4,4,5,5,1],borderColor:'#ffb700',backgroundColor:'rgba(255,183,0,.15)',borderWidth:2},
+      {label:'خازنی',data:[3,4,3,4,4,5],borderColor:'#06b6d4',backgroundColor:'rgba(6,182,212,.15)',borderWidth:2},
+      {label:'نوری',data:[5,4,5,2,3,4],borderColor:'#00d4aa',backgroundColor:'rgba(0,212,170,.15)',borderWidth:2},
+      {label:'PIR',data:[5,3,1,4,5,1],borderColor:'#ff4757',backgroundColor:'rgba(255,71,87,.15)',borderWidth:2},
+      {label:'هال',data:[2,3,5,4,5,1],borderColor:'#a855f7',backgroundColor:'rgba(168,85,247,.15)',borderWidth:2},
+      {label:'AMR/TMR',data:[2,5,5,4,2,1],borderColor:'#ec4899',backgroundColor:'rgba(236,72,153,.15)',borderWidth:2}
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{labels:{color:'#e8eaf2',font:{family:'Vazirmatn'}}}},
+    scales:{r:{min:0,max:5,ticks:{color:'#5c6370',backdropColor:'transparent',stepSize:1},grid:{color:'rgba(255,255,255,.08)'},angleLines:{color:'rgba(255,255,255,.08)'},pointLabels:{color:'#e8eaf2',font:{family:'Vazirmatn',size:12}}}}
+  }
+});
+
+/* ===== Market growth chart ===== */
+new Chart(document.getElementById('marketChart'),{
+  type:'line',
+  data:{
+    labels:['۲۰۲۳','۲۰۲۴','۲۰۲۵','۲۰۲۶','۲۰۲۸','۲۰۳۰','۲۰۳۲','۲۰۳۴'],
+    datasets:[
+      {label:'بازار جهانی (میلیارد دلار)',data:[4.7,5.0,5.4,5.8,6.6,7.0,7.6,8.16],borderColor:'#ffb700',backgroundColor:'rgba(255,183,0,.18)',fill:true,tension:.35,borderWidth:3,pointBackgroundColor:'#ff6b35',pointRadius:5},
+      {label:'بازار سنسور مغناطیسی (میلیارد دلار)',data:[3.9,4.1,4.4,4.7,5.0,5.3,5.6,5.8],borderColor:'#a855f7',backgroundColor:'rgba(168,85,247,.12)',fill:false,tension:.35,borderWidth:2,borderDash:[6,4]}
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{labels:{color:'#e8eaf2',font:{family:'Vazirmatn'}}}},
+    scales:{
+      y:{ticks:{color:'#9aa3b5',font:{family:'Fira Code'},callback:v=>'$'+v+'B'},grid:{color:'rgba(255,255,255,.06)'}},
+      x:{ticks:{color:'#e8eaf2',font:{family:'Vazirmatn'}},grid:{display:false}}
+    }
+  }
+});
+
+/* ===== Market share pie ===== */
+new Chart(document.getElementById('shareChart'),{
+  type:'doughnut',
+  data:{
+    labels:['نوری','القایی','خازنی','PIR','مغناطیسی (هال/AMR/TMR)'],
+    datasets:[{data:[32,24,14,18,12],backgroundColor:['#00d4aa','#ffb700','#06b6d4','#ff4757','#a855f7'],borderColor:'#070b1e',borderWidth:3}]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom',labels:{color:'#e8eaf2',font:{family:'Vazirmatn',size:12},padding:14}}}
+  }
+});
+
+/* ===== SIM 1: Inductive zone ===== */
+(function(){
+  const metals=[{name:'فولاد',rf:1.0},{name:'آلومینیوم',rf:0.4},{name:'مس',rf:0.3}];
+  const sizes=[{name:'M8',rng:4},{name:'M18',rng:8},{name:'M30',rng:15}];
+  const canvas=document.getElementById('inductiveCanvas');
+  const ctx=canvas.getContext('2d');
+  function draw(){
+    const w=canvas.width=canvas.offsetWidth, h=canvas.height=280;
+    ctx.clearRect(0,0,w,h);
+    const dist=parseFloat(document.getElementById('distRange').value);
+    const mi=parseInt(document.getElementById('metalRange').value);
+    const si=parseInt(document.getElementById('sizeRange').value);
+    const metal=metals[mi], size=sizes[si];
+    const nom=size.rng;
+    const eff=nom*metal.rf;
+    const detected=dist<=eff;
+    // sensor on right
+    const sx=w-90, cy=h/2;
+    // detection zone (semi-circle)
+    const maxR=120;
+    const zoneR=Math.min(maxR, eff*8);
+    ctx.fillStyle=detected?'rgba(0,212,170,.25)':'rgba(255,183,0,.12)';
+    ctx.beginPath();ctx.arc(sx,cy,zoneR,Math.PI*0.5,Math.PI*1.5);ctx.fill();
+    // gradient rings
+    for(let r=zoneR;r>0;r-=20){ctx.strokeStyle='rgba(255,183,0,'+(0.15*r/zoneR)+')';ctx.beginPath();ctx.arc(sx,cy,r,Math.PI*0.5,Math.PI*1.5);ctx.stroke();}
+    // sensor body
+    ctx.fillStyle='#1a2440';ctx.fillRect(sx,cy-22,40,44);
+    ctx.fillStyle=detected?'#00d4aa':'#ffb700';ctx.fillRect(sx-4,cy-18,8,36);
+    // target
+    const tx=sx-dist*8-30;
+    ctx.fillStyle=metal.name==='فولاد'?'#7a8595':(metal.name==='آلومینیوم'?'#c0c8d4':'#d9925b');
+    ctx.fillRect(tx,cy-30,30,60);
+    ctx.strokeStyle='#fff';ctx.lineWidth=1;ctx.strokeRect(tx,cy-30,30,60);
+    // labels
+    ctx.fillStyle='#fff';ctx.font='13px Vazirmatn';ctx.textAlign='center';
+    ctx.fillText(size.name+' ('+metal.name+')',sx+20,cy+45);
+    ctx.fillText('فاصله: '+dist.toFixed(1)+' mm',tx+15,cy-40);
+    // distance line
+    ctx.strokeStyle='rgba(255,255,255,.3)';ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.moveTo(sx-4,cy);ctx.lineTo(tx+30,cy);ctx.stroke();ctx.setLineDash([]);
+  }
+  function update(){
+    const dist=parseFloat(document.getElementById('distRange').value);
+    const mi=parseInt(document.getElementById('metalRange').value);
+    const si=parseInt(document.getElementById('sizeRange').value);
+    const metal=metals[mi], size=sizes[si];
+    const eff=(size.rng*metal.rf).toFixed(2);
+    const detected=dist<=parseFloat(eff);
+    document.getElementById('distVal').textContent=dist.toFixed(1);
+    document.getElementById('metalVal').textContent=metal.name;
+    document.getElementById('sizeVal').textContent=size.name;
+    document.getElementById('outputState').textContent=detected?'ON':'OFF';
+    document.getElementById('outputState').style.color=detected?'var(--success)':'var(--danger)';
+    const led=document.getElementById('detectLed');
+    led.classList.toggle('on',detected);
+    led.classList.toggle('red',!detected);
+    document.getElementById('effDist').textContent=eff;
+    document.getElementById('redFactor').textContent=metal.rf.toFixed(2);
+    document.getElementById('nomRange').textContent=size.rng.toFixed(1);
+    const pct=Math.max(0,Math.min(100,(1-dist/parseFloat(eff))*100));
+    document.getElementById('sigPct').textContent=pct.toFixed(0)+'%';
+    document.getElementById('inductiveHint').innerHTML=detected?
+      '<strong style="color:var(--success)">✓ تشخیص داده شد!</strong> قطعه در زون تشخیص است (مسافت '+dist.toFixed(1)+' mm ≤ برد مؤثر '+eff+' mm).':
+      '<strong style="color:var(--danger)">✗ خارج از زون.</strong> مسافت '+dist.toFixed(1)+' mm بیشتر از برد مؤثر '+eff+' mm است.';
+    draw();
+  }
+  ['distRange','metalRange','sizeRange'].forEach(id=>document.getElementById(id).addEventListener('input',update));
+  window.addEventListener('resize',draw);
+  update();
+})();
+
+/* ===== SIM 2: PIR ===== */
+(function(){
+  const speeds=['آهسته','معمولی','سریع'];
+  const canvas=document.getElementById('pirCanvas');
+  const ctx=canvas.getContext('2d');
+  let prevZone=-1, count=0;
+  function draw(){
+    const w=canvas.width=canvas.offsetWidth, h=canvas.height=280;
+    ctx.clearRect(0,0,w,h);
+    const angle=parseInt(document.getElementById('angleRange').value);
+    const dist=parseFloat(document.getElementById('pirDistRange').value);
+    const cx=w/2, cy=h-30;
+    // Fresnel zones (sector)
+    const zones=7;
+    for(let i=0;i<zones;i++){
+      const a1=-90+(180/zones)*i, a2=-90+(180/zones)*(i+1);
+      ctx.fillStyle=i%2?'rgba(255,71,87,.08)':'rgba(168,85,247,.06)';
+      ctx.beginPath();ctx.moveTo(cx,cy);
+      ctx.arc(cx,cy,Math.min(150,dist*12),a1*Math.PI/180,a2*Math.PI/180);
+      ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,.08)';
+      ctx.beginPath();ctx.moveTo(cx,cy);
+      ctx.lineTo(cx+Math.cos(a1*Math.PI/180)*Math.min(150,dist*12),cy+Math.sin(a1*Math.PI/180)*Math.min(150,dist*12));
+      ctx.stroke();
+    }
+    // PIR sensor (base)
+    ctx.fillStyle='#1a2440';ctx.beginPath();ctx.arc(cx,cy,16,Math.PI,2*Math.PI);ctx.fill();
+    ctx.fillStyle='#ff4757';ctx.beginPath();ctx.arc(cx,cy,8,0,2*Math.PI);ctx.fill();
+    // human
+    const r=Math.min(150,dist*12);
+    const hx=cx+Math.cos(angle*Math.PI/180)*r;
+    const hy=cy+Math.sin(angle*Math.PI/180)*r;
+    ctx.fillStyle='#ffb700';ctx.beginPath();ctx.arc(hx,hy,10,0,2*Math.PI);ctx.fill();
+    ctx.strokeStyle='#ffb700';ctx.lineWidth=2;ctx.beginPath();ctx.arc(hx,hy,16,0,2*Math.PI);ctx.stroke();
+    // heat plume
+    const grd=ctx.createRadialGradient(hx,hy,5,hx,hy,30);
+    grd.addColorStop(0,'rgba(255,107,53,.4)');grd.addColorStop(1,'rgba(255,107,53,0)');
+    ctx.fillStyle=grd;ctx.beginPath();ctx.arc(hx,hy,30,0,2*Math.PI);ctx.fill();
+    // labels
+    ctx.fillStyle='#fff';ctx.font='12px Vazirmatn';ctx.textAlign='center';
+    ctx.fillText('انسان (°'+angle+')',hx,hy-22);
+    ctx.fillText('PIR',cx,cy+24);
+    // current zone
+    const curZone=Math.floor((angle+90)/(180/zones));
+    if(prevZone!==-1 && prevZone!==curZone && curZone>=0 && curZone<zones){count++;document.getElementById('pirCount').textContent=count;}
+    prevZone=curZone;
+    return curZone;
+  }
+  function update(){
+    const angle=parseInt(document.getElementById('angleRange').value);
+    const dist=parseFloat(document.getElementById('pirDistRange').value);
+    const sp=parseInt(document.getElementById('speedRange').value);
+    document.getElementById('angleVal').textContent=angle;
+    document.getElementById('pirDistVal').textContent=dist.toFixed(1);
+    document.getElementById('speedVal').textContent=speeds[sp];
+    const curZone=draw();
+    const detected=curZone>=0 && curZone<7 && dist<=12;
+    document.getElementById('pirState').textContent=detected?'MOTION DETECTED':'NO MOTION';
+    document.getElementById('pirState').style.color=detected?'var(--success)':'var(--danger)';
+    const led=document.getElementById('pirLed');
+    led.classList.toggle('on',detected);
+    led.classList.toggle('amber',detected);
+    document.getElementById('pirV').textContent=detected?(3.3).toFixed(1):'0.0';
+    document.getElementById('pirZone').textContent=detected?('زون '+(curZone+1)):'--';
+    const q=detected?(sp==2?'Strong':sp==1?'Medium':'Weak'):'None';
+    document.getElementById('pirQ').textContent=q;
+    document.getElementById('pirHint').innerHTML=detected?
+      '<strong style="color:var(--success)">✓ حرکت تشخیص داده شد!</strong> انسان در زون '+(curZone+1)+' است. تعداد دفعات تغییر زون: '+count+' (هر تغییر = یک تریگر).':
+      '<strong>انسان را در زاویه و فاصله مختلف حرکت دهید</strong>. PIR فقط به تغییر زون واکنش می‌دهد.';
+  }
+  ['angleRange','pirDistRange','speedRange'].forEach(id=>document.getElementById(id).addEventListener('input',update));
+  window.addEventListener('resize',draw);
+  update();
+})();
+
+/* ===== SIM 3: Production dashboard ===== */
+(function(){
+  let prodCount=0, prodTime=0, prodTimer=null, prodInterval=null;
+  let chart;
+  const ctx=document.getElementById('prodChart').getContext('2d');
+  const labels=[], data=[];
+  chart=new Chart(ctx,{type:'line',data:{labels,datasets:[{label:'قطعه/دقیقه',data,borderColor:'#00d4aa',backgroundColor:'rgba(0,212,170,.18)',fill:true,tension:.35,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#e8eaf2',font:{family:'Vazirmatn'}}}},scales:{y:{ticks:{color:'#9aa3b5',font:{family:'Fira Code'}},grid:{color:'rgba(255,255,255,.06)'}},x:{ticks:{color:'#9aa3b5',font:{family:'Fira Code'}},grid:{display:false}}}}});
+  // ensure chart resizes with viewport
+  window.addEventListener('resize',function(){chart.resize();});
+  function tick(){
+    prodTime++;
+    prodCount+=Math.floor(2+Math.random()*3);
+    const rate=60+Math.floor(Math.random()*40);
+    document.getElementById('prodCount').textContent=prodCount;
+    document.getElementById('prodRate').textContent=rate;
+    document.getElementById('prodUptime').textContent=prodTime+'s';
+    const oee=Math.min(98,70+Math.floor(Math.random()*25));
+    document.getElementById('prodOee').textContent=oee+'%';
+    if(labels.length>15){labels.shift();data.shift();}
+    labels.push(prodTime+'s');data.push(rate);
+    chart.update('none');
+  }
+  document.getElementById('prodStart').addEventListener('click',()=>{
+    if(prodTimer)return;
+    prodTimer=setInterval(tick,1000);
+  });
+  document.getElementById('prodStop').addEventListener('click',()=>{
+    clearInterval(prodTimer);prodTimer=null;
+  });
+  document.getElementById('prodReset').addEventListener('click',()=>{
+    clearInterval(prodTimer);prodTimer=null;prodCount=0;prodTime=0;
+    labels.length=0;data.length=0;chart.update();
+    document.getElementById('prodCount').textContent=0;
+    document.getElementById('prodRate').textContent=0;
+    document.getElementById('prodUptime').textContent='0s';
+    document.getElementById('prodOee').textContent='0%';
+  });
+})();
+
+/* ===== SIM 4: Selection guide ===== */
+(function(){
+  const materials=['فلز','پلاستیک/شیشه','مایع','انسان'];
+  const envs=['خشک و تمیز','گرد و غبار/روغن','فضای باز'];
+  function recommend(){
+    const m=parseInt(document.getElementById('selMaterialRange').value);
+    const r=parseInt(document.getElementById('selRangeRange').value);
+    const e=parseInt(document.getElementById('selEnvRange').value);
+    document.getElementById('selMaterial').textContent=materials[m];
+    document.getElementById('selRange').textContent=r+' mm';
+    document.getElementById('selEnv').textContent=envs[e];
+    let sensor='',reason='';
+    if(m===0){ // فلز
+      if(e===1){sensor='سنسور القایی M18 (IP67)';reason='فلز + محیط خشن = القایی بهترین گزینه؛ مقاوم به روغن و گرد و غبار، بدون افت لنز.';}
+      else{sensor='سنسور القایی یا اثر هال';reason='فلز در محیط تمیز: القایی ساده و ارزان. اگر آهنربا قابل نصب باشد، هال هم گزینه است.';}
+    } else if(m===1){ // پلاستیک/شیشه
+      if(r>300){sensor='سنسور نوری Retro-Reflective';reason='پلاستیک/شیشه + برد متوسط: نوری Retro با یک کابل‌کشی، نصب آسان.';}
+      else{sensor='سنسور خازنی';reason='پلاستیک/شیشه با برد کوتاه: خازنی همه‌متریالی، نصب ساده.';}
+    } else if(m===2){ // مایع
+      sensor='سنسور خازنی (نوار باندی یا M30)';reason='مایع در تانک: خازنی از بیرون دیوار پلاستیکی هم سطح را می‌بیند.';
+    } else { // انسان
+      if(e===2){sensor='PIR + فیلتر دوتایی (Dual-Tech)';reason='انسان در فضای باز: PIR با فیلتر نویز خورشید و حیوانات. ترکیب با رادار مایکروویو برای کاذب‌های کمتر.';}
+      else{sensor='سنسور PIR با لنز فرنل';reason='انسان در داخل: PIR کم‌مصرف و استاندارد. برای دقت بیشتر، آرایه حرارتی MLX90640 پیشنهاد می‌شود.';}
+    }
+    if(r>100 && m!==0){sensor='سنسور نوری Through-Beam';reason='برد بیشتر از ۱۰۰mm برای غیرفلز: فقط نوری Through-Beam توان آن را دارد.';}
+    document.getElementById('selResultText').innerHTML='<strong style="color:var(--success)">'+sensor+'</strong><br>'+reason;
+  }
+  ['selMaterialRange','selRangeRange','selEnvRange'].forEach(id=>document.getElementById(id).addEventListener('input',recommend));
+  recommend();
+})();
+
+/* ===== QUIZ ===== */
+(function(){
+  const questions=[
+    {q:'کدام سنسور فقط فلزات را تشخیص می‌دهد؟',o:['خازنی','القایی','PIR','نوری'],a:1,ex:'سنسور القایی بر اساس جریان گردابی کار می‌کند که فقط در سطح فلزات ایجاد می‌شود.'},
+    {q:'ضریب کاهش سنسور القایی M18 برای آلومینیوم تقریباً چقدر است؟',o:['1.0','0.5','0.3','0.1'],a:1,ex:'آلومینیوم ضریب کاهش ۰.۳۵ تا ۰.۵ دارد. یعنی برد فولاد به‌نصف تقریباً می‌رسد.'},
+    {q:'چه چیزی درون یک سنسور PIR «حرارت را به ولتاژ» تبدیل می‌کند؟',o:['فتودیود','کریستال پیروالکتریک','ترمیستور','فتوترانزیستور'],a:1,ex:'مواد پیروالکتریک مانند LiTaO₃ یا PZT با تغییر دما ولتاژ تولید می‌کنند.'},
+    {q:'کدام پیکربندی نوری دوربردترین است؟',o:['Retro-Reflective','Diffuse','Through-Beam','پراکندگی'],a:2,ex:'Through-Beam فرستنده و گیرنده مجزا دارد و تا ۵۰+ متر کار می‌کند.'},
+    {q:'چرا PIR فقط حرکت را تشخیص می‌دهد، نه حضور ساکن را؟',o:['چون به دما حساس نیست','چون کریستال به تغییر دما واکنش می‌دهد نه مقدار مطلق','چون لنز فرنل مانع است','چون ولتاژ خروجی ضعیف است'],a:1,ex:'پیروالکتریک فقط به ΔT واکنش می‌دهد. انسان ساکن پس از چند ثانیه با محیط به تعادل می‌رسد.'},
+    {q:'کدام گزینه نقطه ضعف سنسور هال کلاسیک است؟',o:['حساسیت بالا','قیمت بالا','حساسیت به دما و دقت پایین','کندی سوئیچینگ'],a:2,ex:'هال کلاسیک به دما وابسته است و در میدان‌های ضعیف افت دقت دارد. به همین دلیل AMR جایگزین می‌شود.'},
+    {q:'سنسور AMR چه چیزی را با دقت زیر ۰.۱ درجه اندازه می‌گیرد؟',o:['فاصله خطی','زاویه چرخش','دما','رطوبت'],a:1,ex:'AMR با چیدمان گرادیانی-مماسی، زاویه چرخش آهنربا را با دقت بالا و مستقل از فاصله هوایی می‌سنجد.'},
+    {q:'کدام سنسور برای تشخیص سطح مایع در یک تانک پلاستیکی بهترین است؟',o:['القایی','خازنی','PIR','هال'],a:1,ex:'خازنی از بیرون دیوار پلاستیکی هم سطح مایع را می‌بیند چون پلاستیک و مایع هر دو ثابت دی‌الکتریک قابل‌سنجش دارند.'},
+    {q:'بازار جهانی سنسورهای مجاورتی تا سال ۲۰۳۴ به چه مقداری می‌رسد؟',o:['۱ میلیارد دلار','۳ میلیارد دلار','۸ میلیارد دلار','۲۰ میلیارد دلار'],a:2,ex:'بر اساس گزارش Fortune Business Insights، بازار تا ۲۰۳۴ به ۸.۱۶ میلیارد دلار می‌رسد.'},
+    {q:'IO-Link چه قابلیتی به سنسور مجاورتی صنعتی اضافه می‌کند؟',o:['برد بیشتر','داده‌های آنالوگ و تعمیر پیش‌بینانه','کاهش قیمت','حساسیت به دما'],a:1,ex:'IO-Link داده‌های آنالوگ، دما، تعداد سیکل و کیفیت تشخیص را زنده به cloud می‌فرستد و تعمیر پیش‌بینانه را ممکن می‌کند.'}
+  ];
+  let cur=0, score=0, answered=false;
+  const faDigits=['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹','۱۰'];
+  function render(){
+    answered=false;
+    const q=questions[cur];
+    document.getElementById('quizCount').textContent='سؤال '+(faDigits[cur]||cur+1)+' از ۱۰';
+    document.getElementById('quizFill').style.width=((cur)/10*100)+'%';
+    document.getElementById('quizQuestion').textContent=q.q;
+    const opts=document.getElementById('quizOptions');
+    opts.innerHTML='';
+    q.o.forEach((opt,i)=>{
+      const btn=document.createElement('button');
+      btn.className='quiz-option';btn.textContent=opt;
+      btn.addEventListener('click',()=>{
+        if(answered)return;
+        answered=true;
+        const correct=i===q.a;
+        if(correct){btn.classList.add('correct');score++;document.getElementById('quizScore').textContent=faDigits[score]||score;}
+        else{btn.classList.add('incorrect');opts.children[q.a].classList.add('correct');}
+        Array.from(opts.children).forEach(c=>c.classList.add('disabled'));
+        const fb=document.getElementById('quizFeedback');
+        fb.className='quiz-feedback show '+(correct?'success':'error');
+        fb.innerHTML=(correct?'<i class="fas fa-check-circle"></i> درست! ':'<i class="fas fa-circle-xmark"></i> نادرست. ')+'<strong>توضیح:</strong> '+q.ex;
+        document.getElementById('quizNext').disabled=false;
+      });
+      opts.appendChild(btn);
+    });
+    document.getElementById('quizFeedback').className='quiz-feedback';
+    document.getElementById('quizNext').disabled=true;
+    document.getElementById('quizNext').textContent=cur===9?'مشاهده نتیجه ←':'سؤال بعدی ←';
+  }
+  document.getElementById('quizNext').addEventListener('click',()=>{
+    if(cur<9){cur++;render();}
+    else{
+      document.getElementById('quizFill').style.width='100%';
+      document.getElementById('quizCount').textContent='پایان';
+      let msg=score>=8?'عالی! تسلط کامل شما بر این فناوری‌ها آشکار است.':score>=6?'خوب! اکثر مفاهیم را درک کرده‌اید، اما مرور نهایی مفید است.':score>=4?'متوسط. مفاهیم پایه را مرور کنید.':'نیاز به مرور جدی. فصل را دوباره بخوانید و کوییز را تکرار کنید.';
+      document.getElementById('quizQuestion').innerHTML='<strong style="color:var(--accent);font-size:1.2rem">امتیاز نهایی شما: '+(faDigits[score]||score)+' از ۱۰</strong><br><br>'+msg;
+      document.getElementById('quizOptions').innerHTML='';
+      document.getElementById('quizFeedback').className='quiz-feedback';
+      document.getElementById('quizNext').textContent='شروع دوباره';
+      document.getElementById('quizNext').onclick=()=>{cur=0;score=0;document.getElementById('quizScore').textContent='۰';render();document.getElementById('quizNext').onclick=null;document.getElementById('quizNext').addEventListener('click',arguments.callee);};
+    }
+  });
+  render();
+})();
+</script>
+</body>
+</html>
