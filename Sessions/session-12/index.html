@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>جلسه ۱۲: سنسورهای اندازه‌گیری دبی سیال — سیستم‌های اندازه‌گیری و کنترل</title>
+<meta name="description" content="جلسه دوازدهم درس سیستم‌های اندازه‌گیری و کنترل — سنسورهای اندازه‌گیری دبی سیال: ونتوری، نازل، ایمپلر، توربین، روتامتر، الکترومغناطیسی و سوئیچ جریان">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;300;400;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+<style>
+:root{
+  --accent:#06b6d4; --accent2:#3b82f6; --success:#00d4aa; --danger:#ff4757;
+  --purple:#a855f7; --pink:#ec4899; --gold:#ffb700; --dark:#050818;
+  --bg:#070b1e; --card:rgba(255,255,255,.04); --card-border:rgba(255,255,255,.08);
+  --text:#e8eaf2; --text-dim:rgba(232,234,242,.7);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Vazirmatn',sans-serif;
+  background:
+    radial-gradient(ellipse at top right, rgba(6,182,212,.10), transparent 50%),
+    radial-gradient(ellipse at bottom left, rgba(59,130,246,.10), transparent 50%),
+    linear-gradient(180deg,#070b1e 0%, #0a1024 100%);
+  background-attachment:fixed;
+  color:var(--text);
+  min-height:100vh;
+  line-height:1.8;
+  overflow-x:hidden;
+}
+.progress-bar{position:fixed;top:0;right:0;height:5px;background:linear-gradient(90deg,#06b6d4,#3b82f6,#a855f7,#ec4899,#06b6d4);background-size:400% 100%;width:0;transition:width .6s cubic-bezier(.4,0,.2,1);z-index:1000;box-shadow:0 0 20px rgba(6,182,212,.8);animation:gradientFlow 3s linear infinite}
+@keyframes gradientFlow{0%{background-position:0 0}100%{background-position:400% 0}}
+.top-nav{position:fixed;top:0;right:0;left:0;z-index:900;background:rgba(7,11,30,.85);backdrop-filter:blur(18px);border-bottom:1px solid rgba(6,182,212,.15);padding:10px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.nav-brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:.92rem}
+.nav-brand .badge{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#050818;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:900}
+.nav-links{display:flex;gap:6px;flex-wrap:wrap}
+.nav-links a{color:var(--text-dim);text-decoration:none;font-size:.8rem;padding:6px 12px;border-radius:10px;transition:all .25s ease;white-space:nowrap}
+.nav-links a:hover{color:var(--accent);background:rgba(6,182,212,.1)}
+.nav-menu-btn{display:none;background:none;border:none;color:var(--text);font-size:1.2rem;cursor:pointer}
+@media(max-width:780px){
+  .nav-links{display:none;position:absolute;top:100%;right:0;left:0;flex-direction:column;background:rgba(7,11,30,.98);padding:12px;border-bottom:1px solid rgba(6,182,212,.15)}
+  .nav-links.open{display:flex}
+  .nav-menu-btn{display:block}
+  .nav-links a{padding:10px 14px}
+}
+.hero{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:80px 20px 40px;text-align:center;overflow:hidden}
+.hero-bg{position:absolute;inset:0;z-index:-1;background:radial-gradient(circle at 30% 40%, rgba(6,182,212,.25), transparent 40%),radial-gradient(circle at 70% 60%, rgba(59,130,246,.25), transparent 40%),radial-gradient(circle at 50% 80%, rgba(168,85,247,.2), transparent 40%)}
+.hero-content{max-width:980px;position:relative;z-index:2}
+.hero-chip{display:inline-flex;align-items:center;gap:8px;background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.4);padding:8px 18px;border-radius:30px;font-size:.82rem;color:var(--accent);margin-bottom:22px;backdrop-filter:blur(10px)}
+.hero h1{font-size:clamp(2.2rem,7vw,4.6rem);font-weight:900;line-height:1.15;background:linear-gradient(135deg,#fff 0%,#06b6d4 40%,#3b82f6 70%,#a855f7 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:14px}
+.hero .subtitle{font-size:clamp(1rem,2.5vw,1.4rem);color:var(--text-dim);font-weight:300;margin-bottom:8px}
+.hero .en-title{font-size:clamp(.85rem,2vw,1.05rem);color:var(--accent);font-family:'Fira Code',monospace;direction:ltr;margin-bottom:26px;letter-spacing:.5px}
+.hero .lead{font-size:1.05rem;color:var(--text-dim);max-width:760px;margin:0 auto 28px;line-height:2}
+.hero-meta{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:8px}
+.hero-meta .pill{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border:1px solid var(--card-border);padding:9px 16px;border-radius:30px;font-size:.82rem;color:var(--text)}
+.hero-meta .pill i{color:var(--accent)}
+.scroll-cue{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);color:var(--text-dim);font-size:1.4rem;animation:bounce 2s infinite}
+@keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-8px)}}
+.slide{max-width:1180px;margin:0 auto;padding:70px 20px;position:relative}
+.slide-title{display:flex;align-items:center;gap:14px;margin-bottom:30px;flex-wrap:wrap}
+.title-icon-wrap{width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(6,182,212,.18),rgba(59,130,246,.12));border:1px solid rgba(6,182,212,.3);font-size:1.5rem;color:var(--accent);flex-shrink:0}
+.slide-title h2{font-size:clamp(1.4rem,3.5vw,2rem);font-weight:800;color:#fff}
+.subtitle-bar{flex:1;height:3px;background:linear-gradient(90deg,var(--accent),transparent);border-radius:3px;min-width:60px}
+.content-body{color:var(--text)}
+.content-body p{margin-bottom:14px;color:var(--text-dim);line-height:2}
+.content-body strong{color:var(--accent)}
+.content-body ul{list-style:none;margin:14px 0;padding:0}
+.content-body ul li{position:relative;padding-right:26px;margin-bottom:10px;color:var(--text-dim)}
+.content-body ul li::before{content:'▸';position:absolute;right:0;top:0;color:var(--accent);font-weight:bold}
+.info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin:20px 0}
+.info-card{background:linear-gradient(145deg,rgba(255,255,255,.04),rgba(255,255,255,.01));border:1px solid var(--card-border);border-right:4px solid var(--accent);border-radius:18px;padding:20px;transition:all .3s ease}
+.info-card:hover{transform:translateY(-4px);border-color:rgba(6,182,212,.4);box-shadow:0 14px 30px rgba(0,0,0,.3)}
+.info-icon{font-size:1.5rem;color:var(--accent);margin-bottom:10px}
+.info-card h5{font-size:1rem;color:#fff;margin-bottom:8px;font-weight:700}
+.info-card p{font-size:.88rem;color:var(--text-dim);line-height:1.8}
+.hint,.tip,.warn{border-radius:14px;padding:14px 18px;margin:14px 0;font-size:.92rem;line-height:1.9;display:flex;gap:12px;align-items:flex-start}
+.hint{background:rgba(6,182,212,.08);border-right:4px solid var(--accent);color:rgba(255,255,255,.92)}
+.tip{background:rgba(0,212,170,.08);border-right:4px solid var(--success);color:rgba(255,255,255,.92)}
+.warn{background:rgba(255,71,87,.08);border-right:4px solid var(--danger);color:rgba(255,255,255,.92)}
+.hint i,.tip i,.warn i{font-size:1.1rem;margin-top:4px;flex-shrink:0}
+.hint i{color:var(--accent)} .tip i{color:var(--success)} .warn i{color:var(--danger)}
+.sensor-table-wrap{overflow-x:auto;margin:18px 0;border-radius:18px;border:1px solid var(--card-border)}
+table.sensor-table{width:100%;border-collapse:collapse;min-width:560px;background:rgba(255,255,255,.02)}
+table.sensor-table th{background:linear-gradient(135deg,rgba(6,182,212,.2),rgba(59,130,246,.12));color:#fff;padding:14px 16px;text-align:right;font-weight:700;font-size:.85rem;border-bottom:2px solid rgba(6,182,212,.3)}
+table.sensor-table td{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.05);font-size:.88rem;color:var(--text-dim)}
+table.sensor-table tr:hover td{background:rgba(6,182,212,.04)}
+table.sensor-table td.sensor-name{color:var(--accent);font-weight:600}
+.figure{display:block;max-width:100%;margin:18px auto;border-radius:20px;border:1px solid var(--card-border);background:rgba(255,255,255,.02);box-shadow:0 14px 40px rgba(0,0,0,.4);height:auto}
+@media(max-width:640px){.figure{max-width:100% !important;width:100% !important;}}
+.figure-caption{text-align:center;color:var(--text-dim);font-size:.82rem;margin-top:8px;font-style:italic}
+.sim-section{padding:60px 0}
+.sim-container{display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:1180px;margin:0 auto}
+@media(max-width:780px){.sim-container{grid-template-columns:1fr}}
+.sim-panel{background:linear-gradient(145deg,rgba(10,14,39,.7),rgba(30,40,70,.4));border:1px solid rgba(6,182,212,.25);border-radius:20px;padding:22px}
+.sim-panel h4{color:var(--accent);margin-bottom:14px;font-size:1.05rem;font-weight:700;display:flex;align-items:center;gap:8px}
+.sim-canvas{background:radial-gradient(circle at 50% 50%, rgba(6,182,212,.05), transparent 70%),#04060f;border-radius:14px;border:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.sim-controls{display:flex;flex-direction:column;gap:14px;margin-top:16px}
+.sim-controls label{font-size:.85rem;color:var(--text-dim);display:flex;justify-content:space-between;align-items:center;gap:10px}
+.sim-controls input[type=range]{width:100%;accent-color:var(--accent);height:6px}
+.sim-value{font-family:'Fira Code',monospace;color:var(--accent);font-weight:700;min-width:70px;text-align:left;direction:ltr}
+.sim-readout{background:rgba(0,0,0,.3);border:1px solid rgba(0,212,170,.25);border-radius:12px;padding:14px;margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sim-readout .item{font-size:.82rem}
+.sim-readout .item .label{color:var(--text-dim);display:block;margin-bottom:4px}
+.sim-readout .item .val{font-family:'Fira Code',monospace;font-size:1.1rem;font-weight:700;color:var(--success);direction:ltr}
+.led-indicator{width:18px;height:18px;border-radius:50%;background:#1a1a1a;box-shadow:inset 0 0 6px rgba(0,0,0,.5);transition:all .2s ease;display:inline-block;margin-left:6px;vertical-align:middle}
+.led-indicator.on{background:var(--success);box-shadow:0 0 14px var(--success), inset 0 0 4px rgba(255,255,255,.4)}
+.led-indicator.on.red{background:var(--danger);box-shadow:0 0 14px var(--danger), inset 0 0 4px rgba(255,255,255,.4)}
+.led-indicator.on.amber{background:var(--gold);box-shadow:0 0 14px var(--gold), inset 0 0 4px rgba(255,255,255,.4)}
+.quiz-container{background:linear-gradient(145deg,rgba(10,14,39,.9),rgba(30,40,70,.7));border-radius:24px;padding:26px;border:2px solid rgba(168,85,247,.4);max-width:900px;margin:0 auto}
+.quiz-progress{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.quiz-progress .bar{flex:1;height:8px;background:rgba(255,255,255,.08);border-radius:6px;overflow:hidden}
+.quiz-progress .bar .fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--pink));width:0;transition:width .4s ease;border-radius:6px}
+.quiz-progress .count{font-size:.85rem;color:var(--text-dim);font-family:'Fira Code',monospace;direction:ltr}
+.quiz-question{font-size:1.05rem;color:#fff;margin-bottom:18px;font-weight:700;line-height:1.9}
+.quiz-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+@media(max-width:700px){.quiz-options{grid-template-columns:1fr}}
+.quiz-option{background:rgba(255,255,255,.05);border:2px solid rgba(255,255,255,.15);border-radius:14px;padding:14px 18px;color:#fff;cursor:pointer;transition:all .3s ease;text-align:right;font-family:'Vazirmatn',sans-serif;font-size:.88rem;line-height:1.7}
+.quiz-option:hover{background:rgba(168,85,247,.15);border-color:var(--purple)}
+.quiz-option.correct{background:rgba(0,212,170,.2);border-color:var(--success);color:var(--success)}
+.quiz-option.incorrect{background:rgba(255,71,87,.2);border-color:var(--danger);color:var(--danger)}
+.quiz-option.disabled{cursor:not-allowed;opacity:.6}
+.quiz-feedback{background:rgba(255,255,255,.05);border-radius:14px;padding:14px;font-size:.88rem;line-height:1.8;margin-top:10px;display:none}
+.quiz-feedback.show{display:block}
+.quiz-feedback.success{background:rgba(0,212,170,.1);border-right:4px solid var(--success);color:rgba(255,255,255,.9)}
+.quiz-feedback.error{background:rgba(255,71,87,.1);border-right:4px solid var(--danger);color:rgba(255,255,255,.9)}
+.quiz-actions{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:10px;flex-wrap:wrap}
+.btn{background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;border:none;padding:10px 22px;border-radius:30px;font-family:'Vazirmatn',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .25s ease}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(168,85,247,.4)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn.outline{background:transparent;border:1px solid var(--card-border);color:var(--text-dim)}
+.btn.outline:hover{border-color:var(--accent);color:var(--accent);box-shadow:none}
+.quiz-score{font-size:.9rem;color:var(--text-dim);font-family:'Fira Code',monospace;direction:ltr}
+.quiz-score b{color:var(--accent)}
+.accordion{margin:20px 0;border-radius:16px;overflow:hidden;border:1px solid var(--card-border)}
+.acc-item{background:rgba(255,255,255,.02);border-bottom:1px solid var(--card-border)}
+.acc-item:last-child{border-bottom:none}
+.acc-head{padding:16px 20px;cursor:pointer;display:flex;align-items:center;gap:12px;font-weight:600;color:#fff;transition:all .25s ease;font-size:.95rem}
+.acc-head:hover{background:rgba(6,182,212,.05);color:var(--accent)}
+.acc-head .acc-icon{color:var(--accent);transition:transform .25s ease;width:24px;text-align:center}
+.acc-item.open .acc-icon{transform:rotate(90deg)}
+.acc-body{max-height:0;overflow:hidden;transition:max-height .35s ease;padding:0 20px}
+.acc-item.open .acc-body{max-height:2400px;padding:0 20px 18px}
+.acc-body p{color:var(--text-dim);font-size:.9rem;line-height:2;margin:8px 0}
+.code-block{background:#04060f;border:1px solid rgba(6,182,212,.2);border-radius:14px;padding:16px 18px;overflow-x:auto;margin:16px 0;direction:ltr;text-align:left;font-family:'Fira Code',monospace;font-size:.82rem;line-height:1.7;color:#a8e6cf}
+.code-block .kw{color:#c792ea} .code-block .str{color:#c3e88d} .code-block .com{color:#5c6370;font-style:italic} .code-block .fn{color:#82aaff} .code-block .num{color:#f78c6c}
+.chart-card{background:linear-gradient(145deg,rgba(10,14,39,.7),rgba(30,40,70,.4));border:1px solid var(--card-border);border-radius:20px;padding:20px;margin:18px 0}
+.chart-card h4{color:var(--accent);margin-bottom:12px;font-size:1rem;display:flex;align-items:center;gap:8px}
+.chart-wrapper{position:relative;width:100%;height:340px}
+.chart-wrapper.tall{height:420px}
+@media(max-width:640px){.chart-wrapper{height:280px}.chart-wrapper.tall{height:340px}}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0 0;border-bottom:1px solid var(--card-border)}
+.tab{background:transparent;border:none;color:var(--text-dim);padding:10px 18px;cursor:pointer;font-family:'Vazirmatn',sans-serif;font-size:.88rem;border-bottom:3px solid transparent;transition:all .25s ease;font-weight:600}
+.tab:hover{color:var(--accent)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-panel{display:none;padding:20px 0;animation:fadeIn .35s ease}
+.tab-panel.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.phase-track{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:24px 0}
+@media(max-width:640px){.phase-track{grid-template-columns:1fr}}
+.phase-item{background:rgba(255,255,255,.03);border:1px solid var(--card-border);border-right:4px solid var(--accent);border-radius:14px;padding:14px}
+.phase-item.p2{border-right-color:var(--success)} .phase-item.p3{border-right-color:var(--purple)} .phase-item.p4{border-right-color:var(--pink)}
+.phase-item .num{font-size:1.4rem;font-weight:900;color:var(--accent);font-family:'Fira Code',monospace;direction:ltr}
+.phase-item.p2 .num{color:var(--success)} .phase-item.p3 .num{color:var(--purple)} .phase-item.p4 .num{color:var(--pink)}
+.phase-item .title{font-weight:700;color:#fff;margin:4px 0;font-size:.92rem}
+.phase-item .desc{font-size:.8rem;color:var(--text-dim);line-height:1.7}
+.market-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:18px 0}
+.market-stat{background:linear-gradient(145deg,rgba(6,182,212,.06),rgba(59,130,246,.03));border:1px solid rgba(6,182,212,.2);border-radius:16px;padding:18px;text-align:center}
+.market-stat .val{font-size:1.8rem;font-weight:900;color:var(--accent);font-family:'Fira Code',monospace;direction:ltr}
+.market-stat .lbl{font-size:.82rem;color:var(--text-dim);margin-top:4px}
+.market-stat.green{background:linear-gradient(145deg,rgba(0,212,170,.06),rgba(0,212,170,.03));border-color:rgba(0,212,170,.2)}
+.market-stat.green .val{color:var(--success)}
+.market-stat.purple{background:linear-gradient(145deg,rgba(168,85,247,.06),rgba(168,85,247,.03));border-color:rgba(168,85,247,.2)}
+.market-stat.purple .val{color:var(--purple)}
+.timeline{position:relative;padding:20px 0;margin:20px 0}
+.timeline::before{content:'';position:absolute;right:20px;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--accent),var(--accent2),var(--purple),var(--pink));border-radius:3px}
+.timeline-item{position:relative;padding-right:55px;margin-bottom:24px}
+.timeline-item::before{content:'';position:absolute;right:13px;top:6px;width:17px;height:17px;border-radius:50%;background:var(--accent);border:3px solid var(--bg);box-shadow:0 0 12px var(--accent)}
+.timeline-item .year{font-family:'Fira Code',monospace;color:var(--accent);font-weight:900;font-size:1.1rem;direction:ltr;display:block;margin-bottom:4px}
+.timeline-item .ttl{color:#fff;font-weight:700;font-size:.95rem;margin-bottom:4px}
+.timeline-item .desc{color:var(--text-dim);font-size:.85rem;line-height:1.8}
+.app-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:20px 0}
+.app-card{background:rgba(255,255,255,.03);border:1px solid var(--card-border);border-radius:16px;padding:18px;transition:all .3s ease}
+.app-card:hover{transform:translateY(-3px);border-color:rgba(6,182,212,.4)}
+.app-card .icon{width:42px;height:42px;border-radius:10px;background:rgba(6,182,212,.1);display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:1.1rem;margin-bottom:10px}
+.app-card h5{color:#fff;font-size:.95rem;margin-bottom:6px}
+.app-card p{color:var(--text-dim);font-size:.82rem;line-height:1.7}
+.app-card .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.app-card .tags span{font-size:.72rem;padding:3px 9px;border-radius:12px;background:rgba(168,85,247,.12);color:var(--purple)}
+.footer{text-align:center;padding:40px 20px;border-top:1px solid var(--card-border);color:var(--text-dim);font-size:.85rem;background:rgba(0,0,0,.3)}
+.footer a{color:var(--accent);text-decoration:none}
+.footer .credits{margin-top:10px;font-size:.78rem;color:rgba(232,234,242,.5)}
+.animate-in{opacity:0;transform:translateY(20px);transition:all .7s cubic-bezier(.2,.7,.2,1)}
+.animate-in.in{opacity:1;transform:translateY(0)}
+.mermaid-wrap{background:rgba(255,255,255,.02);border:1px solid var(--card-border);border-radius:16px;padding:18px;margin:18px 0;text-align:center;overflow-x:auto}
+.mermaid{display:inline-block;min-width:100%}
+.formula-box{background:linear-gradient(135deg,rgba(6,182,212,.08),rgba(168,85,247,.05));border:1px solid rgba(6,182,212,.25);border-radius:16px;padding:20px;margin:18px 0;text-align:center}
+.formula-box .formula{font-family:'Fira Code',monospace;font-size:1.3rem;color:var(--accent);direction:ltr;display:block;margin:8px 0;font-weight:700}
+.formula-box .var-list{font-size:.85rem;color:var(--text-dim);direction:ltr;text-align:right;display:inline-block;margin-top:8px}
+@media print{.top-nav,.progress-bar,.scroll-cue{display:none}body{background:#fff;color:#000}.slide{page-break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progressBar"></div>
+
+<nav class="top-nav">
+  <div class="nav-brand"><span class="badge">جلسه ۱۲</span> <span>سنسورهای اندازه‌گیری دبی سیال</span></div>
+  <button class="nav-menu-btn" id="navMenuBtn" aria-label="منو"><i class="fas fa-bars"></i></button>
+  <div class="nav-links" id="navLinks">
+    <a href="#hero">شروع</a>
+    <a href="#roadmap">نقشه راه</a>
+    <a href="#history">پیشینه تاریخی</a>
+    <a href="#concepts">مفاهیم پایه</a>
+    <a href="#venturi">ونتوری و نازل</a>
+    <a href="#turbine">توربین و ایمپلر</a>
+    <a href="#rotameter">روتامتر</a>
+    <a href="#magnetic">مغناطیسی</a>
+    <a href="#modern">مدرن (کوریولیس/اولتراسونیک)</a>
+    <a href="#comparison">مقایسه</a>
+    <a href="#lab">آزمایشگاه</a>
+    <a href="#market">بازار</a>
+    <a href="#quiz">کوییز</a>
+  </div>
+</nav>
+
+<section class="hero" id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="hero-chip animate-in"><i class="fas fa-water"></i> فاز ۳ — جلسه دوازدهم از ۲۴</div>
+    <h1 class="animate-in">سنسورهای اندازه‌گیری دبی سیال</h1>
+    <div class="subtitle animate-in">Flow Measurement Sensors — از لوله ونتوری تا کوریولیس</div>
+    <div class="en-title animate-in">Venturi · Nozzle · Impeller · Turbine · Rotameter · Electromagnetic · Coriolis · Ultrasonic</div>
+    <p class="lead animate-in">در این جلسه به دنیای اندازه‌گیری جریان سیال می‌رویم — از معادله پیوستگی تا فلومترهای کوریولیس و اولتراسونیک مدرن. هفت فناوری، دو قرن تکامل، یک هدف مشترک: <strong style="color:var(--accent)">دقیق‌ترین پاسخ به پرسش «چقدر سیال عبور کرده؟»</strong>.</p>
+    <div class="hero-meta animate-in">
+      <span class="pill"><i class="fas fa-chalkboard-teacher"></i> دکتر مسعود گوهری‌منش</span>
+      <span class="pill"><i class="fas fa-clock"></i> ۹۰ دقیقه</span>
+      <span class="pill"><i class="fas fa-microchip"></i> ۷ فناوری فلومتر</span>
+      <span class="pill"><i class="fas fa-flask"></i> ۴ شبیه‌ساز تعاملی</span>
+      <span class="pill"><i class="fas fa-graduation-cap"></i> میان‌ترم</span>
+    </div>
+  </div>
+  <div class="scroll-cue animate-in"><i class="fas fa-chevron-down"></i></div>
+</section>
+
+<!-- ROADMAP -->
+<section class="slide" id="roadmap" data-slide="roadmap">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-map-signs"></i></div>
+    <h2>🗺️ نقشه راه جلسه دوازدهم</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <p class="animate-in" style="text-align:center;font-size:1.05rem;color:var(--text-dim);margin-bottom:20px;line-height:1.9">از رود نیل تا کوریولیس کوانتومی — ۴ فاز، ۷ فناوری فلومتر، ۴ داشبورد تعاملی</p>
+    <div class="phase-track animate-in">
+      <div class="phase-item p1"><div class="num">۰۱</div><div class="title">مبانی و پیشینه</div><div class="desc">پیشینه تاریخی از مصر باستان تا امروز، مفاهیم پایه (دبی حجمی/جرمی) و معادله پیوستگی سیال.</div></div>
+      <div class="phase-item p2"><div class="num">۰۲</div><div class="title">فلومترهای فشاری</div><div class="desc">لوله ونتوری، نازل جریان و اصل برنولی — کاهش سطح → افزایش سرعت → کاهش فشار.</div></div>
+      <div class="phase-item p3"><div class="num">۰۳</div><div class="title">فلومترهای مکانیکی</div><div class="desc">ایمپلر با اثر هال، توربین با کوئل پیک‌آپ، روتامتر متغیر مساحت و سوئیچ فلپ.</div></div>
+      <div class="phase-item p4"><div class="num">۰۴</div><div class="title">الکترومغناطیسی و مدرن</div><div class="desc">فلومتر مغناطیسی (قانون فارادی)، کوریولیس (جرمی)، اولتراسونیک، آزمایشگاه و کوییز.</div></div>
+    </div>
+    <div class="animate-in" style="margin-top:22px;display:flex;justify-content:center;gap:12px;flex-wrap:wrap">
+      <span style="display:inline-flex;align-items:center;gap:8px;background:rgba(0,212,170,.1);border:1px solid rgba(0,212,170,.4);padding:10px 18px;border-radius:30px;font-size:.85rem;color:var(--success)"><i class="fas fa-clock"></i> حدود ۹۰ دقیقه</span>
+      <span style="display:inline-flex;align-items:center;gap:8px;background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.4);padding:10px 18px;border-radius:30px;font-size:.85rem;color:var(--accent)"><i class="fas fa-industry"></i> ۷ فناوری فلومتر</span>
+      <span style="display:inline-flex;align-items:center;gap:8px;background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.4);padding:10px 18px;border-radius:30px;font-size:.85rem;color:var(--purple)"><i class="fas fa-laptop-code"></i> ۴ داشبورد تعاملی</span>
+      <span style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,71,87,.1);border:1px solid rgba(255,71,87,.4);padding:10px 18px;border-radius:30px;font-size:.85rem;color:var(--danger)"><i class="fas fa-graduation-cap"></i> میان‌ترم</span>
+    </div>
+  </div>
+</section>
+
+<!-- INTRO IMAGE -->
+<section class="slide" id="intro-img">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-droplet"></i></div>
+    <h2>💧 چه می‌سنجیم؟</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <p class="animate-in">فلومتر دستگاهی است که دبی سیال (مایع یا گاز) را اندازه می‌گیرد. سیال می‌تواند آب، روغن، گاز طبیعی، بخار، اسید، یا حتی دوغاب باشد. پارامترهای کلیدی که در اندازه‌گیری جریان دخیل‌اند در تصویر زیر می‌بینید: دبی حجمی <code>Q (m³/s)</code>، دبی جرمی <code>ṁ (kg/s)</code>، فشار <code>P (Pa)</code>، چگالی <code>ρ (kg/m³)</code>، سرعت <code>V (m/s)</code> و دما <code>T (°C)</code>.</p>
+    <img src="images/01-intro-flow-measurement.png" alt="معرفی سنسورهای اندازه‌گیری دبی سیال" class="figure animate-in" loading="lazy">
+    <div class="figure-caption animate-in">اسلاید ۱ — معرفی پارامترهای پایه: Q، ṁ، P، ρ، V و T</div>
+  </div>
+</section>
+
+<!-- HISTORY -->
+<section class="slide" id="history">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-hourglass-half"></i></div>
+    <h2>📜 پیشینه تاریخی فلومتر</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <p class="animate-in">اندازه‌گیری جریان آب قدمتی دو هزار ساله دارد. مصریان باستان برای تقسیم آب نیل از سده‌های ساده استفاده می‌کردند؛ رومیان با <strong>کلدوسیس (Calix)</strong> و <strong>پگتا</strong> جریان آب آکوادوکت‌ها را اندازه می‌گرفتند. اما تحول علمی مدرن با معادله برنولی (۱۷۳۸) و اختراع لوله ونتوری (۱۷۹۷) آغاز شد. در جدول زیر، نقطه عطف‌های این تکامل را می‌بینید.</p>
+    <div class="timeline animate-in">
+      <div class="timeline-item"><span class="year">~۳۰۰۰ پیش از میلاد</span><div class="ttl">مصر باستان — نیلسومتر</div><div class="desc">سده‌های ساده برای تقسیم آب نیل؛ اولین تلاش ثبت‌شدهٔ بشر برای اندازه‌گیری جریان.</div></div>
+      <div class="timeline-item"><span class="year">~۲۷ پیش از میلاد</span><div class="ttl">روم باستان — Calix و Pegta</div><div class="desc">سوراخ‌های اندازه‌گیری استاندارد برای توزیع آب آکوادوکت‌ها بر اساس قطر لوله.</div></div>
+      <div class="timeline-item"><span class="year">۱۷۳۸</span><div class="ttl">دنیل برنولی — معادله برنولی</div><div class="desc">قانون پایسته انرژی سیال: مجموع انرژی فشاری، جنبشی و پتانسیل ثابت است. پایهٔ همهٔ فلومترهای فشاری.</div></div>
+      <div class="timeline-item"><span class="year">۱۷۹۷</span><div class="ttl">جیووانی باتیستا ونتوری — لوله ونتوری</div><div class="desc">فیزیکدان ایتالیایی کشف کرد که تنگ‌کردن مقطع لوله، سرعت را بالا و فشار را پایین می‌آورد.</div></div>
+      <div class="timeline-item"><span class="year">۱۸۸۶</span><div class="ttl">کلمنس هرشل — فلومتر ونتوری عملی</div><div class="desc">مهندس آمریکایی، لوله ونتوری را به یک دستگاه تجاری برای اندازه‌گیری آب تبدیل کرد.</div></div>
+      <div class="timeline-item"><span class="year">۱۹۵۲</span><div class="ttl">شرکت Tobinmeter — فلومتر مغناطیسی</div><div class="desc">اولین فلومتر الکترومغناطیسی صنعتی بر اساس قانون القای فارادی.</div></div>
+      <div class="timeline-item"><span class="year">۱۹۵۵–۱۹۶۰</span><div class="ttl">پدر بوناونتورا تورلمن — توسعه صنعتی مغناطیسی</div><div class="desc">کشیش و مخترع سوئیسی (۱۹۰۹-۱۹۹۷) که کاربرد صنعتی فلومتر مغناطیسی را گسترش داد.</div></div>
+      <div class="timeline-item"><span class="year">۱۹۷۷</span><div class="ttl">میکرو موشن — فلومتر کوریولیس</div><div class="desc">اولین فلومتر جرمی بر اساس نیروی کوریولیس؛ انقلاب در اندازه‌گیری جرم مستقیم.</div></div>
+      <div class="timeline-item"><span class="year">۱۹۸۰–۱۹۹۰</span><div class="ttl">فلومتر اولتراسونیک زمان‌پرواز</div><div class="desc">ارسال امواج فراصوت در جهت و خلاف جریان؛ غیرتهاجمی و نصب clamp-on.</div></div>
+      <div class="timeline-item"><span class="year">۲۰۲۴–۲۰۲۵</span><div class="ttl">نسل IoT و هوش مصنوعی</div><div class="desc">فلومترهای هوشمند متصل به فضای ابری با الگوریتم‌های یادگیری ماشین برای تعمیر پیش‌بینانه و کالیبراسیون خودکار.</div></div>
+    </div>
+    <div class="hint animate-in"><i class="fas fa-lightbulb"></i><div><strong>دو قرن، یک ایده:</strong> از ونتوری ۱۷۹۷ تا کوریولیس ۱۹۷۷، اصل پایه یکسان ماند — تبدیل یک ویژگی فیزیکی جریان (فشار، سرعت، گرداب، نیروی کوریولیس) به یک سیگنال قابل‌اندازه‌گیری. تحول اصلی در لایهٔ خوانش بوده: از مانومتر مایعی تا سنسور اثر هال و پردازشگر سیگنال دیجیتال.</div></div>
+  </div>
+</section>
+
+<!-- CONCEPTS -->
+<section class="slide" id="concepts">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-calculator"></i></div>
+    <h2>🧮 مفاهیم پایه — دبی حجمی و دبی جرمی</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <p class="animate-in">دبی (Flow Rate) به دو صورت تعریف می‌شود: <strong>دبی حجمی</strong> که حجم سیال عبوری در واحد زمان است (<code>Q</code> با واحد <code>m³/s</code> یا <code>L/min</code>)، و <strong>دبی جرمی</strong> که جرم عبوری در واحد زمان است (<code>ṁ</code> با واحد <code>kg/s</code>). این دو با چگالی سیال به هم ربط دارند.</p>
+    <div class="formula-box animate-in">
+      <span class="formula">Q = A × V</span>
+      <span class="formula">ṁ = ρ × Q = ρ × A × V</span>
+      <span class="var-list">
+        Q = دبی حجمی (m³/s)<br>
+        ṁ = دبی جرمی (kg/s)<br>
+        ρ = چگالی سیال (kg/m³)<br>
+        A = مساحت مقطع لوله (m²)<br>
+        V = سرعت متوسط سیال (m/s)
+      </span>
+    </div>
+    <img src="images/02-concepts-volume-mass.png" alt="دبی حجمی و دبی جرمی" class="figure animate-in" loading="lazy" style="max-width:900px">
+    <div class="figure-caption animate-in">اسلاید ۲ — مفاهیم پایه: رابطه دبی حجمی، دبی جرمی و چگالی</div>
+
+    <h3 style="color:var(--accent);margin:26px 0 10px;font-size:1.1rem">📐 معادله پیوستگی (Continuity Equation)</h3>
+    <p class="animate-in">قانون پایسته جرم می‌گوید: در یک لوله بدون نشتی، دبی حجمی در همهٔ مقاطع ثابت است. اگر مقطع لوله کوچک شود، سرعت باید به همان نسبت بزرگ شود. این اصل پایهٔ همهٔ فلومترهای فشاری (ونتوری، نازل، اوریفیس) است.</p>
+    <div class="formula-box animate-in">
+      <span class="formula">A₁ × V₁ = A₂ × V₂</span>
+      <span class="formula">Q = A₁ × V₁ = A₂ × V₂ = ثابت</span>
+      <span class="var-list">
+        A₁, V₁ = مساحت و سرعت در مقطع بزرگ (ورودی)<br>
+        A₂, V₂ = مساحت و سرعت در مقطع گلوگاه (تنگ‌شده)
+      </span>
+    </div>
+    <img src="images/03-continuity-equation.png" alt="معادله پیوستگی سیال" class="figure animate-in" loading="lazy" style="max-width:900px">
+    <div class="figure-caption animate-in">اسلاید ۳ — معادله پیوستگی و قانون برنولی: پایهٔ فلومترهای فشاری</div>
+    <div class="tip animate-in"><i class="fas fa-lightbulb"></i><div><strong>مثال عددی:</strong> اگر لوله‌ای به مساحت ۱۰ cm² با سرعت ۲ m/s سیال جریان دارد و ناگهان مساحت به ۵ cm² کاهش یابد، سرعت دو برابر می‌شود: V₂ = (A₁V₁)/A₂ = (۱۰×۲)/۵ = ۴ m/s. دبی ثابت می‌ماند: Q = ۲۰ cm³/s.</div></div>
+  </div>
+</section>
+
+<!-- VENTURI & NOZZLE -->
+<section class="slide" id="venturi">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-compress-arrows-alt"></i></div>
+    <h2>📉 لوله ونتوری و نازل جریان</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <p class="animate-in">لوله ونتوری قدیمی‌ترین و معتبرترین فلومتر فشاری است. ساختار آن سه بخش دارد: <strong>مقطع همگرا (Convergent)</strong> که سرعت را بالا می‌برد، <strong>گلوگاه (Throat)</strong> که کم‌مساحت‌ترین نقطه است و فشار در آن کمینه است، و <strong>مقطع واگرا (Divergent)</strong> که فشار را بازیابی می‌کند. اختلاف فشار بین لولهٔ اصلی و گلوگاه، متناسب با مجذور دبی است.</p>
+
+    <div class="formula-box animate-in">
+      <span class="formula">Q = C_d × A₂ × √(2ΔP / ρ(1−β⁴))</span>
+      <span class="var-list">
+        Q = دبی حجمی (m³/s)<br>
+        C_d = ضریب تخلیه (0.95–0.99 برای ونتوری)<br>
+        A₂ = مساحت گلوگاه (m²)<br>
+        ΔP = اختلاف فشار (Pa)<br>
+        β = نسبت قطر گلوگاه به لوله (d/D)<br>
+        ρ = چگالی سیال (kg/m³)
+      </span>
+    </div>
+
+    <img src="images/04-venturi-tube.png" alt="لوله ونتوری و نقاط اندازه‌گیری فشار" class="figure animate-in" loading="lazy" style="max-width:920px">
+    <div class="figure-caption animate-in">اسلاید ۴ — لوله ونتوری: PIPE TAP (HIGH) و THROAT TAP (LOW)، گلوگاه و ناحیه همگرا-واگرا</div>
+
+    <div class="info-grid animate-in">
+      <div class="info-card" style="border-right-color:var(--accent)"><div class="info-icon"><i class="fas fa-gauge-high"></i></div><h5>اصل کار</h5><p>قانون برنولی: کاهش سطح → افزایش سرعت → کاهش فشار. ΔP متناسب با Q² است.</p></div>
+      <div class="info-card" style="border-right-color:var(--success)"><div class="info-icon" style="color:var(--success)"><i class="fas fa-percentage"></i></div><h5>دقت</h5><p>ضریب تخلیه C_d بین ۰.۹۵ تا ۰.۹۹؛ بالاترین دقت در میان فلومترهای فشاری (±۰.۵٪).</p></div>
+      <div class="info-card" style="border-right-color:var(--purple)"><div class="info-icon" style="color:var(--purple)"><i class="fas fa-arrow-down"></i></div><h5>افت فشار</h5><p>بازگشت ۸۰–۹۰٪ فشار در ناحیهٔ واگرا. کمترین افت فشار در میان فلومترهای اختلاف‌فشاری.</p></div>
+      <div class="info-card" style="border-right-color:var(--pink)"><div class="info-icon" style="color:var(--pink)"><i class="fas fa-money-bill-trend-up"></i></div><h5>قیمت</h5><p>گران‌ترین فلومتر فشاری به‌خاطر machining دقیق گلوگاه و طول زیاد.</p></div>
+    </div>
+
+    <div class="mermaid-wrap animate-in">
+      <pre class="mermaid">
+flowchart LR
+  A[<b>ورودی</b><br/>قطر D، فشار P1] --> B[<b>همگرا</b><br/>مساحت کم می‌شود]
+  B --> C[<b>گلوگاه</b><br/>قطر d، فشار P2 کمینه]
+  C --> D[<b>واگرا</b><br/>مساحت زیاد می‌شود]
+  D --> E[<b>خروجی</b><br/>فشار بازیابی‌شده]
+  B -.->|ΔP = P1 − P2| F[<b>فلومتر دبی</b><br/>Q ∝ √ΔP]
+  style A fill:#06b6d422,stroke:#06b6d4,color:#fff
+  style B fill:#3b82f622,stroke:#3b82f6,color:#fff
+  style C fill:#a855f722,stroke:#a855f7,color:#fff
+  style D fill:#3b82f622,stroke:#3b82f6,color:#fff
+  style E fill:#06b6d422,stroke:#06b6d4,color:#fff
+  style F fill:#ec489922,stroke:#ec4899,color:#fff
+      </pre>
+    </div>
+
+    <h3 style="color:var(--accent);margin:30px 0 10px;font-size:1.1rem">🔧 نازل جریان (Flow Nozzle)</h3>
+    <p class="animate-in">نازل جریان نوعی میان‌رو از ونتوری و اوریفیس است. به جای یک گلوگاه بلند همگرا-واگرا، یک <strong>پروفایل همگرای منحنی</strong> کوتاه دارد که جریان را به‌آرامی شتاب می‌دهد. هزینهٔ ساخت کمتر، افت فشار متوسط، و کاربرد اصلی در <strong>سیالات با سرعت بالا، بخار و گاز فشرده</strong> است.</p>
+    <img src="images/05-flow-nozzle.png" alt="نازل جریان Flow Nozzle" class="figure animate-in" loading="lazy" style="max-width:900px">
+    <div class="figure-caption animate-in">اسلاید ۵ — نازل جریان: ساده‌تر و ارزان‌تر از ونتوری، مناسب بخار و گاز فشرده</div>
+
+    <div class="sensor-table-wrap animate-in">
+      <table class="sensor-table">
+        <thead><tr><th>پارامتر</th><th>ونتوری</th><th>نازل</th><th>اوریفیس (مرجع)</th></tr></thead>
+        <tbody>
+          <tr><td class="sensor-name">ضریب تخلیه C_d</td><td>۰.۹۵–۰.۹۹</td><td>۰.۹۲–۰.۹۸</td><td>۰.۶۰–۰.۶۵</td></tr>
+          <tr><td class="sensor-name">افت فشار دائمی</td><td>۱۰–۲۰٪ ΔP</td><td>۳۰–۵۰٪ ΔP</td><td>۵۰–۸۰٪ ΔP</td></tr>
+          <tr><td class="sensor-name">دقت</td><td>±۰.۵٪</td><td>±۱.۰٪</td><td>±۲–۴٪</td></tr>
+          <tr><td class="sensor-name">قیمت نسبی</td><td>زیاد</td><td>متوسط</td><td>کم</td></tr>
+          <tr><td class="sensor-name">طول مورد نیاز</td><td>طولانی</td><td>متوسط</td><td>کوتاه</td></tr>
+          <tr><td class="sensor-name">کاربرد شاخص</td><td>آب، مایعات تمیز</td><td>بخار، گاز فشرده</td><td>عمومی، مایعات و گازها</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="hint animate-in"><i class="fas fa-lightbulb"></i><div><strong>چرا رابطه ΔP و Q مجذوری است؟</strong> چون انرژی جنبشی متناسب با V² است و V نیز متناسب با Q. بنابراین Q² ∝ ΔP. این یعنی افت فشار در دبی‌های پایین بسیار کوچک و در دبی‌های بالا بزرگ است — همان دلیل اینکه فلومترهای فشاری در پایین‌ترین ۱۰٪ بازهٔ دبی دقت پایینی دارند.</div></div>
+  </div>
+</section>
+
+<!-- IMPELLER & TURBINE -->
+<section class="slide" id="turbine">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-fan"></i></div>
+    <h2>🌀 فلومتر ایمپلر و توربین</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <p class="animate-in">این دو فلومتر مکانیکی، سرعت چرخش یک پروانه را متناسب با سرعت سیال اندازه می‌گیرند. تفاوت اصلی در اندازه و کاربرد است: <strong>ایمپلر</strong> کوچک و ارزان برای جریان‌های داخلی و وسایل نقلیه، و <strong>توربین</strong> بزرگ و دقیق برای انتقال نفت و گاز. در هر دو، خوانش با شمارش پالس انجام می‌شود: هر دور پروانه = یک پالس.</p>
+
+    <h3 style="color:var(--accent);margin:20px 0 10px;font-size:1.1rem">🔹 فلومتر ایمپلر (Impeller Flow Meter)</h3>
+    <p class="animate-in">ایمپلر یک پروانهٔ کوچک پلاستیکی یا فلزی است که مستقیماً در مسیر جریان قرار می‌گیرد. روی پرهٔ پروانه یک آهنربای کوچک نصب می‌شود و در بیرون لوله، یک <strong>سنسور اثر هال</strong> هر بار که آهنربا از مقابلش می‌گذرد، یک پالس تولید می‌کند. تعداد پالس در واحد زمان = فرکانس چرخش = دبی.</p>
+    <img src="images/06-impeller-hall.png" alt="فلومتر ایمپلر با سنسور اثر هال" class="figure animate-in" loading="lazy" style="max-width:920px">
+    <div class="figure-caption animate-in">اسلاید ۶ — فلومتر ایمپلر: آهنربا روی پره + سنسور اثر هال + خروجی پالس دیجیتال</div>
+    <div class="info-grid animate-in">
+      <div class="info-card" style="border-right-color:var(--accent)"><div class="info-icon"><i class="fas fa-bolt"></i></div><h5>خروجی</h5><p>پالس دیجیتال (square wave). فرکانس متناسب با دبی. آسان برای میکروکنترلر.</p></div>
+      <div class="info-card" style="border-right-color:var(--success)"><div class="info-icon" style="color:var(--success)"><i class="fas fa-microchip"></i></div><h5>سنسور خوانش</h5><p>اثر هال (Hall Effect) — غیرتماسی، بدون سایش، تحمل بالا در برابر لرزش و رطوبت.</p></div>
+      <div class="info-card" style="border-right-color:var(--purple)"><div class="info-icon" style="color:var(--purple)"><i class="fas fa-car"></i></div><h5>کاربرد</h5><p>سوخت خودرو، آب‌سنج خانگی، دستگاه‌های تزریق، سیستم آبیاری.</p></div>
+      <div class="info-card" style="border-right-color:var(--pink)"><div class="info-icon" style="color:var(--pink)"><i class="fas fa-ruler"></i></div><h5>محدوده</h5><p>۰.۵ تا ۲۰۰ L/min، دقت ±۲–۵٪. ارزان و فشرده.</p></div>
+    </div>
+
+    <div class="code-block animate-in">
+<span class="com">// شمارش پالس از فلومتر ایمپلر با سنسور اثر هال</span>
+<span class="kw">const</span> pulsesPerLiter = <span class="num">450</span>;   <span class="com">// ضریب K (از دیتاشیت)</span>
+<span class="kw">volatile</span> <span class="kw">unsigned</span> <span class="kw">long</span> pulseCount = <span class="num">0</span>;
+
+<span class="kw">void</span> <span class="fn">isr</span>() { pulseCount++; }   <span class="com">// وقفه خارجی روی پین ۲</span>
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">pinMode</span>(<span class="num">2</span>, <span class="str">INPUT_PULLUP</span>);
+  <span class="fn">attachInterrupt</span>(<span class="num">0</span>, isr, <span class="str">FALLING</span>);  <span class="com">// هر لبهٔ نزولی = یک پره عبور کرده</span>
+  <span class="fn">Serial</span>.<span class="fn">begin</span>(<span class="num">9600</span>);
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="kw">static</span> <span class="kw">unsigned</span> <span class="kw">long</span> last = <span class="num">0</span>;
+  <span class="kw">if</span> (<span class="fn">millis</span>() - last >= <span class="num">1000</span>) {     <span class="com">// هر ۱ ثانیه</span>
+    <span class="fn">noInterrupts</span>();
+    <span class="kw">unsigned</span> <span class="kw">long</span> n = pulseCount; pulseCount = <span class="num">0</span>;
+    <span class="fn">interrupts</span>();
+    <span class="kw">float</span> liters = (<span class="kw">float</span>)n / pulsesPerLiter;
+    <span class="kw">float</span> L_per_min = liters * <span class="num">60</span>;
+    <span class="fn">Serial</span>.<span class="fn">print</span>(<span class="str">"Flow = "</span>); <span class="fn">Serial</span>.<span class="fn">print</span>(L_per_min); <span class="fn">Serial</span>.<span class="fn">println</span>(<span class="str">" L/min"</span>);
+    last = <span class="fn">millis</span>();
+  }
+}</div>
+
+    <h3 style="color:var(--accent);margin:30px 0 10px;font-size:1.1rem">🔹 فلومتر توربین (Turbine Flow Meter)</h3>
+    <p class="animate-in">فلومتر توربین نسخهٔ بزرگ‌تر و دقیق‌تر ایمپلر است. یک <strong>روتور چندپرهٔ دقیق</strong> روی بلبرینگ‌های کم‌اصطکاک درون یک لولهٔ فلزی نصب می‌شود. به‌جای آهنربای کوچک و هال، از یک <strong>کوئل پیک‌آپ (Coil Pickup)</strong> استفاده می‌شود: هر بار که یک پرهٔ فولادی از مقابل کوئل عبور می‌کند، یک پالس ولتاژ القایی تولید می‌کند (قانون فارادی). هیچ تغذیهٔ خارجی به کوئل لازم نیست — خود سیگنال از انرژی جنبشی پره گرفته می‌شود.</p>
+    <img src="images/07-turbine-meter.png" alt="فلومتر توربین با کوئل پیک‌آپ" class="figure animate-in" loading="lazy" style="max-width:920px">
+    <div class="figure-caption animate-in">اسلاید ۷ — فلومتر توربین: ROTOR، RETAINER، THRUST BALL، SUPPORT و کوئل پیک‌آپ</div>
+    <div class="info-grid animate-in">
+      <div class="info-card" style="border-right-color:var(--accent)"><div class="info-icon"><i class="fas fa-magnet"></i></div><h5>خوانش کوئل</h5><p>تغییر reluctivity مسیر مغناطیسی هنگام عبور پره، ولتاژ القایی در کوئل تولید می‌کند. بدون تغذیه!</p></div>
+      <div class="info-card" style="border-right-color:var(--success)"><div class="info-icon" style="color:var(--success)"><i class="fas fa-bullseye"></i></div><h5>دقت بالا</h5><p>±۰.۲۵٪ در محدودهٔ کاری. استاندارد بازرگانی برای نفت و گاز طبیعی.</p></div>
+      <div class="info-card" style="border-right-color:var(--purple)"><div class="info-icon" style="color:var(--purple)"><i class="fas fa-oil-can"></i></div><h5>کاربرد</h5><p>خط انتقال نفت، گاز طبیعی، هیدروکربن‌های سبک، اندازه‌گیری تجاری.</p></div>
+      <div class="info-card" style="border-right-color:var(--pink)"><div class="info-icon" style="color:var(--pink)"><i class="fas fa-cogs"></i></div><h5>محدودیت</h5><p>بلبرینگ سایش دارد؛ روانکاری لازم؛ سیال باید تمیز باشد (ذرات بزرگ روتور را خراب می‌کنند).</p></div>
+    </div>
+    <div class="warn animate-in"><i class="fas fa-triangle-exclamation"></i><div><strong>نکته تعمیر:</strong> فلومتر توربین حساس به روانکاری بلبرینگ است. در سیالات خشک (گاز بدون روانساز)، بلبرینگ زودتر خراب می‌شود؛ به‌همین دلیل نسخه‌های گازی از بلبرینگ‌های سرامیکی یا گاز روانکار استفاده می‌کنند.</div></div>
+  </div>
+</section>
+
+<!-- ROTAMETER & FLOW SWITCH -->
+<section class="slide" id="rotameter">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-grip-lines-vertical"></i></div>
+    <h2>📊 روتامتر و سوئیچ جریان</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <h3 style="color:var(--accent);margin:20px 0 10px;font-size:1.1rem">🔹 روتامتر (Rotameter) — فلید متغیر</h3>
+    <p class="animate-in">روتامتر ساده‌ترین و بصری‌ترین فلومتر است: یک لولهٔ شیشه‌ای مخروطی (پایین باریک، بالا پهن) با یک <strong>شناور (Float)</strong> داخل آن. جریان سیال از پایین به بالا وارد می‌شود و شناور را بالا هل می‌دهد. هرچه دبی بیشتر، شناور بالاتر می‌رود تا جایی که فضای حلقوی بین شناور و لوله، جریمهٔ فشار ثابت بسازد. ارتفاع شناور = دبی. خوانش با چشم، بدون نیاز به برق.</p>
+    <img src="images/08-rotameter-variable-area.png" alt="روتامتر فلید متغیر" class="figure animate-in" loading="lazy" style="max-width:920px">
+    <div class="figure-caption animate-in">اسلاید ۸ — روتامتر: لولهٔ مخروطی شیشه‌ای + شناور + افت فشار ثابت</div>
+    <div class="info-grid animate-in">
+      <div class="info-card" style="border-right-color:var(--accent)"><div class="info-icon"><i class="fas fa-arrows-up-down"></i></div><h5>اصل کار</h5><p>متغیر مساحت (Variable Area). افت فشار در طول لوله ثابت است؛ ارتفاع شناور متناسب با دبی.</p></div>
+      <div class="info-card" style="border-right-color:var(--success)"><div class="info-icon" style="color:var(--success)"><i class="fas fa-eye"></i></div><h5>خوانش بصری</h5><p>بدون برق، بدون الکترونیک. مناسب محیط‌های خطر (EX) و نمایش محلی در کارخانه.</p></div>
+      <div class="info-card" style="border-right-color:var(--purple)"><div class="info-icon" style="color:var(--purple)"><i class="fas fa-bolt"></i></div><h5>نسخهٔ الکترونیکی</h5><p>شناور مغناطیسی + سنسور اثر هال بیرون لوله: تبدیل ارتفاع به سیگنال ۴-۲۰mA.</p></div>
+      <div class="info-card" style="border-right-color:var(--pink)"><div class="info-icon" style="color:var(--pink)"><i class="fas fa-thermometer-half"></i></div><h5>حساسیت</h5><p>چگالی و ویسکوزیته سیال روی ارتفاع شناور اثر می‌گذارد. کالیبراسیون برای هر سیال لازم است.</p></div>
+    </div>
+
+    <h3 style="color:var(--accent);margin:30px 0 10px;font-size:1.1rem">🔹 سوئیچ جریان فلپ (Flow Switch)</h3>
+    <p class="animate-in">سوئیچ جریان فلومتر نیست — فقط می‌گوید «جریان هست یا نیست». یک <strong>فلپ (Flap)</strong> در مسیر سیال قرار می‌گیرد که با عبور جریان، خم می‌شود و یک میکروسوئیچ را فعال می‌کند. نوع Tapered Plug یک قابلیت مهم دارد: <strong>آستانهٔ فعالی‌شدن قابل تنظیم</strong> است. با چرخش پلاگ، زاویهٔ فلپ تغییر می‌کند و نقطهٔ تریگر روی دبی دلخواه تنظیم می‌شود.</p>
+    <img src="images/09-flap-flow-switch.png" alt="سوئیچ جریان فلپ Tapered Plug" class="figure animate-in" loading="lazy" style="max-width:920px">
+    <div class="figure-caption animate-in">اسلاید ۹ — سوئیچ جریان نوع Tapered Plug با فلپ و آستانهٔ قابل تنظیم</div>
+    <div class="hint animate-in"><i class="fas fa-lightbulb"></i><div><strong>کاربرد امنیتی:</strong> سوئیچ جریان برای محافظت از پمپ‌ها و مبدل‌های حرارتی استفاده می‌شود. اگر جریان آب قطع شود، سوئیچ پمپ یا هیتر را خاموش می‌کند تا از سوختن جلوگیری شود. هزینهٔ کم، نصب ساده، اما فقط اطلاعات دیتال/نودیتال می‌دهد — نه مقدار دبی.</div></div>
+  </div>
+</section>
+
+<!-- MAGNETIC -->
+<section class="slide" id="magnetic">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-magnet"></i></div>
+    <h2>⚡ فلومتر الکترومغناطیسی (Magnetic)</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <p class="animate-in">فلومتر الکترومغناطیسی بر اساس <strong>قانون القای فارادی</strong> کار می‌کند: وقتی یک هادی (سیال رسانا) در میدان مغناطیسی حرکت می‌کند، ولتاژ القایی در عرض آن ایجاد می‌شود. این ولتاژ متناسب با سرعت سیال است. دو سیم‌پیچ خارج از لوله میدان مغناطیسی تولید می‌کنند و دو الکترود در دیوارهٔ لوله، ولتاژ القایی را می‌خوانند. هیچ قطعهٔ متحرکی وجود ندارد — <strong>صفر سایش</strong>.</p>
+    <div class="formula-box animate-in">
+      <span class="formula">E = B × D × V</span>
+      <span class="var-list">
+        E = ولتاژ القایی (V)<br>
+        B = چگالی شار مغناطیسی (Tesla)<br>
+        D = قطر داخلی لوله (m)<br>
+        V = سرعت متوسط سیال (m/s)<br>
+        Q = V × (πD²/4)
+      </span>
+    </div>
+    <img src="images/10-electromagnetic-meter.png" alt="فلومتر الکترومغناطیسی" class="figure animate-in" loading="lazy" style="max-width:920px">
+    <div class="figure-caption animate-in">اسلاید ۱۰ — فلومتر مغناطیسی: سیم‌پیچ میدان، الکترودها و سیال رسانا</div>
+    <div class="info-grid animate-in">
+      <div class="info-card" style="border-right-color:var(--accent)"><div class="info-icon"><i class="fas fa-droplet"></i></div><h5>شرط: رسانایی سیال</h5><p>سیال باید رسانا باشد (آب، اسید، باز، دوغاب). آب خالص با σ&lt;5 µS/cm کار نمی‌کند.</p></div>
+      <div class="info-card" style="border-right-color:var(--success)"><div class="info-icon" style="color:var(--success)"><i class="fas fa-infinity"></i></div><h5>بدون سایش</h5><p>هیچ قطعهٔ متحرکی داخل لوله نیست. لولهٔ پایه گاهی پوشش PTFE برای اسید. عمر بسیار طولانی.</p></div>
+      <div class="info-card" style="border-right-color:var(--purple)"><div class="info-icon" style="color:var(--purple)"><i class="fas fa-temperature-low"></i></div><h5>عدم حساسیت</h5><p>به ویسکوزیته، چگالی، دما، و فشار حساس نیست. فقط سرعت را می‌خواند.</p></div>
+      <div class="info-card" style="border-right-color:var(--pink)"><div class="info-icon" style="color:var(--pink)"><i class="fas fa-industry"></i></div><h5>کاربرد گسترده</h5><p>آب شهری، فاضلاب، صنایع شیمیایی، خمیر کاغذ، دوغاب معدنی، دارویی.</p></div>
+    </div>
+    <div class="warn animate-in"><i class="fas fa-triangle-exclamation"></i><div><strong>محدودیت کلیدی:</strong> فلومتر مغناطیسی برای گازها و مایعات هیدروکربنی (بنزین، روغن) کار نمی‌کند چون این سیالات رسانا نیستند. همچنین اگر لولهٔ پر از هوا یا حباب باشد، الکترودها سیگنال نویزی می‌دهند. نصب باید روی لولهٔ پر (نه بالای تپ) باشد.</div></div>
+  </div>
+</section>
+
+<!-- MODERN: CORIOLIS & ULTRASONIC -->
+<section class="slide" id="modern">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-atom"></i></div>
+    <h2>🔬 فلومترهای مدرن — کوریولیس و اولتراسونیک</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <p class="animate-in">دو فناوری نسل جدید که از فلسفهٔ سنتی «فشار یا سرعت» خارج شدند و مستقیماً جرم یا زمان‌پرواز را اندازه می‌گیرند. این فلومترها انقلاب هستند چون مستقل از چگالی، ویسکوزیته و دما هستند.</p>
+
+    <div class="tabs animate-in" id="modernTabs">
+      <button class="tab active" data-tab="coriolis">کوریولیس (جرمی)</button>
+      <button class="tab" data-tab="ultrasonic">اولتراسونیک (زمان‌پرواز)</button>
+      <button class="tab" data-tab="thermal">حرارتی (گرمایی)</button>
+    </div>
+
+    <div class="tab-panel active" id="panel-coriolis">
+      <p>فلومتر کوریولیس بر اساس <strong>نیروی کوریولیس</strong> کار می‌کند — نیرویی که در یک چارچوب چرخان، به جرم متحرک وارد می‌شود. لولهٔ U شکل با فرکانس طبیعی نوسان می‌کند. وقتی جرم سیال از داخل آن عبور می‌کند، نیروی کوریولیس باعث می‌شود دو انتهای لوله با فاز متفاوت نوسان کنند. <strong>اختلاف فاز متناسب با دبی جرمی است</strong> — مستقل از چگالی!</p>
+      <div class="formula-box">
+        <span class="formula">Δφ = K × ṁ</span>
+        <span class="var-list">Δφ = اختلاف فاز نوسان دو انتهای لوله · K = ثابت دستگاه · ṁ = دبی جرمی</span>
+      </div>
+      <div class="info-grid">
+        <div class="info-card" style="border-right-color:var(--purple)"><div class="info-icon" style="color:var(--purple)"><i class="fas fa-weight-hanging"></i></div><h5>دبی جرمی مستقیم</h5><p>تنها فلومتری که مستقیماً جرم (نه حجم) را می‌سنجد. نیازی به دانستن چگالی نیست.</p></div>
+        <div class="info-card" style="border-right-color:var(--accent)"><div class="info-icon"><i class="fas fa-percentage"></i></div><h5>دقت فوق‌العاده</h5><p>±۰.۱٪ جرمی. بالاترین دقت در میان همهٔ فلومترها. استاندارد بازرگانی شیمی و دارو.</p></div>
+        <div class="info-card" style="border-right-color:var(--success)"><div class="info-icon" style="color:var(--success)"><i class="fas fa-flask"></i></div><h5>اطلاعات چندگانه</h5><p>هم‌زمان دبی جرمی، چگالی و دما را اندازه می‌گیرد — سه سنسور در یک.</p></div>
+        <div class="info-card" style="border-right-color:var(--pink)"><div class="info-icon" style="color:var(--pink)"><i class="fas fa-money-bill-trend-up"></i></div><h5>هزینه بالا</h5><p>گران‌ترین فلومتر؛ اما برای محموله‌های گران‌قیمت (دارویی، پتروشیمی) اقتصادی است.</p></div>
+      </div>
+      <div class="hint"><i class="fas fa-lightbulb"></i><div><strong>تاریخچه:</strong> اولین فلومتر کوریولیس توسط شرکت Micro Motion در سال ۱۹۷۷ معرفی شد. اصل کوریولیس خود در ۱۸۳۵ توسط گاسپار-گوستاو کوریولیس برای توضیح چرخش طوفان‌ها کشف شد — بیش از یک قرن پیش از کاربرد صنعتی!</div></div>
+    </div>
+
+    <div class="tab-panel" id="panel-ultrasonic">
+      <p>فلومتر اولتراسونیک دو ترانسدیوسر فراصوتی دارد که امواج فراصوت را به‌نوبت در جهت جریان و خلاف جهت جریان می‌فرستند. اگر موج با جهت جریان برود، زودتر می‌رسد؛ اگر خلاف جریان برود، دیرتر. <strong>اختلاف زمان پرواز (Time-of-Flight) متناسب با سرعت سیال است</strong>.</p>
+      <div class="formula-box">
+        <span class="formula">Δt = (2 × L × V × cos θ) / c²</span>
+        <span class="var-list">Δt = اختلاف زمان پرواز · L = فاصلهٔ ترانسدیوسرها · V = سرعت سیال · θ = زاویهٔ موج · c = سرعت صوت در سیال</span>
+      </div>
+      <div class="info-grid">
+        <div class="info-card" style="border-right-color:var(--accent)"><div class="info-icon"><i class="fas fa-satellite-dish"></i></div><h5>غیرتهاجمی (Clamp-on)</h5><p>ترانسدیوسرها با چسب از بیرون لوله نصب می‌شوند. هیچ برشی در لوله لازم نیست.</p></div>
+        <div class="info-card" style="border-right-color:var(--success)"><div class="info-icon" style="color:var(--success)"><i class="fas fa-stopwatch"></i></div><h5>بدون قطع جریان</h5><p>نصب بدون توقف خط. مناسب لوله‌های بزرگ آب، گاز و نفت در حال کار.</p></div>
+        <div class="info-card" style="border-right-color:var(--purple)"><div class="info-icon" style="color:var(--purple)"><i class="fas fa-chart-line"></i></div><h5>روند بازار</h5><p>بزرگترین نرخ رشد (CAGR 9.1٪ تا 2035) به‌خاطر نصب آسان و IoT.</p></div>
+        <div class="info-card" style="border-right-color:var(--pink)"><div class="info-icon" style="color:var(--pink)"><i class="fas fa-ruler"></i></div><h5>دقت متوسط</h5><p>±۱-۲٪. پایین‌تر از کوریولیس اما نصب آن بسیار آسان‌تر و ارزان‌تر است.</p></div>
+      </div>
+      <div class="tip"><i class="fas fa-lightbulb"></i><div><strong>دو روش:</strong> <strong>Time-of-Flight (Transit-Time)</strong> برای سیالات تمیز و <strong>داپلر (Doppler)</strong> برای دوغاب‌ها و سیالات کدر که ذرات معلق دارند و امواج را بازتاب می‌دهند.</div></div>
+    </div>
+
+    <div class="tab-panel" id="panel-thermal">
+      <p>فلومتر حرارتی (Thermal Mass) برای گازها طراحی شده. یک گرم‌کن سیال را گرم می‌کند و دو سنسور دما اختلاف دمای بالا و پایین دست را می‌خوانند. <strong>اختلاف دما معکوس متناسب با دبی جرمی است</strong> — هرچه جریان بیشتر، خنک‌کاری بیشتر، اختلاف دما کمتر. مستقل از فشار و دما.</p>
+      <div class="info-grid">
+        <div class="info-card" style="border-right-color:var(--accent)"><div class="info-icon"><i class="fas fa-wind"></i></div><h5>کاربرد اصلی</h5><p>گازهای صنعتی: هوای فشرده، گاز طبیعی، آرگون، نیتروژن، CO₂.</p></div>
+        <div class="info-card" style="border-right-color:var(--success)"><div class="info-icon" style="color:var(--success)"><i class="fas fa-weight-hanging"></i></div><h5>دبی جرمی مستقیم</h5><p>برای گاز، دبی جرمی معنادارتر از حجمی است چون حجم با فشار/دما تغییر می‌کند.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARISON -->
+<section class="slide" id="comparison">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-scale-balanced"></i></div>
+    <h2>⚖️ مقایسه جامع هفت فناوری</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <p class="animate-in">هر فلومتری جای خود را دارد. در جدول زیر هفت فناوری فلومتر را بر اساس اصل، دقت، افت فشار، قیمت و کاربرد مقایسه می‌کنیم.</p>
+    <div class="sensor-table-wrap animate-in">
+      <table class="sensor-table">
+        <thead>
+          <tr><th>فناوری</th><th>اصل کار</th><th>دقت</th><th>افت فشار</th><th>قیمت</th><th>کاربرد شاخص</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="sensor-name">ونتوری</td><td>برنولی (ΔP)</td><td>±۰.۵٪</td><td>کم</td><td>زیاد</td><td>آب، مایع تمیز بزرگ</td></tr>
+          <tr><td class="sensor-name">نازل</td><td>برنولی (ΔP)</td><td>±۱٪</td><td>متوسط</td><td>متوسط</td><td>بخار، گاز فشرده</td></tr>
+          <tr><td class="sensor-name">ایمپلر</td><td>چرخش پروانه + هال</td><td>±۲-۵٪</td><td>متوسط</td><td>کم</td><td>سوخت خودرو، آب خانگی</td></tr>
+          <tr><td class="sensor-name">توربین</td><td>چرخش روتور + کوئل</td><td>±۰.۲۵٪</td><td>متوسط</td><td>متوسط-زیاد</td><td>نفت، گاز طبیعی تجاری</td></tr>
+          <tr><td class="sensor-name">روتامتر</td><td>فلید متغیر</td><td>±۲-۵٪</td><td>ثابت</td><td>کم</td><td>نمایش محلی، گاز آزمایشگاهی</td></tr>
+          <tr><td class="sensor-name">مغناطیسی</td><td>قانون فارادی</td><td>±۰.۵٪</td><td>صفر</td><td>متوسط</td><td>آب، فاضلاب، اسید، دوغاب</td></tr>
+          <tr><td class="sensor-name">کوریولیس</td><td>نیروی کوریولیس</td><td>±۰.۱٪</td><td>متوسط</td><td>زیاد</td><td>دارو، شیمی، محموله گران</td></tr>
+          <tr><td class="sensor-name">اولتراسونیک</td><td>زمان‌پرواز</td><td>±۱-۲٪</td><td>صفر</td><td>متوسط</td><td>لوله بزرگ در حال کار، گاز</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <img src="images/11-comparison-matrix.png" alt="ماتریس مقایسه فلومترها" class="figure animate-in" loading="lazy" style="max-width:920px">
+    <div class="figure-caption animate-in">اسلاید ۱۱ — ماتریس مقایسه ونتوری، ایمپلر، توربین و مغناطیسی</div>
+
+    <div class="chart-card animate-in">
+      <h4><i class="fas fa-chart-radar"></i> رادار هشت‌فازی — مقایسه بر اساس ۶ شاخص</h4>
+      <div class="chart-wrapper tall"><canvas id="radarChart"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- LAB / INTERACTIVE -->
+<section class="slide sim-section" id="lab">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-flask"></i></div>
+    <h2>🧪 آزمایشگاه تعاملی — داشبوردهای زنده</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <p class="animate-in">چهار داشبورد تعاملی می‌سازیم: <strong>(۱) شبیه‌ساز ونتوری</strong> که رابطه ΔP-Q را زنده نشان می‌دهد، <strong>(۲) شبیه‌ساز ایمپلر</strong> با پالس‌های هال، <strong>(۳) داشبورد کوریولیس</strong> برای دبی جرمی، و <strong>(۴) انتخابگر تعاملی فلومتر</strong>.</p>
+
+    <!-- SIM 1: Venturi -->
+    <h3 style="color:var(--accent);margin:24px 0 12px;font-size:1.15rem">📉 داشبورد ۱ — شبیه‌ساز لوله ونتوری</h3>
+    <div class="sim-container animate-in">
+      <div class="sim-panel">
+        <h4><i class="fas fa-compress-arrows-alt"></i> ونتوری — دبی را تغییر دهید</h4>
+        <div class="sim-canvas" style="height:280px"><canvas id="venturiCanvas" style="width:100%;height:100%"></canvas></div>
+        <div class="sim-controls">
+          <label>دبی Q (L/min): <span class="sim-value" id="qVal">50</span></label>
+          <input type="range" id="qRange" min="5" max="200" step="5" value="50">
+          <label>نسبت β (d/D): <span class="sim-value" id="betaVal">0.60</span></label>
+          <input type="range" id="betaRange" min="0.3" max="0.8" step="0.05" value="0.6">
+          <label>چگالی ρ (kg/m³): <span class="sim-value" id="rhoVal">1000</span></label>
+          <input type="range" id="rhoRange" min="800" max="1200" step="10" value="1000">
+        </div>
+      </div>
+      <div class="sim-panel">
+        <h4><i class="fas fa-gauge-high"></i> خروجی — اختلاف فشار و سرعت</h4>
+        <div class="sim-readout">
+          <div class="item"><span class="label">ΔP فشار (kPa):</span><span class="val" id="dpVal">0.0</span></div>
+          <div class="item"><span class="label">V۱ سرعت ورودی (m/s):</span><span class="val" id="v1Val">0.0</span></div>
+          <div class="item"><span class="label">V۲ سرعت گلوگاه (m/s):</span><span class="val" id="v2Val">0.0</span></div>
+          <div class="item"><span class="label">بازگشت فشار:</span><span class="val" id="recVal">0%</span></div>
+          <div class="item"><span class="label">C_d ضریب تخلیه:</span><span class="val" id="cdVal">0.98</span></div>
+          <div class="item"><span class="label">وضعیت:</span><span class="val" id="statVal" style="color:var(--accent)">OK</span></div>
+        </div>
+        <div class="hint" style="margin-top:14px"><i class="fas fa-lightbulb"></i><div id="venturiHint">دبی را تغییر دهید. رابطه ΔP و Q مجذوری است: Q دو برابر → ΔP چهار برابر.</div></div>
+      </div>
+    </div>
+
+    <!-- SIM 2: Impeller -->
+    <h3 style="color:var(--accent);margin:34px 0 12px;font-size:1.15rem">🌀 داشبورد ۲ — شبیه‌ساز ایمپلر با پالس هال</h3>
+    <div class="sim-container animate-in">
+      <div class="sim-panel">
+        <h4><i class="fas fa-fan"></i> ایمپلر — سرعت چرخش پروانه</h4>
+        <div class="sim-canvas" style="height:280px"><canvas id="impellerCanvas" style="width:100%;height:100%"></canvas></div>
+        <div class="sim-controls">
+          <label>دبی (L/min): <span class="sim-value" id="impQ">30</span></label>
+          <input type="range" id="impQRange" min="0" max="100" step="1" value="30">
+          <label>تعداد پره: <span class="sim-value" id="bladeVal">4</span></label>
+          <input type="range" id="bladeRange" min="2" max="8" step="1" value="4">
+        </div>
+      </div>
+      <div class="sim-panel">
+        <h4><i class="fas fa-wave-square"></i> خروجی — سیگنال پالس هال</h4>
+        <div class="sim-readout">
+          <div class="item"><span class="label">فرکانس (Hz):</span><span class="val" id="freqVal">0</span></div>
+          <div class="item"><span class="label">LED پالس:</span><span class="val"><span class="led-indicator" id="hallLed"></span></span></div>
+          <div class="item"><span class="label">RPM چرخش:</span><span class="val" id="rpmVal">0</span></div>
+          <div class="item"><span class="label">حجم هر پالس (mL):</span><span class="val" id="pulseVol">0.0</span></div>
+          <div class="item"><span class="label">ضریب K (pulses/L):</span><span class="val" id="kFactor">0</span></div>
+          <div class="item"><span class="label">جریان:</span><span class="val" id="impStatus">متوقف</span></div>
+        </div>
+        <div class="hint" style="margin-top:14px"><i class="fas fa-lightbulb"></i><div id="impHint">هر پالس = یک پره از مقابل سنسور هال عبور کرده. فرکانس متناسب با دبی است.</div></div>
+      </div>
+    </div>
+
+    <!-- SIM 3: Coriolis -->
+    <h3 style="color:var(--accent);margin:34px 0 12px;font-size:1.15rem">⚖️ داشبورد ۳ — فلومتر کوریولیس (دبی جرمی)</h3>
+    <div class="sim-container animate-in">
+      <div class="sim-panel">
+        <h4><i class="fas fa-atom"></i> کوریولیس — نوسان لوله U شکل</h4>
+        <div class="sim-canvas" style="height:280px"><canvas id="coriolisCanvas" style="width:100%;height:100%"></canvas></div>
+        <div class="sim-controls">
+          <label>دبی جرمی ṁ (kg/min): <span class="sim-value" id="massQ">5.0</span></label>
+          <input type="range" id="massQRange" min="0" max="20" step="0.1" value="5">
+          <label>چگالی ρ (kg/m³): <span class="sim-value" id="corRho">1000</span></label>
+          <input type="range" id="corRhoRange" min="700" max="1300" step="10" value="1000">
+        </div>
+      </div>
+      <div class="sim-panel">
+        <h4><i class="fas fa-gauge-high"></i> خروجی — اختلاف فاز و دبی</h4>
+        <div class="sim-readout">
+          <div class="item"><span class="label">اختلاف فاز (μs):</span><span class="val" id="phaseVal">0.0</span></div>
+          <div class="item"><span class="label">دبی جرمی (kg/s):</span><span class="val" id="massKgs">0.000</span></div>
+          <div class="item"><span class="label">دبی حجمی (L/min):</span><span class="val" id="volLpm">0.0</span></div>
+          <div class="item"><span class="label">دقت:</span><span class="val" id="corAcc">±0.1%</span></div>
+          <div class="item"><span class="label">مستقل از ρ:</span><span class="val" id="corInd">بله</span></div>
+          <div class="item"><span class="label">وضعیت:</span><span class="val" id="corStat" style="color:var(--success)">فعال</span></div>
+        </div>
+        <div class="tip" style="margin-top:14px"><i class="fas fa-lightbulb"></i><div>کوریولیس مستقل از چگالی است. چگالی را تغییر دهید و دبی جرمی ثابت بماند. این مزیت کلیدی کوریولیس است.</div></div>
+      </div>
+    </div>
+
+    <!-- SIM 4: Selection guide -->
+    <h3 style="color:var(--accent);margin:34px 0 12px;font-size:1.15rem">🎯 داشبورد ۴ — انتخابگر تعاملی فلومتر</h3>
+    <div class="sim-panel animate-in">
+      <h4><i class="fas fa-wand-magic-sparkles"></i> پارامترهای کاربرد را انتخاب کنید تا فلومتر مناسب پیشنهاد داده شود</h4>
+      <div class="sim-controls" style="margin-top:14px">
+        <label>نوع سیال: <span class="sim-value" id="selFluid">آب</span></label>
+        <input type="range" id="selFluidRange" min="0" max="4" step="1" value="0">
+        <label>دقت لازم: <span class="sim-value" id="selAcc">متوسط</span></label>
+        <input type="range" id="selAccRange" min="0" max="2" step="1" value="1">
+        <label>قطر لوله: <span class="sim-value" id="selPipe">متوسط</span></label>
+        <input type="range" id="selPipeRange" min="0" max="2" step="1" value="1">
+      </div>
+      <div id="selResult" style="margin-top:18px;padding:18px;border-radius:14px;background:linear-gradient(135deg,rgba(6,182,212,.1),rgba(59,130,246,.05));border:1px solid rgba(6,182,212,.3)">
+        <h5 style="color:var(--accent);margin-bottom:8px">پیشنهاد:</h5>
+        <div id="selResultText" style="color:#fff;font-size:.95rem;line-height:2">فلومتر مغناطیسی — بهترین گزینه برای آب در لوله متوسط با دقت متوسط.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARKET -->
+<section class="slide" id="market">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-chart-line"></i></div>
+    <h2>📈 داشبورد بازار جهانی فلومتر — ۲۰۲۴ تا ۲۰۳۴</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <p class="animate-in">بازار جهانی فلومترها در حال انفجار است. بر اساس گزارش‌های Fortune Business Insights، Mordor Intelligence و Grand View Research، این بازار از ۸.۷۷ میلیارد دلار در ۲۰۲۵ به بیش از ۱۴.۵ میلیارد دلار در ۲۰۳۴ خواهد رسید. راننده‌های اصلی: نفت و گاز، تصفیه آب، صنایع شیمیایی، دارویی و IoT صنعتی.</p>
+    <div class="market-grid animate-in">
+      <div class="market-stat green"><div class="val">$8.77B</div><div class="lbl">حجم بازار ۲۰۲۵</div></div>
+      <div class="market-stat"><div class="val">$14.57B</div><div class="lbl">پیش‌بینی ۲۰۳۴</div></div>
+      <div class="market-stat purple"><div class="val">5.8%</div><div class="lbl">CAGR 2026-2033</div></div>
+      <div class="market-stat green"><div class="val">9.1%</div><div class="lbl">CAGR اولتراسونیک</div></div>
+      <div class="market-stat"><div class="val">$18B</div><div class="lbl">پیش‌بینی ۲۰۳۳ (Grand View)</div></div>
+      <div class="market-stat purple"><div class="val">6.7%</div><div class="lbl">CAGR 2024-2029</div></div>
+    </div>
+    <div class="chart-card animate-in">
+      <h4><i class="fas fa-chart-area"></i> رشد بازار جهانی فلومتر (میلیارد دلار)</h4>
+      <div class="chart-wrapper tall"><canvas id="marketChart"></canvas></div>
+    </div>
+    <div class="chart-card animate-in">
+      <h4><i class="fas fa-chart-pie"></i> سهم فناوری‌ها از بازار ۲۰۲۵</h4>
+      <div class="chart-wrapper tall"><canvas id="shareChart"></canvas></div>
+    </div>
+    <div class="info-grid animate-in" style="margin-top:18px">
+      <div class="info-card" style="border-right-color:var(--accent)"><div class="info-icon"><i class="fas fa-oil-can"></i></div><h5>راننده ۱ — نفت و گاز</h5><p>بزرگترین بخش بازار. توربین، کوریولیس و اولتراسونیک برای اندازه‌گیری تجاری محموله.</p></div>
+      <div class="info-card" style="border-right-color:var(--success)"><div class="info-icon" style="color:var(--success)"><i class="fas fa-tint"></i></div><h5>راننده ۲ — تصفیه آب</h5><p>فلومتر مغناطیسی استاندارد برای آب و فاضلاب. بدون سایش، عمر طولانی.</p></div>
+      <div class="info-card" style="border-right-color:var(--purple)"><div class="info-icon" style="color:var(--purple)"><i class="fas fa-flask"></i></div><h5>راننده ۳ — دارویی و شیمیایی</h5><p>کوریولیس برای دقت ±۰.۱٪ و اندازه‌گیری جرم مستقیم محموله‌های گران‌قیمت.</p></div>
+      <div class="info-card" style="border-right-color:var(--pink)"><div class="info-icon" style="color:var(--pink)"><i class="fas fa-microchip"></i></div><h5>راننده ۴ — IoT و هوش مصنوعی</h5><p>فلومترهای هوشمند متصل به فضای ابری با تعمیر پیش‌بینانه. سریع‌ترین رشد بازار.</p></div>
+    </div>
+    <div class="hint animate-in"><i class="fas fa-lightbulb"></i><div><strong>روند کلیدی ۲۰۲۴-۲۰۲۵:</strong> فلومترهای اولتراسونیک clamp-on با CAGR ۹.۱٪ سریع‌ترین رشد را دارند چون بدون توقف خط نصب می‌شوند. ترکیب با IoT به کاربران اجازه می‌دهد دبی را از راه دور پایش کنند و با الگوریتم‌های یادگیری ماشین، نشتی و فرسودگی را پیش‌بینی کنند.</div></div>
+  </div>
+</section>
+
+<!-- APPLICATIONS -->
+<section class="slide" id="applications">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-th-large"></i></div>
+    <h2>🏭 ماتریس کاربردها — جایی که هر فلومتری می‌درخشد</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <p class="animate-in">در زیر ماتریس کاربردهای واقعی را می‌بینید. هر کاربرد با فلومتر مناسب و دلیل انتخاب آن مشخص شده است.</p>
+    <img src="images/12-summary-selection.png" alt="جمع‌بندی و راهنمای انتخاب فلومتر" class="figure animate-in" loading="lazy" style="max-width:920px">
+    <div class="figure-caption animate-in">اسلاید ۱۲ — جمع‌بندی: راهنمای انتخاب فلومتر بر اساس نوع سیال و کاربرد</div>
+
+    <div class="app-grid animate-in">
+      <div class="app-card">
+        <div class="icon"><i class="fas fa-tint"></i></div>
+        <h5>تصفیه آب شهری</h5>
+        <p>اندازه‌گیری دبی ورودی و خروجی تصفیه‌خانه. لوله‌های بزرگ.</p>
+        <div class="tags"><span>مغناطیسی</span><span>اولتراسونیک</span></div>
+      </div>
+      <div class="app-card">
+        <div class="icon"><i class="fas fa-oil-can"></i></div>
+        <h5>انتقال نفت</h5>
+        <p>اندازه‌گیری تجاری محموله در خط لوله. دقت بحرانی.</p>
+        <div class="tags"><span>توربین</span><span>کوریولیس</span></div>
+      </div>
+      <div class="app-card">
+        <div class="icon"><i class="fas fa-pills"></i></div>
+        <h5>خط تولید دارو</h5>
+        <p>دقیق‌ترین اندازه‌گیری جرم مادهٔ فعال. بدون آلودگی.</p>
+        <div class="tags"><span>کوریولیس</span><span>±0.1%</span></div>
+      </div>
+      <div class="app-card">
+        <div class="icon"><i class="fas fa-fire"></i></div>
+        <h5>بخار صنعتی</h5>
+        <p>توزیع بخار در کارخانه. دما و فشار بالا.</p>
+        <div class="tags"><span>ونتوری</span><span>نازل</span></div>
+      </div>
+      <div class="app-card">
+        <div class="icon"><i class="fas fa-gas-pump"></i></div>
+        <h5>دیسپنسر سوخت</h5>
+        <p>پمپ بنزین. حجم هر لیتر باید دقیق باشد.</p>
+        <div class="tags"><span>ایمپلر</span><span>هال</span></div>
+      </div>
+      <div class="app-card">
+        <div class="icon"><i class="fas fa-flask-vial"></i></div>
+        <h5>آزمایشگاه شیمی</h5>
+        <p>نمایش محلی جریان گاز. خوانش با چشم.</p>
+        <div class="tags"><span>روتامتر</span></div>
+      </div>
+      <div class="app-card">
+        <div class="icon"><i class="fas fa-wind"></i></div>
+        <h5>گاز طبیعی صنعتی</h5>
+        <p>توزیع گاز در کارخانه. لولهٔ در حال کار.</p>
+        <div class="tags"><span>اولتراسونیک</span><span>حرارتی</span></div>
+      </div>
+      <div class="app-card">
+        <div class="icon"><i class="fas fa-shield-halved"></i></div>
+        <h5>محافظت پمپ</h5>
+        <p>قطع پمپ اگر جریان آب متوقف شود.</p>
+        <div class="tags"><span>سوئیچ فلپ</span></div>
+      </div>
+      <div class="app-card">
+        <div class="icon"><i class="fas fa-seedling"></i></div>
+        <h5>آبیاری هوشمند</h5>
+        <p>پایش مصرف آب در مزرعه. کم‌هزینه و دیجیتال.</p>
+        <div class="tags"><span>ایمپلر</span><span>IoT</span></div>
+      </div>
+      <div class="app-card">
+        <div class="icon"><i class="fas fa-industry"></i></div>
+        <h5>دوغاب معدنی</h5>
+        <p>سیال رسانا با ذرات معلق. بدون سایش.</p>
+        <div class="tags"><span>مغناطیسی</span></div>
+      </div>
+      <div class="app-card">
+        <div class="icon"><i class="fas fa-vial"></i></div>
+        <h5>تزریق اسید</h5>
+        <p>محمولهٔ خورنده. لولهٔ پوشش‌دار.</p>
+        <div class="tags"><span>مغناطیسی</span><span>PTFE</span></div>
+      </div>
+      <div class="app-card">
+        <div class="icon"><i class="fas fa-bolt"></i></div>
+        <h5>هوای فشرده صنعتی</h5>
+        <p>پایش مصرف هوای فشرده برای بهره‌وری انرژی.</p>
+        <div class="tags"><span>حرارتی</span><span>اولتراسونیک</span></div>
+      </div>
+    </div>
+    <div class="hint animate-in"><i class="fas fa-lightbulb"></i><div><strong>قانون طلایی انتخاب:</strong> سیال رسانا (آب، اسید، دوغاب) → مغناطیسی. گاز → حرارتی یا اولتراسونیک. مایع تمیز با دقت بالا → توربین یا کوریولیس. بخار/گاز فشرده → نازل یا ونتوری. نمایش محلی بدون برق → روتامتر. فقط حضور/غیاب → سوئیچ فلپ.</div></div>
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section class="slide" id="quiz">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-brain"></i></div>
+    <h2>🧠 کوییز تعاملی — ۱۰ سؤال</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <p class="animate-in">آموخته‌هایتان را بسنجید. هر سؤال چهار گزینه دارد و پس از انتخاب، توضیح کامل ظاهر می‌شود. در پایان امتیاز کلی شما نمایش داده می‌شود.</p>
+    <div class="quiz-container animate-in">
+      <div class="quiz-progress">
+        <div class="bar"><div class="fill" id="quizFill"></div></div>
+        <div class="count" id="quizCount">سؤال ۱ از ۱۰</div>
+      </div>
+      <div class="quiz-question" id="quizQuestion">در حال بارگذاری...</div>
+      <div class="quiz-options" id="quizOptions"></div>
+      <div class="quiz-feedback" id="quizFeedback"></div>
+      <div class="quiz-actions">
+        <button class="btn" id="quizNext" disabled>سؤال بعدی ←</button>
+        <div class="quiz-score">امتیاز: <b id="quizScore">۰</b> از ۱۰</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXERCISES -->
+<section class="slide" id="exercises">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-pen-to-square"></i></div>
+    <h2>📝 تمرین‌های کلاسی و میان‌ترم</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <div class="accordion animate-in">
+      <div class="acc-item open">
+        <div class="acc-head"><span class="acc-icon">▶</span> الف) سؤالات مفهومی</div>
+        <div class="acc-body">
+          <p><strong style="color:var(--accent)">۱.</strong> اصل کار فلومتر ونتوری را با استفاده از معادله برنولی توضیح دهید. چرا رابطه ΔP و Q مجذوری است؟</p>
+          <p><strong style="color:var(--accent)">۲.</strong> تفاوت فلومتر ایمپلر و توربین در چیست؟ چرا توربین از کوئل پیک‌آپ استفاده می‌کند در حالی که ایمپلر از سنسور اثر هال؟</p>
+          <p><strong style="color:var(--accent)">۳.</strong> چرا فلومتر مغناطیسی برای بنزین و روغن کار نمی‌کند؟ چه شرطی لازم است؟</p>
+          <p><strong style="color:var(--accent)">۴.</strong> فلومتر کوریولیس چه مزیت کلیدی نسبت به همهٔ فلومترهای دیگر دارد؟ چرا مستقل از چگالی است؟</p>
+        </div>
+      </div>
+      <div class="acc-item">
+        <div class="acc-head"><span class="acc-icon">▶</span> ب) تمرین‌های عملی</div>
+        <div class="acc-body">
+          <p><strong style="color:var(--success)">۵.</strong> یک لوله با قطر ۱۰۰ mm و گلوگاه ونتوری ۶۰ mm دارد. اگر دبی ۵۰ L/min باشد، سرعت در ورودی و گلوگاه را حساب کنید. (پاسخ: V₁≈۱.۰۶ m/s، V₂≈۲.۹۵ m/s)</p>
+          <p><strong style="color:var(--success)">۶.</strong> فلومتر ایمپلر با ضریب K=۴۵۰ pulses/L روی یک خط آبیاری نصب شده. در یک ساعت ۱۶۲۰۰ پالس شمارش شد. حجم آب مصرفی چند لیتر است؟ نرخ دبی چند L/min؟</p>
+          <p><strong style="color:var(--success)">۷.</strong> اگر اختلاف فشار یک فلومتر ونتوری ۲ برابر شود، دبی چند برابر می‌شود؟ (پاسخ: √۲ ≈ ۱.۴۱ برابر)</p>
+        </div>
+      </div>
+      <div class="acc-item">
+        <div class="acc-head"><span class="acc-icon">▶</span> ج) تمرین نوشتاری</div>
+        <div class="acc-body">
+          <p><strong style="color:var(--purple)">۸.</strong> در یک سناریوی صنعتی، یک کارخانه شیمیایی نیاز دارد دبی اسید سولفوریک (رسانا و خورنده) را در لولهٔ ۴ اینچ اندازه بگیرد. کدام فلومتر را پیشنهاد می‌دهید و چرا؟ حداقل ۲۰۰ کلمه بنویسید و پوشش لوله، مواد الکترود و روش نصب را توضیح دهید.</p>
+          <p><strong style="color:var(--purple)">۹.</strong> مقایسهٔ ۳۰۰ کلمه‌ای بین فلومتر کوریولیس و اولتراسونیک برای کاربرد «اندازه‌گیری گاز طبیعی در خط لولهٔ در حال کار ۲۴ اینچ» بنویسید. دقت، نصب، قیمت و تعمیر و نگهداری را پوشش دهید.</p>
+        </div>
+      </div>
+      <div class="acc-item">
+        <div class="acc-head"><span class="acc-icon">▶</span> د) چالش خلاقانه میان‌ترم ★</div>
+        <div class="acc-body">
+          <p><strong style="color:var(--danger)">۱۰.</strong> یک سیستم پایش هوشمند IoT برای شبکهٔ آب شهری طراحی کنید که با فلومتر اولتراسونیک clamp-on کار کند. دیاگرام بلوکی بکشید، پارامترهای پایش را لیست کنید و توضیح دهید چطور الگوریتم یادگیری ماشین می‌تواند نشتی را در ۲۴ ساعت تشخیص دهد. (این چالش به‌عنوان سؤال میان‌ترم محسوب می‌شود.)</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL REVIEW -->
+<section class="slide" id="review">
+  <div class="slide-title animate-in">
+    <div class="title-icon-wrap"><i class="fas fa-clipboard-check"></i></div>
+    <h2>📋 جمع‌بندی و مرور</h2>
+    <span class="subtitle-bar"></span>
+  </div>
+  <div class="content-body">
+    <p class="animate-in">در این جلسه، هفت فناوری فلومتر را کالبدشکافی کردیم — از لولهٔ ونتوری ۱۷۹۷ تا کوریولیس مدرن. هرکدام جای خود را دارد:</p>
+    <div class="info-grid animate-in">
+      <div class="info-card" style="border-right-color:var(--accent)"><div class="info-icon"><i class="fas fa-compress-arrows-alt"></i></div><h5>ونتوری</h5><p>قدیمی‌ترین و معتبرترین فلومتر فشاری. اصل برنولی. ±۰.۵٪. افت فشار کم. قیمت بالا.</p></div>
+      <div class="info-card" style="border-right-color:var(--accent2)"><div class="info-icon" style="color:var(--accent2)"><i class="fas fa-compress"></i></div><h5>نازل</h5><p>میان‌رو ونتوری-اوریفیس. مناسب بخار و گاز فشرده. ارزان‌تر از ونتوری.</p></div>
+      <div class="info-card" style="border-right-color:var(--success)"><div class="info-icon" style="color:var(--success)"><i class="fas fa-fan"></i></div><h5>ایمپلر</h5><p>پروانهٔ کوچک + اثر هال. ارزان، دیجیتال، برای خودرو و خانگی.</p></div>
+      <div class="info-card" style="border-right-color:var(--purple)"><div class="info-icon" style="color:var(--purple)"><i class="fas fa-fan"></i></div><h5>توربین</h5><p>روتور دقیق + کوئل پیک‌آپ. ±۰.۲۵٪. استاندارد نفت و گاز تجاری.</p></div>
+      <div class="info-card" style="border-right-color:var(--gold)"><div class="info-icon" style="color:var(--gold)"><i class="fas fa-grip-lines-vertical"></i></div><h5>روتامeter</h5><p>فلید متغیر، خوانش بصری. بدون برق. آزمایشگاه و نمایش محلی.</p></div>
+      <div class="info-card" style="border-right-color:var(--pink)"><div class="info-icon" style="color:var(--pink)"><i class="fas fa-magnet"></i></div><h5>مغناطیسی</h5><p>قانون فارادی. سیال رسانا. بدون سایش. آب، فاضلاب، اسید.</p></div>
+      <div class="info-card" style="border-right-color:var(--purple)"><div class="info-icon" style="color:var(--purple)"><i class="fas fa-atom"></i></div><h5>کوریولیس</h5><p>دبی جرمی مستقیم. ±۰.۱٪. مستقل از چگالی. دارویی و شیمیایی.</p></div>
+      <div class="info-card" style="border-right-color:var(--accent)"><div class="info-icon"><i class="fas fa-satellite-dish"></i></div><h5>اولتراسونیک</h5><p>زمان‌پرواز. clamp-on، غیرتهاجمی. سریع‌ترین رشد بازار (CAGR ۹.۱٪).</p></div>
+    </div>
+    <div class="tip animate-in"><i class="fas fa-lightbulb"></i><div><strong>پیام پایانی:</strong> اندازه‌گیری دبی، پایهٔ بهره‌وری صنعتی و حفاظت از منابع است. از نیلسومتر مصری تا کوریولیس کوانتومی، یک اصل ثابت ماند — تبدیل ویژگی فیزیکی جریان به سیگنال قابل‌خوانش. در جلسهٔ بعد، اثر هال و اندازه‌گیری سرعت را بررسی می‌کنیم. آماده باشید!</div></div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div>جلسه دوازدهم — <strong>سنسورهای اندازه‌گیری دبی سیال</strong> | درس سیستم‌های اندازه‌گیری و کنترل</div>
+  <div class="credits">مدرس: دکتر مسعود گوهری‌منش · دانشگاه تربت حیدریه · <a href="https://goharimanesh.github.io/Measurement-Class/">صفحه درس</a></div>
+</footer>
+
+<!-- SCRIPTS -->
+<script>
+mermaid.initialize({startOnLoad:true, theme:'dark', themeVariables:{primaryColor:'#06b6d4', primaryTextColor:'#fff', primaryBorderColor:'#3b82f6', lineColor:'#a855f7', secondaryColor:'#0a1024', fontFamily:'Vazirmatn, sans-serif'}});
+
+const io = new IntersectionObserver((entries)=>{ entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); } }); },{threshold:0.12, rootMargin:'0px 0px -8% 0px'});
+document.querySelectorAll('.animate-in').forEach(el=>io.observe(el));
+
+window.addEventListener('scroll',()=>{
+  const h = document.documentElement;
+  const scrolled = (h.scrollTop)/(h.scrollHeight-h.clientHeight)*100;
+  document.getElementById('progressBar').style.width = scrolled + '%';
+});
+
+document.getElementById('navMenuBtn').addEventListener('click',()=>{ document.getElementById('navLinks').classList.toggle('open'); });
+document.querySelectorAll('.nav-links a').forEach(a=>{ a.addEventListener('click',()=>document.getElementById('navLinks').classList.remove('open')); });
+
+document.querySelectorAll('.acc-head').forEach(h=>{ h.addEventListener('click',()=>{ h.parentElement.classList.toggle('open'); }); });
+
+document.querySelectorAll('#modernTabs .tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('#modernTabs .tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-'+tab.dataset.tab).classList.add('active');
+  });
+});
+
+/* ===== Radar chart ===== */
+new Chart(document.getElementById('radarChart'),{
+  type:'radar',
+  data:{
+    labels:['دقت','افت فشار کم','قیمت پایین','بدون سایش','گستره سیال','نصب آسان','IoT-آماده','مستقل از چگالی'],
+    datasets:[
+      {label:'ونتوری',data:[4,5,2,5,3,2,2,2],borderColor:'#06b6d4',backgroundColor:'rgba(6,182,212,.15)',borderWidth:2},
+      {label:'توربین',data:[5,3,3,2,3,3,3,2],borderColor:'#a855f7',backgroundColor:'rgba(168,85,247,.12)',borderWidth:2},
+      {label:'مغناطیسی',data:[4,5,3,5,2,4,4,3],borderColor:'#00d4aa',backgroundColor:'rgba(0,212,170,.12)',borderWidth:2},
+      {label:'کوریولیس',data:[5,3,1,4,4,2,4,5],borderColor:'#ec4899',backgroundColor:'rgba(236,72,153,.12)',borderWidth:2},
+      {label:'اولتراسونیک',data:[3,5,3,5,4,5,5,3],borderColor:'#ffb700',backgroundColor:'rgba(255,183,0,.12)',borderWidth:2}
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{labels:{color:'#e8eaf2',font:{family:'Vazirmatn'}}}},
+    scales:{r:{min:0,max:5,ticks:{color:'#5c6370',backdropColor:'transparent',stepSize:1},grid:{color:'rgba(255,255,255,.08)'},angleLines:{color:'rgba(255,255,255,.08)'},pointLabels:{color:'#e8eaf2',font:{family:'Vazirmatn',size:11}}}}
+  }
+});
+
+/* ===== Market chart ===== */
+new Chart(document.getElementById('marketChart'),{
+  type:'line',
+  data:{
+    labels:['۲۰۲۳','۲۰۲۴','۲۰۲۵','۲۰۲۶','۲۰۲۸','۲۰۳۰','۲۰۳۲','۲۰۳۴'],
+    datasets:[
+      {label:'بازار جهانی (میلیارد دلار)',data:[8.1,8.4,8.77,9.28,10.3,11.5,12.8,14.57],borderColor:'#06b6d4',backgroundColor:'rgba(6,182,212,.18)',fill:true,tension:.35,borderWidth:3,pointBackgroundColor:'#3b82f6',pointRadius:5},
+      {label:'اولتراسونیک (CAGR 9.1%)',data:[1.2,1.31,1.43,1.56,1.85,2.2,2.6,3.1],borderColor:'#ffb700',backgroundColor:'rgba(255,183,0,.1)',fill:false,tension:.35,borderWidth:2,borderDash:[6,4]}
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{labels:{color:'#e8eaf2',font:{family:'Vazirmatn'}}}},
+    scales:{
+      y:{ticks:{color:'#9aa3b5',font:{family:'Fira Code'},callback:v=>'$'+v+'B'},grid:{color:'rgba(255,255,255,.06)'}},
+      x:{ticks:{color:'#e8eaf2',font:{family:'Vazirmatn'}},grid:{display:false}}
+    }
+  }
+});
+
+/* ===== Share chart ===== */
+new Chart(document.getElementById('shareChart'),{
+  type:'doughnut',
+  data:{
+    labels:['مغناطیسی','کوریولیس','اولتراسونیک','ونتوری/نازل','توربین','روتامتر/ایمپلر/سایر'],
+    datasets:[{data:[22,18,16,14,16,14],backgroundColor:['#06b6d4','#a855f7','#ffb700','#3b82f6','#ec4899','#00d4aa'],borderColor:'#070b1e',borderWidth:3}]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom',labels:{color:'#e8eaf2',font:{family:'Vazirmatn',size:11},padding:14}}}
+  }
+});
+
+/* ===== SIM 1: Venturi ===== */
+(function(){
+  const canvas=document.getElementById('venturiCanvas');
+  const ctx=canvas.getContext('2d');
+  function draw(){
+    const w=canvas.width=canvas.offsetWidth, h=canvas.height=280;
+    ctx.clearRect(0,0,w,h);
+    const Q=parseFloat(document.getElementById('qRange').value);
+    const beta=parseFloat(document.getElementById('betaRange').value);
+    const rho=parseFloat(document.getElementById('rhoRange').value);
+    const D=0.05; // 5cm
+    const A1=Math.PI*D*D/4;
+    const A2=A1*beta*beta;
+    const V1=Q/60000/A1;
+    const V2=V1/(beta*beta);
+    const Cd=0.98;
+    const dP=(rho*(1-Math.pow(beta,4))*0.5*Math.pow(V2,2))/1000;
+    document.getElementById('qVal').textContent=Q;
+    document.getElementById('betaVal').textContent=beta.toFixed(2);
+    document.getElementById('rhoVal').textContent=rho;
+    document.getElementById('dpVal').textContent=dP.toFixed(2);
+    document.getElementById('v1Val').textContent=V1.toFixed(2);
+    document.getElementById('v2Val').textContent=V2.toFixed(2);
+    document.getElementById('recVal').textContent=(85+Math.random()*5).toFixed(0)+'%';
+    document.getElementById('cdVal').textContent=Cd.toFixed(2);
+    document.getElementById('statVal').textContent=dP>0.01?'OK':'ΔP کم';
+    document.getElementById('statVal').style.color=dP>0.01?'var(--success)':'var(--danger)';
+    document.getElementById('venturiHint').innerHTML='Q='+Q+' L/min، ΔP='+dP.toFixed(2)+' kPa. رابطه مجذوری: اگر Q دو برابر شود، ΔP چهار برابر می‌شود.';
+    // draw pipe
+    const cy=h/2, pipeH=80, throatH=pipeH*beta;
+    const x1=20, x2=w-20;
+    const conv=(x1+x2)/2-60, throat=(x1+x2)/2, div=(x1+x2)/2+60;
+    // pipe walls
+    ctx.fillStyle='rgba(6,182,212,.08)';
+    ctx.beginPath();
+    ctx.moveTo(x1,cy-pipeH/2);
+    ctx.lineTo(conv,cy-pipeH/2);
+    ctx.lineTo(throat,cy-throatH/2);
+    ctx.lineTo(div,cy-pipeH/2);
+    ctx.lineTo(x2,cy-pipeH/2);
+    ctx.lineTo(x2,cy+pipeH/2);
+    ctx.lineTo(div,cy+pipeH/2);
+    ctx.lineTo(throat,cy+throatH/2);
+    ctx.lineTo(conv,cy+pipeH/2);
+    ctx.lineTo(x1,cy+pipeH/2);
+    ctx.closePath();ctx.fill();
+    ctx.strokeStyle='var(--accent)';ctx.lineWidth=2;ctx.stroke();
+    // flow streamlines
+    for(let i=0;i<5;i++){
+      const yy=cy-pipeH/2+10+i*15;
+      ctx.strokeStyle='rgba(6,182,212,'+(0.3+0.4*Math.random())+')';
+      ctx.lineWidth=1;
+      ctx.beginPath();
+      let xx=x1;
+      while(xx<x2){
+        const t=(xx-x1)/(x2-x1);
+        let y=yy;
+        if(xx>conv&&xx<throat){const k=(xx-conv)/(throat-conv);y=cy+(yy-cy)*(1-k+k*beta);}
+        else if(xx>throat&&xx<div){const k=(xx-throat)/(div-throat);y=cy+(yy-cy)*(beta+k*(1-beta));}
+        ctx.lineTo(xx,y);
+        xx+=4+V1*0.5;
+      }
+      ctx.stroke();
+    }
+    // pressure taps
+    ctx.fillStyle='#ffb700';ctx.beginPath();ctx.arc(conv-10,cy-pipeH/2-5,4,0,7);ctx.fill();
+    ctx.fillStyle='#ff4757';ctx.beginPath();ctx.arc(throat,cy-throatH/2-5,4,0,7);ctx.fill();
+    ctx.fillStyle='#fff';ctx.font='11px Vazirmatn';ctx.textAlign='center';
+    ctx.fillText('HIGH',conv-10,cy-pipeH/2-12);
+    ctx.fillText('LOW',throat,cy-throatH/2-12);
+    ctx.fillText('Q='+Q+' L/min',x1+50,cy+pipeH/2+25);
+  }
+  ['qRange','betaRange','rhoRange'].forEach(id=>document.getElementById(id).addEventListener('input',draw));
+  window.addEventListener('resize',draw);
+  draw();
+})();
+
+/* ===== SIM 2: Impeller ===== */
+(function(){
+  const canvas=document.getElementById('impellerCanvas');
+  const ctx=canvas.getContext('2d');
+  let angle=0, ledOn=false, ledTimer=0, count=0;
+  function draw(){
+    const w=canvas.width=canvas.offsetWidth, h=canvas.height=280;
+    ctx.clearRect(0,0,w,h);
+    const Q=parseFloat(document.getElementById('impQRange').value);
+    const blades=parseInt(document.getElementById('bladeRange').value);
+    const omega=Q*0.6; // rad/s approx
+    angle+=omega*0.05;
+    document.getElementById('impQ').textContent=Q;
+    document.getElementById('bladeVal').textContent=blades;
+    const rpm=omega*60/(2*Math.PI);
+    const freq=rpm/60*blades;
+    const kFactor=freq*60/Q;
+    const pulseVol=Q>0?1000/freq*60:0;
+    document.getElementById('freqVal').textContent=freq.toFixed(1);
+    document.getElementById('rpmVal').textContent=rpm.toFixed(0);
+    document.getElementById('pulseVol').textContent=pulseVol.toFixed(2);
+    document.getElementById('kFactor').textContent=kFactor.toFixed(0);
+    document.getElementById('impStatus').textContent=Q>0?'در حال جریان':'متوقف';
+    document.getElementById('impStatus').style.color=Q>0?'var(--success)':'var(--danger)';
+    // pipe
+    const cy=h/2;
+    ctx.fillStyle='rgba(6,182,212,.05)';ctx.fillRect(20,cy-50,w-40,100);
+    ctx.strokeStyle='rgba(6,182,212,.3)';ctx.lineWidth=2;ctx.strokeRect(20,cy-50,w-40,100);
+    // impeller hub
+    const cx=w/2;
+    ctx.fillStyle='#1a2440';ctx.beginPath();ctx.arc(cx,cy,16,0,7);ctx.fill();
+    // blades
+    for(let i=0;i<blades;i++){
+      const a=angle+i*2*Math.PI/blades;
+      const x2=cx+Math.cos(a)*40, y2=cy+Math.sin(a)*40;
+      ctx.strokeStyle='#06b6d4';ctx.lineWidth=4;
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(x2,y2);ctx.stroke();
+      // magnet at tip
+      ctx.fillStyle='#ff4757';ctx.beginPath();ctx.arc(x2,y2,5,0,7);ctx.fill();
+    }
+    // hall sensor (outside pipe)
+    ctx.fillStyle='#a855f7';ctx.fillRect(cx+45,cy-5,10,10);
+    ctx.fillStyle='#fff';ctx.font='10px Vazirmatn';ctx.textAlign='center';
+    ctx.fillText('Hall',cx+50,cy-12);
+    // LED blink on blade pass
+    ledTimer++;
+    if(ledTimer> (60/(freq+0.1))){
+      ledOn=!ledOn;ledTimer=0;count++;
+      const led=document.getElementById('hallLed');
+      led.classList.toggle('on',ledOn);
+      led.classList.toggle('amber',ledOn);
+    }
+    document.getElementById('impHint').innerHTML='پالس تولیدشده: '+count+'. هر پالس = یک پره از مقابل هال عبور کرده. فرکانس '+freq.toFixed(1)+' Hz.';
+    requestAnimationFrame(draw);
+  }
+  ['impQRange','bladeRange'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{count=0;}));
+  draw();
+})();
+
+/* ===== SIM 3: Coriolis ===== */
+(function(){
+  const canvas=document.getElementById('coriolisCanvas');
+  const ctx=canvas.getContext('2d');
+  let t=0;
+  function draw(){
+    const w=canvas.width=canvas.offsetWidth, h=canvas.height=280;
+    ctx.clearRect(0,0,w,h);
+    const massQ=parseFloat(document.getElementById('massQRange').value);
+    const rho=parseFloat(document.getElementById('corRhoRange').value);
+    t+=0.05;
+    const phase=Math.atan(massQ*0.1);
+    const phaseMicros=massQ*2.5; // μs approx
+    const massKgs=massQ/60;
+    const volLpm=massQ/rho*1000;
+    document.getElementById('massQ').textContent=massQ.toFixed(1);
+    document.getElementById('corRho').textContent=rho;
+    document.getElementById('phaseVal').textContent=phaseMicros.toFixed(1);
+    document.getElementById('massKgs').textContent=massKgs.toFixed(3);
+    document.getElementById('volLpm').textContent=volLpm.toFixed(1);
+    document.getElementById('corStat').textContent=massQ>0?'فعال':'متوقف';
+    document.getElementById('corStat').style.color=massQ>0?'var(--success)':'var(--danger)';
+    // U-tube
+    const cx=w/2, cy=h/2;
+    const armLen=70;
+    const amp=15;
+    const leftY=cy+amp*Math.sin(t);
+    const rightY=cy+amp*Math.sin(t+phase);
+    // left arm
+    ctx.strokeStyle='#06b6d4';ctx.lineWidth=8;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(cx-armLen,cy-50);ctx.lineTo(cx-armLen,leftY);ctx.stroke();
+    // bottom
+    ctx.beginPath();ctx.moveTo(cx-armLen,leftY);
+    ctx.quadraticCurveTo(cx,cy+amp*2,cx+armLen,rightY);ctx.stroke();
+    // right arm
+    ctx.beginPath();ctx.moveTo(cx+armLen,rightY);ctx.lineTo(cx+armLen,cy-50);ctx.stroke();
+    // coils (driver & sensors)
+    ctx.fillStyle='#ffb700';ctx.beginPath();ctx.arc(cx,cy+amp*1.5+30,8,0,7);ctx.fill();
+    ctx.fillStyle='#ff4757';ctx.beginPath();ctx.arc(cx-armLen,cy-50,6,0,7);ctx.fill();
+    ctx.fillStyle='#00d4aa';ctx.beginPath();ctx.arc(cx+armLen,cy-50,6,0,7);ctx.fill();
+    // labels
+    ctx.fillStyle='#fff';ctx.font='11px Vazirmatn';ctx.textAlign='center';
+    ctx.fillText('درایور',cx,cy+amp*1.5+50);
+    ctx.fillText('سنسور ۱',cx-armLen,cy-65);
+    ctx.fillText('سنسور ۲',cx+armLen,cy-65);
+    ctx.fillText('Δφ = '+phaseMicros.toFixed(1)+' μs',cx,30);
+    requestAnimationFrame(draw);
+  }
+  ['massQRange','corRhoRange'].forEach(id=>document.getElementById(id).addEventListener('input',draw));
+  draw();
+})();
+
+/* ===== SIM 4: Selection ===== */
+(function(){
+  const fluids=['آب','فاضلاب/دوغاب','بنزین/روغن','گاز طبیعی','بخار صنعتی'];
+  const accs=['پایین','متوسط','بالا'];
+  const pipes=['کوچک (<۲۵mm)','متوسط (۲۵-۲۰۰mm)','بزرگ (>۲۰۰mm)'];
+  function recommend(){
+    const f=parseInt(document.getElementById('selFluidRange').value);
+    const a=parseInt(document.getElementById('selAccRange').value);
+    const p=parseInt(document.getElementById('selPipeRange').value);
+    document.getElementById('selFluid').textContent=fluids[f];
+    document.getElementById('selAcc').textContent=accs[a];
+    document.getElementById('selPipe').textContent=pipes[p];
+    let sensor='',reason='';
+    if(f===0){ // آب
+      if(p===2){sensor='فلومتر مغناطیسی یا اولتراسونیک';reason='آب در لوله بزرگ: مغناطیسی برای دقت ±۰.۵٪، اولتراسونیک clamp-on برای نصب بدون توقف.';}
+      else{sensor='فلومتر مغناطیسی';reason='آب رسانا، بدون سایش، عمر طولانی. استاندارد صنایع آب.';}
+    } else if(f===1){ // فاضلاب/دوغاب
+      sensor='فلومتر مغناطیسی';reason='دوغاب رسانا با ذرات: مغناطیسی بدون قطعهٔ متحرک، مقاوم در برابر سایش ذرات.';
+    } else if(f===2){ // بنزین/روغن
+      if(a===2){sensor='فلومتر کوریولیس';reason='هیدروکربن با دقت بالا: کوریولیس دبی جرمی مستقیم، مستقل از چگالی متغیر.';}
+      else{sensor='فلومتر توربین';reason='مایع تمیز هیدروکربنی: توربین ±۰.۲۵٪، استاندارد تجاری نفت.';}
+    } else if(f===3){ // گاز
+      if(p===2){sensor='فلومتر اولتراسونیک';reason='گاز در لوله بزرگ در حال کار: اولتراسونیک clamp-on، بدون توقف، مناسب IoT.';}
+      else{sensor='فلومتر حرارتی (Thermal Mass)';reason='گاز کوچک/متوسط: حرارتی دبی جرمی مستقیم، مناسب گاز خشک.';}
+    } else { // بخار
+      sensor='فلومتر نازل یا ونتوری';reason='بخار دما/فشار بالا: نازل تحمل بهتری دارد، ونتوری برای دقت ±۰.۵٪.';}
+    document.getElementById('selResultText').innerHTML='<strong style="color:var(--success)">'+sensor+'</strong><br>'+reason;
+  }
+  ['selFluidRange','selAccRange','selPipeRange'].forEach(id=>document.getElementById(id).addEventListener('input',recommend));
+  recommend();
+})();
+
+/* ===== QUIZ ===== */
+(function(){
+  const questions=[
+    {q:'کدام رابطه بین ΔP و Q در فلومتر ونتوری برقرار است؟',o:['خطی Q ∝ ΔP','مجذوری Q ∝ √ΔP','معکوس Q ∝ 1/ΔP','نمایی Q ∝ ΔP²'],a:1,ex:'قانون برنولی: انرژی جنبشی متناسب با V² است و V متناسب با Q. بنابراین Q² ∝ ΔP یا Q ∝ √ΔP.'},
+    {q:'لوله ونتوری در چه سالی و توسط چه کسی اختراع شد؟',o:['۱۷۳۸ برنولی','۱۷۹۷ ونتوری','۱۸۸۶ هرشل','۱۹۵۲ توبین‌متر'],a:1,ex:'جیووانی باتیستا ونتوری فیزیکدان ایتالیایی در ۱۷۹۷ کشف کرد. هرشل در ۱۸۸۶ آن را به فلومتر عملی تبدیل کرد.'},
+    {q:'فلومتر ایمپلر از کدام سنسور برای خوانش چرخش استفاده می‌کند؟',o:['فتودیود','سنسور اثر هال','کوئل پیک‌آپ','ترمیستور'],a:1,ex:'آهنربای روی پره از مقابل سنسور اثر هال عبور می‌کند و پالس دیجیتال تولید می‌کند.'},
+    {q:'فلومتر توربین چطور بدون تغذیه الکتریکی سیگنال تولید می‌کند؟',o:['با پیل خورشیدی','با کوئل پیک‌آپ القایی','با اثر هال','با ترموکوپل'],a:1,ex:'کوئل پیک‌آپ با تغییر reluctivity مسیر مغناطیسی هنگام عبور پرهٔ فولادی، ولتاژ القایی تولید می‌کند (قانون فارادی).'},
+    {q:'کدام فلومتر برای بنزین و روغن کار نمی‌کند؟',o:['ونتوری','مغناطیسی','توربین','کوریولیس'],a:1,ex:'فلومتر مغناطیسی فقط با سیال رسانا کار می‌کند. هیدروکربن‌ها رسانا نیستند.'},
+    {q:'فلومتر کوریولیس چه نوع دبی را مستقیماً اندازه می‌گیرد؟',o:['دبی حجمی','دبی جرمی','دبی سرعت','دبی فشار'],a:1,ex:'کوریولیس بر اساس نیروی کوریولیس کار می‌کند که به جرم متحرک وارد می‌شود. مستقل از چگالی است.'},
+    {q:'روتامتر بر چه اصلی کار می‌کند؟',o:['فلید ثابت','فلید متغیر (مساحت متغیر)','زمان پرواز','اثر هال'],a:1,ex:'روتامتر لولهٔ مخروطی با شناور دارد. مساحت حلقوی تغییر می‌کند تا افت فشار ثابت بماند.'},
+    {q:'کدام فلومتر بالاترین دقت را دارد؟',o:['توربین (±۰.۲۵٪)','کوریولیس (±۰.۱٪)','مغناطیسی (±۰.۵٪)','روتامتر (±۲٪)'],a:1,ex:'کوریولیس با ±۰.۱٪ بالاترین دقت را دارد. مستقل از چگالی، دما و ویسکوزیته.'},
+    {q:'فلومتر اولتراسونیک clamp-on چه مزیت کلیدی دارد؟',o:['دقت ±۰.۱٪','نصب بدون توقف خط','بدون هزینه','قابل استفاده برای همه سیالات'],a:1,ex:'ترانسدیوسرها از بیرون لوله نصب می‌شوند. هیچ برش در لوله لازم نیست. مناسب لوله‌های در حال کار.'},
+    {q:'بازار جهانی فلومترها در سال ۲۰۲۵ تقریباً چند میلیارد دلار است؟',o:['۲ میلیارد','۸.۷۷ میلیارد','۲۰ میلیارد','۵۰ میلیارد'],a:1,ex:'بر اساس گزارش Fortune Business Insights، بازار جهانی فلومتر در ۲۰۲۵ حدود ۸.۷۷ میلیارد دلار بود.'}
+  ];
+  let cur=0, score=0, answered=false;
+  const faDigits=['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹','۱۰'];
+  function render(){
+    answered=false;
+    const q=questions[cur];
+    document.getElementById('quizCount').textContent='سؤال '+(faDigits[cur]||cur+1)+' از ۱۰';
+    document.getElementById('quizFill').style.width=((cur)/10*100)+'%';
+    document.getElementById('quizQuestion').textContent=q.q;
+    const opts=document.getElementById('quizOptions');
+    opts.innerHTML='';
+    q.o.forEach((opt,i)=>{
+      const btn=document.createElement('button');
+      btn.className='quiz-option';btn.textContent=opt;
+      btn.addEventListener('click',()=>{
+        if(answered)return;
+        answered=true;
+        const correct=i===q.a;
+        if(correct){btn.classList.add('correct');score++;document.getElementById('quizScore').textContent=faDigits[score]||score;}
+        else{btn.classList.add('incorrect');opts.children[q.a].classList.add('correct');}
+        Array.from(opts.children).forEach(c=>c.classList.add('disabled'));
+        const fb=document.getElementById('quizFeedback');
+        fb.className='quiz-feedback show '+(correct?'success':'error');
+        fb.innerHTML=(correct?'<i class="fas fa-check-circle"></i> درست! ':'<i class="fas fa-circle-xmark"></i> نادرست. ')+'<strong>توضیح:</strong> '+q.ex;
+        document.getElementById('quizNext').disabled=false;
+      });
+      opts.appendChild(btn);
+    });
+    document.getElementById('quizFeedback').className='quiz-feedback';
+    document.getElementById('quizNext').disabled=true;
+    document.getElementById('quizNext').textContent=cur===9?'مشاهده نتیجه ←':'سؤال بعدی ←';
+  }
+  document.getElementById('quizNext').addEventListener('click',()=>{
+    if(cur<9){cur++;render();}
+    else{
+      document.getElementById('quizFill').style.width='100%';
+      document.getElementById('quizCount').textContent='پایان';
+      let msg=score>=8?'عالی! تسلط کامل شما بر فلومترها آشکار است.':score>=6?'خوب! اکثر مفاهیم را درک کرده‌اید، مرور نهایی مفید است.':score>=4?'متوسط. مفاهیم پایه را مرور کنید.':'نیاز به مرور جدی. فصل را دوباره بخوانید.';
+      document.getElementById('quizQuestion').innerHTML='<strong style="color:var(--accent);font-size:1.2rem">امتیاز نهایی شما: '+(faDigits[score]||score)+' از ۱۰</strong><br><br>'+msg;
+      document.getElementById('quizOptions').innerHTML='';
+      document.getElementById('quizFeedback').className='quiz-feedback';
+      document.getElementById('quizNext').textContent='شروع دوباره';
+      document.getElementById('quizNext').onclick=function(){cur=0;score=0;document.getElementById('quizScore').textContent='۰';render();};
+    }
+  });
+  render();
+})();
+</script>
+</body>
+</html>
